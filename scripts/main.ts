@@ -101,30 +101,10 @@ world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : Play
       );
 
       if (nearestOakLog !== null){
+        // Move the entity to the oak log that was found
         const targetLocation = nearestOakLog.location;
         const walker = new EntityWalker(newEntity);
         await walker.MoveTo(targetLocation);
-
-        let runId = system.runInterval( () => {
-          if (Vector3Distance(newEntity.location, targetLocation) < 2.0){
-            system.clearRun(runId);
-          }else{
-            const direction = ToUnitVector3({
-              x: targetLocation.x - newEntity.location.x,
-              y: targetLocation.y - newEntity.location.y,
-              z: targetLocation.z - newEntity.location.z
-            });
-
-            newEntity.teleport({
-              x: newEntity.location.x + direction.x / 8,
-              y: newEntity.location.y + direction.y / 8,
-              z: newEntity.location.z + direction.z / 8
-            },
-            {
-              facingLocation: targetLocation
-            });
-          }
-        });
       }else{
         playerPlaceBlockEvent.player.sendMessage("No oak logs around.");
       }
