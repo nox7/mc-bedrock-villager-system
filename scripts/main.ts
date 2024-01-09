@@ -6,6 +6,7 @@ import { world, system, BlockPermutation, EntityInventoryComponent, ItemStack, D
 import BlockFinder from "./Utilities/BlockFinder.js";
 import Vector3Distance from "./Utilities/Vector3Distance.js";
 import ToUnitVector3 from "./Utilities/ToUnitVector3.js";
+import EntityWalker from "./Walker/EntityWalker.js";
 
 interface Region{
   Corner1: Vector3;
@@ -101,6 +102,8 @@ world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : Play
 
       if (nearestOakLog !== null){
         const targetLocation = nearestOakLog.location;
+        const walker = new EntityWalker(newEntity);
+        await walker.MoveTo(targetLocation);
 
         let runId = system.runInterval( () => {
           if (Vector3Distance(newEntity.location, targetLocation) < 2.0){
