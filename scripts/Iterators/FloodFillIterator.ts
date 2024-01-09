@@ -2,6 +2,15 @@ import { Block, BlockPermutation, Dimension, Vector3 } from "@minecraft/server"
 import Queue from "../DataStructures/Queue.js";
 import Vector3Distance from "../Utilities/Vector3Distance.js";
 
+/**
+ * Flood-fill style BFS iterator that will iterate over "empty" blocks starting at a center location. It will also iterate over any blocks
+ * included in the list of BlockNamesToInclude. "Empty" blocks (defined by BlockNameToConsiderEmpty) are used to determine if an entity can
+ * move to them.
+ * 
+ * Will return sets of blocks in maximum size of YieldedChunkSize. 
+ * 
+ * This iterator does not iterate up or down on the Y axis _unless_ the entity needs to jump up a block or jump down a block safely.
+ */
 export default class FloodFillIterator implements Iterable<Block[]> {
 
     private BlockNameToConsiderEmpty: string = "minecraft:air";
@@ -32,14 +41,29 @@ export default class FloodFillIterator implements Iterable<Block[]> {
         this.BlockNamesToInclude = blockNamesToInclude;
     }
 
+    /**
+     * Gets a basic string to represent the Vector3 location in a hash map
+     * @param location
+     * @returns 
+     */
     private GetHashForLocation(location: Vector3): string{
         return `${location.x}, ${location.y}, ${location.z}`;
     }
 
+    /**
+     * Determines if the provided block has already been added to this iterator's "closed" list of already-visited blocks.
+     * @param block 
+     * @returns 
+     */
     private HasBlockLocationBeenClosed(block: Block): boolean{
         return this.GetHashForLocation(block.location) in this.ClosedList;
     }
 
+    /**
+     * Adds the block, after fetching a hash for its Vector3 location, to this iterator's closed list
+     * @param block 
+     * @returns 
+     */
     private AddBlockLocationToClosedList(block: Block): Block{
         this.ClosedList[this.GetHashForLocation(block.location)] = true;
         return block;
@@ -74,7 +98,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
      * 
      * If the provided block is not air, then checks if the block above the provided block (y + 1) is air. If
      */
-    private GetBlockIfAirOrAboveBlocKIfAboveIsAir(block: Block): Block | null{
+    private GetBlockIfAirOrAboveBlockIfAboveIsAir(block: Block): Block | null{
         if (block.permutation.matches(this.BlockNameToConsiderEmpty)){
             const locationBelow: Vector3 = {
                 x: block.location.x,
@@ -171,7 +195,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                     includedBlocks.push(block);
                 }
 
-                const airBlock: Block | null = this.GetBlockIfAirOrAboveBlocKIfAboveIsAir(block);
+                const airBlock: Block | null = this.GetBlockIfAirOrAboveBlockIfAboveIsAir(block);
                 if (airBlock !== null){
                     includedBlocks.push(airBlock);
                 }
