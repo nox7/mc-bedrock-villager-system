@@ -1,0 +1,18 @@
+{
+    "format_version": 2,
+    "header": {
+      "name": "Village System Resources",
+      "description": "Resource files for the village system by Nox.",
+      "uuid":"37d5f069-3fc9-463f-aa44-ecc841238bd8",
+      "version": [1, 0, 0],
+      "min_engine_version": [1, 16, 0]
+     },
+    "modules": [
+      {
+        "description": "My First Add-On!",
+        "type": "resources",
+        "uuid": "457f55a3-2573-4e3c-a5db-f7e64b3d43a5",
+        "version": [1, 0, 0]
+      }
+    ]
+   }
