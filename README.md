@@ -5,6 +5,19 @@ An experimental "unloaded chunk manager" works to manage these happenings even w
 
 All code uses Microsoft's official Bedrock JavaScript API - no custom modding required.
 
+## Running
+With NodeJS installed into your environment, navigate to this project's root. Install the dependencies
+```
+npm install
+```
+
+Then, to compile the TS, behavior pack, and resource pack then publish to your Bedrock installation - run `gulp` in the CLI
+```gulp
+gulp
+```
+
+The Behavior Pack and Resource Pack will now be available to use in Minecraft Bedrock.
+
 ## Additions
 
 ### NPCs 
