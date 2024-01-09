@@ -79,20 +79,21 @@ function GetFirstEmptyLocationInRegionOfDimension(corner1: Vector3, corner2: Vec
 
 world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : PlayerPlaceBlockAfterEvent) => {
   const block = playerPlaceBlockEvent.block;
+
+  // Player placed a woodcutter-manager block
   if (block.permutation.matches("nox:woodcutter-manager")){
+
     const overworld = world.getDimension("overworld");
+
+    // Find an open space around the placed block to spawn the woodcutter guy
     const regionAroundPlacedBlock: Region = GetCuboidRegionAroundLocation(block.location, 1, true);
     const freeSpaceVector: Vector3 | null = GetFirstEmptyLocationInRegionOfDimension(regionAroundPlacedBlock.Corner1, regionAroundPlacedBlock.Corner2, overworld);
+
     if (freeSpaceVector !== null){
+      
+      // Find the nearest oak log
       const blockFinder: BlockFinder = new BlockFinder();
       const newEntity: Entity = overworld.spawnEntity("nox:villager", freeSpaceVector);
-      // const nearestOakLogs: Block[] = await blockFinder.FindBlocksMatchingPermuations(
-      //   freeSpaceVector,
-      //   10,
-      //   ["minecraft:log"],
-      //   overworld
-      // );
-
       const nearestOakLog: Block | null = await blockFinder.FindFirstBlockMatchingPermutation(
         freeSpaceVector,
         15,
