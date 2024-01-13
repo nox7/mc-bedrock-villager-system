@@ -24,9 +24,6 @@ export default class EntityWalker{
      */
     public Stop(): void{
         if (this.IsWalking){
-            if (this.CurrentSystemRunId !== null){
-                system.clearRun(this.CurrentSystemRunId);
-            }
             this.IsWalking = false;
             this.TargetLocation = null;
             this.CurrentSystemRunId = null;
@@ -35,6 +32,10 @@ export default class EntityWalker{
                 this.CurrentMoveToPromiseResolveFunction();
                 this.CurrentMoveToPromiseResolveFunction = null;
             }
+        }
+
+        if (this.CurrentSystemRunId !== null){
+            system.clearRun(this.CurrentSystemRunId);
         }
     }
 
@@ -47,20 +48,31 @@ export default class EntityWalker{
         return new Promise(resolve => {
             this.CurrentMoveToPromiseResolveFunction = resolve;
             const runId: number = system.runInterval( () => {
-                if (Vector3Distance(this.Entity.location, location) < stopAtThreshold){
+
+                let entityLocation: Vector3;
+                try{
+                    entityLocation = this.Entity.location;
+                }catch(e){
+                    // Failed to get location. Probably dead or unloaded
+                    // Stop the walker
                     this.Stop();
-                    resolve();
+                    return resolve();
+                }
+
+                if (Vector3Distance(entityLocation!, location) < stopAtThreshold){
+                    this.Stop();
+                    return resolve();
                 }else{
                     const direction = ToUnitVector3({
-                        x: location.x - this.Entity.location.x,
-                        y: location.y - this.Entity.location.y,
-                        z: location.z - this.Entity.location.z
+                        x: location.x - entityLocation!.x,
+                        y: location.y - entityLocation!.y,
+                        z: location.z - entityLocation!.z
                     });
         
                     this.Entity.teleport({
-                        x: this.Entity.location.x + direction.x / 8,
-                        y: this.Entity.location.y + direction.y / 8,
-                        z: this.Entity.location.z + direction.z / 8
+                        x: entityLocation!.x + direction.x / 8,
+                        y: entityLocation!.y + direction.y / 8,
+                        z: entityLocation!.z + direction.z / 8
                         },
                     {
                         facingLocation: location
