@@ -2,26 +2,27 @@
     "format_version": "1.12.0",
     "minecraft:client_entity": {
         "description": {
-            "identifier": "nox:villager",
+            "identifier": "nox:woodcutter",
             "spawn_egg": {
                 "base_color": "#505152",
                 "overlay_color": "#3b9dff"
             },
             "render_controllers": [
-                "controller.render.nox_villager"
+                "controller.render.nox_woodcutter"
             ],
             "geometry": {
-                "default": "geometry.nox_villager"
+                "default": "geometry.nox_woodcutter"
             },
             "textures": {
-                "variant_1": "textures/entity/villager_1"
+                "variant_1": "textures/entity/woodcutter_1"
             },
             "materials": {
                 "default": "entity"
             },
             "animations":{
                 "look_at_target": "animation.humanoid.look_at_target.default",
-                "move":"animation.humanoid.move"
+                "move":"animation.humanoid.move",
+                "woodcutting":"animation.woodcutter.chop"
             },
             "scripts":{
                 "pre_animation": [
@@ -29,6 +30,7 @@
                 ],
                 "animate": [
                     "look_at_target",
+                    {"woodcutting": "query.property('nox:is_chopping')"},
                     {"move":"query.is_on_ground"}
                 ]
             }

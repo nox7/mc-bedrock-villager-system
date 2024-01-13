@@ -2,9 +2,22 @@
     "format_version": "1.12.0",
     "minecraft:entity": {
         "description": {
-            "identifier": "nox:villager",
-            "is_spawnable": true,
-            "is_summonable": true
+            "identifier": "nox:woodcutter",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "properties": {
+                "nox:chop_time":{
+                    "type": "float",
+                    "default": 0.0,
+                    "range": [-10.0,10.0],
+                    "client_sync": true
+                },
+                "nox:is_chopping":{
+                    "type": "bool",
+                    "default": false,
+                    "client_sync": true
+                }
+            }
         },
         "components": {
             "minecraft:physics": {},

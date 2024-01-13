@@ -1,3 +1,3 @@
-entity.nox:villager.name=Nox Villager
-item.spawn_egg.entity.nox:villager.name=Spawn Nox Villager
+entity.nox:woodcutter.name=Woodsman
+item.spawn_egg.entity.nox:villager.name=Spawn Nox Woodcutter
 tile.nox:woodcutter-manager.name=Woodcutter Manager
