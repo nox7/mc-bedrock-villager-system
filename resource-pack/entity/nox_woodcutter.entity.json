@@ -29,7 +29,7 @@
                     "variable.tcos0 = (Math.cos(query.modified_distance_moved * 38.17) * query.modified_move_speed / variable.gliding_speed_value) * 57.3;"
                 ],
                 "animate": [
-                    "look_at_target",
+                    {"look_at_target": "!query.property('nox:is_chopping')"},
                     {"woodcutting": "query.property('nox:is_chopping')"},
                     {"move":"query.is_on_ground"}
                 ]
