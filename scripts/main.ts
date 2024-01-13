@@ -7,6 +7,9 @@ import NPCHandler from "./NPCHandler.js";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 
+const npcManager = new NPCHandler();
+system.runInterval(() => {
+  npcManager.OnGameTick();
 });
 
 world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : PlayerPlaceBlockAfterEvent) => {
