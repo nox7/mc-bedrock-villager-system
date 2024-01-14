@@ -38,14 +38,6 @@ export default class Woodcutter extends NPC{
         return null;
     }
 
-    // public static FromExistingEntity(
-    //     entity: Entity, 
-    //     dimension: Dimension, 
-    //     location: Vector3){
-    //     const woodcutter = new Woodcutter(dimension, location);
-    //     woodcutter.CreateEntity(location);
-    // }
-
     private Dimension: Dimension;
     private State: WoodcutterState;
     private Entity: Entity | null = null;
