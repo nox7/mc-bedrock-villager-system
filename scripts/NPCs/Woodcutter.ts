@@ -1,14 +1,42 @@
-import { Block, Dimension, Entity, Vector3, system } from "@minecraft/server";
+import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, Vector3, system } from "@minecraft/server";
 import WoodcutterManagerBlock from "../BlockHandlers/WoodcutterManagerBlock";
 import NPC from "./NPC";
 import BlockFinder from "../Utilities/BlockFinder";
 import EntityWalker from "../Walker/EntityWalker";
 import { WoodcutterState } from "./States/WoodcutterState";
+import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 
 export default class Woodcutter extends NPC{
 
     public static ENTITY_NAME = "nox:woodcutter";
-    public static LOG_NAMES_TO_FIND = ["minecraft:log"];
+    public static LOG_NAMES_TO_FIND = [
+        "minecraft:oak_log", "minecraft:birch_log", "minecraft:spruce_log", "minecraft:jungle_log", 
+        "minecraft:acacia_log", "minecraft:dark_oak_log",
+    ];
+
+    public static LOG_NAMES_TO_SAPLING_NAMES_MAP: {[key: string]: string} = {
+        "minecraft:oak_log": "oak",
+        "minecraft:birch_log": "birch",
+        "minecraft:spruce_log": "spruce",
+        "minecraft:jungle_log": "mjungle",
+        "minecraft:acacia_log": "acacia",
+        "minecraft:dark_oak_log": "dark_oak", // Will need special treatment, because it places four
+    };
+
+    /**
+     * Gets the name of the sapling related to a log provided a BlockPermutation
+     * @returns 
+     */
+    public static GetSaplingPermuationFromLogPermutation(blockPermutation: BlockPermutation): BlockPermutation | null{
+        for (const logName in Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP){
+            if (blockPermutation.matches(logName)){
+                console.warn(logName, "matches sapling", Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP[logName]);
+                return BlockPermutation.resolve("minecraft:sapling").withState("sapling_type", Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP[logName]);
+            }
+        }
+
+        return null;
+    }
 
     // public static FromExistingEntity(
     //     entity: Entity, 
@@ -73,9 +101,14 @@ export default class Woodcutter extends NPC{
                 this.OnStateChangeToWalkingToWood();
                 return resolve();
             }else if (this.State === WoodcutterState.WALKING_TO_WOOD){
-                // Not implemented
                 this.State = WoodcutterState.WOODCUTTING;
                 this.IsReadyForStateChange = false;
+                this.OnStateChangeToWoodcutting();
+                return resolve();
+            }else if (this.State === WoodcutterState.WOODCUTTING){
+                this.State = WoodcutterState.WALKING_TO_CHEST
+                this.IsReadyForStateChange = false;
+                // this.OnStateChangeToWoodcutting();
                 return resolve();
             }
         });
@@ -124,17 +157,63 @@ export default class Woodcutter extends NPC{
         }else{
             const walker = new EntityWalker(this.Entity!);
             await walker.MoveTo(this.TargetWoodBlock);
-            let attackTime = 0;
-            let increments = Math.PI / 32;
-            let loops = 0;
-            this.Entity?.setProperty("nox:is_chopping", true);
-            await new Promise<void>(resolve => {
-                system.runTimeout(() => {
-                    resolve();
-                }, 100);
-            });
-            this.Entity?.setProperty("nox:is_chopping", false);
             this.IsReadyForStateChange = true;
         }
+    }
+
+    /**
+     * The state has been changed to WOODCUTTING
+     * Chop down the TargetWoodBlock
+     */
+    public async OnStateChangeToWoodcutting(): Promise<void>{
+        this.Entity?.setProperty("nox:is_chopping", true);
+        
+        await new Promise<void>(resolve => {
+            system.runTimeout(() => {
+                resolve();
+            }, 100);
+        });
+        
+        this.Entity?.setProperty("nox:is_chopping", false);
+        
+        if (this.TargetWoodBlock !== null){
+            const targetBlockPermutation = this.TargetWoodBlock.permutation;
+            const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
+            const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
+            console.warn(this.TargetWoodBlock.type.id);
+            console.warn(this.TargetWoodBlock.typeId);
+            console.warn(this.TargetWoodBlock.permutation.type.id);
+
+            // Chop all the wood
+            const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND);
+            for (const block of connectedBlocks){
+                block.setPermutation(BlockPermutation.resolve("minecraft:air"));
+            }
+
+            // Get the dirt block that should/was under the tree
+            const raycastOptions: BlockRaycastOptions = {
+                includeLiquidBlocks: false,
+                includePassableBlocks: false,
+                maxDistance: 5
+            };
+
+            const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
+            if (blockRaycastHit !== undefined){
+                const blockHit = blockRaycastHit.block;
+                if (blockHit.permutation.matches("minecraft:dirt") || blockHit.permutation.matches("minecraft:grass")){
+                    // Place a sapling
+                    const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
+                    if (saplingToPlace !== null){
+                        const blockAboveLocation: Block | undefined = blockHit.above(1);
+                        if (blockAboveLocation !== undefined){
+                            blockAboveLocation.setPermutation(saplingToPlace);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        this.IsReadyForStateChange = true;
     }
 }

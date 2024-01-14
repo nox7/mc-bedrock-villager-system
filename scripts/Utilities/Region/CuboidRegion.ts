@@ -140,4 +140,32 @@ export default class CuboidRegion{
         this.CuboidRadius = cuboidRadius;
         this.IsVerticallyFlat = isVerticallyFlat;
     }
+
+    /**
+     * Gets all the Vector3 locations that are contained within this region
+     */
+    public GetAllLocationsInRegion(): Vector3[]{
+        const locations: Vector3[] = [];
+        const top: Vector3 = {
+            x: Math.min(this.Corner1.x, this.Corner2.x),
+            y: Math.min(this.Corner1.y, this.Corner2.y),
+            z: Math.min(this.Corner1.z, this.Corner2.z),
+        };
+
+        const bottom: Vector3 = {
+            x: Math.max(this.Corner1.x, this.Corner2.x),
+            y: Math.max(this.Corner1.y, this.Corner2.y),
+            z: Math.max(this.Corner1.z, this.Corner2.z),
+        };
+
+        for (let x = top.x; x <= bottom.x; x++){
+            for (let y = top.y; y <= bottom.y; y++){
+                for (let z = top.z; z <= bottom.z; z++){
+                    locations.push({x: x, y: y, z :z});
+                }
+            }
+        }
+
+        return locations;
+    }
 }
