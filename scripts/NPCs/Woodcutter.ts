@@ -9,11 +9,14 @@ import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfTyp
 export default class Woodcutter extends NPC{
 
     public static ENTITY_NAME = "nox:woodcutter";
+
+    // Do not use "minecraft:log" as it matches all logs
     public static LOG_NAMES_TO_FIND = [
         "minecraft:oak_log", "minecraft:birch_log", "minecraft:spruce_log", "minecraft:jungle_log", 
         "minecraft:acacia_log", "minecraft:dark_oak_log",
     ];
 
+    // Do not use "minecraft:log" as it matches all logs
     public static LOG_NAMES_TO_SAPLING_NAMES_MAP: {[key: string]: string} = {
         "minecraft:oak_log": "oak",
         "minecraft:birch_log": "birch",
@@ -172,9 +175,6 @@ export default class Woodcutter extends NPC{
             const targetBlockPermutation = this.TargetWoodBlock.permutation;
             const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
             const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
-            console.warn(this.TargetWoodBlock.type.id);
-            console.warn(this.TargetWoodBlock.typeId);
-            console.warn(this.TargetWoodBlock.permutation.type.id);
 
             // Chop all the wood
             const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND);
