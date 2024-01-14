@@ -1,10 +1,11 @@
-import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, Vector3, system } from "@minecraft/server";
+import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, Vector3, system } from "@minecraft/server";
 import WoodcutterManagerBlock from "../BlockHandlers/WoodcutterManagerBlock";
 import NPC from "./NPC";
 import BlockFinder from "../Utilities/BlockFinder";
 import EntityWalker from "../Walker/EntityWalker";
 import { WoodcutterState } from "./States/WoodcutterState";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
+import Wait from "../Utilities/Wait";
 
 export default class Woodcutter extends NPC{
 
@@ -33,7 +34,6 @@ export default class Woodcutter extends NPC{
     public static GetSaplingPermuationFromLogPermutation(blockPermutation: BlockPermutation): BlockPermutation | null{
         for (const logName in Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP){
             if (blockPermutation.matches(logName)){
-                console.warn(logName, "matches sapling", Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP[logName]);
                 return BlockPermutation.resolve("minecraft:sapling").withState("sapling_type", Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP[logName]);
             }
         }
@@ -46,6 +46,7 @@ export default class Woodcutter extends NPC{
     private Entity: Entity | null = null;
     private WoodcutterManagerBlock: WoodcutterManagerBlock;
     private TargetWoodBlock: Block | null = null;
+    private BlocksCarrying: {[key: string]: number} = {};
 
     /**
      * If this entity is ready for a state change on the next game tick
@@ -57,6 +58,19 @@ export default class Woodcutter extends NPC{
         this.State = WoodcutterState.NONE;
         this.Dimension = dimension;
         this.WoodcutterManagerBlock = woodcutterManagerBlockInstance;
+    }
+
+    /**
+     * Adds a block to this Woodcutter's carrying inventory
+     * @param typeId 
+     * @param amount 
+     */
+    private AddBlockToCarryingStack(typeId: string, amount: number){
+        if (!(typeId in this.BlocksCarrying)){
+            this.BlocksCarrying[typeId] = 0;
+        }
+
+        this.BlocksCarrying[typeId] += amount;
     }
 
     /**
@@ -103,7 +117,12 @@ export default class Woodcutter extends NPC{
             }else if (this.State === WoodcutterState.WOODCUTTING){
                 this.State = WoodcutterState.WALKING_TO_CHEST
                 this.IsReadyForStateChange = false;
-                // this.OnStateChangeToWoodcutting();
+                this.OnStateChangedToWalkingToChest();
+                return resolve();
+            }else if (this.State === WoodcutterState.WALKING_TO_CHEST){
+                // Done. Restart everything
+                this.State = WoodcutterState.NONE;
+                this.IsReadyForStateChange = true;
                 return resolve();
             }
         });
@@ -123,12 +142,8 @@ export default class Woodcutter extends NPC{
         );
 
         if (nearestOakLog === null){
-            // Couldn't find an oak log. Wait 10 seconds to try again
-            await new Promise<void>(resolve => {
-                setTimeout(() => {
-                    return resolve();
-                }, 1000 * 10);
-            });
+            // Couldn't find an oak log. Wait 50 ticks and try again
+            await Wait(50);
 
             // Revert state backwards
             this.State = WoodcutterState.NONE;
@@ -151,6 +166,9 @@ export default class Woodcutter extends NPC{
             this.IsReadyForStateChange = true;
         }else{
             const walker = new EntityWalker(this.Entity!);
+
+            // TODO
+            // Return a value for "didReachDestination" and if it false, try walking again
             await walker.MoveTo(this.TargetWoodBlock);
             this.IsReadyForStateChange = true;
         }
@@ -178,8 +196,15 @@ export default class Woodcutter extends NPC{
 
             // Chop all the wood
             const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND);
+
+            // Add the logs to this NPC's inventory
+            this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
+
+            let iteratorCount = 0;
             for (const block of connectedBlocks){
+                ++iteratorCount;
                 block.setPermutation(BlockPermutation.resolve("minecraft:air"));
+                await Wait(2);
             }
 
             // Get the dirt block that should/was under the tree
@@ -207,5 +232,38 @@ export default class Woodcutter extends NPC{
 
 
         this.IsReadyForStateChange = true;
+    }
+
+    /**
+     * When the state has changed for the woodcutter to walk back to the chest adjacent to his manager block
+     */
+    public async OnStateChangedToWalkingToChest(): Promise<void>{
+        const chestToWalkTo: Block | null = this.WoodcutterManagerBlock.GetAdjacentChest();
+        if (chestToWalkTo !== null){
+            const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
+            const walker = new EntityWalker(this.Entity!);
+            await walker.MoveTo(chestToWalkTo.location, 1.33);
+
+            // Deposit items
+            for (const typeId in this.BlocksCarrying){
+                const amount: number = this.BlocksCarrying[typeId];
+                if (chestInventory !== undefined){
+                    const itemStack: ItemStack = new ItemStack(typeId, amount);
+                    chestInventory.container?.addItem(itemStack);
+                }
+            }
+
+            // Clear inventory
+            this.BlocksCarrying = {};
+
+            this.IsReadyForStateChange = true;
+        }else{
+            console.warn("No chest to walk to. Waiting 20 ticks to try again");
+            // No chest? Wait some time then try again
+            await Wait(100);
+            // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
+            this.State = WoodcutterState.WOODCUTTING;
+            this.IsReadyForStateChange = true;
+        }
     }
 }

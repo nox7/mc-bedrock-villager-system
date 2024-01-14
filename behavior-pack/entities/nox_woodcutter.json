@@ -21,6 +21,9 @@
         },
         "components": {
             "minecraft:physics": {},
+            "minecraft:equipment": {
+                "table":"loot_tables/entities/woodcutter.json"
+            },
             "minecraft:variant":{
                 "value": 0
             },
@@ -35,4 +38,4 @@
             }
         }
     }
-}
+} 

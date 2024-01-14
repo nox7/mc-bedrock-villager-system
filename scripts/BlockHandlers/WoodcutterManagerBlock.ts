@@ -42,4 +42,27 @@ export default class WoodcutterManagerBlock{
 
         return null;
     }
+
+    /**
+     * Finds a chest that is adjacent to this manager block, if there is one
+     */
+    public GetAdjacentChest(): Block | null{
+        // Vertically flat
+        const cuboidRegionAroundSpawn: CuboidRegion = CuboidRegion.FromCenterLocation(this.Block.location, 1, true);
+        const locations: Vector3[] = cuboidRegionAroundSpawn.GetAllLocationsInRegion();
+        for (const location of locations){
+            let block: Block | undefined;
+            try{
+                block = this.Block.dimension.getBlock(location);
+            }catch(e){}
+
+            if (block !== undefined){
+                if (block.permutation.matches("minecraft:chest")){
+                    return block;
+                }
+            }
+        }
+
+        return null;
+    }
 }
