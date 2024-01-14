@@ -4,9 +4,9 @@ import FloodFillIterator from "../Iterators/FloodFillIterator.js";
 export default class BlockFinder{
 
     /**
-     * TODO Add this to system interval?
      * Uses an iterator to iterate all blocks in an octahedron around the starting location for a maxDistance. Returns all blocks with permuations
-     * matching any blockNamesToMatch provided that exist in the dimension provided.
+     * matching any blockNamesToMatch provided that exist in the dimension provided. Runs on the system interval so that lag is avoided on large
+     * searches.
      * @param startingLocation
      * @param maxDistance 
      * @returns 
@@ -35,31 +35,12 @@ export default class BlockFinder{
                 // If this iteration marks the end, then clear the run interval and resolve the promise
                 if (nextBlocksIteration.done == true){
                     system.clearRun(runId);
-
-                    // For debugging only, ignore
-                    // for (const block of iteratedBlocks){
-                    //     if (Math.random() < 0.15){
-                    //         await new Promise(resolve2 => {
-                    //             system.runTimeout(() => {
-                    //                 block.setPermutation(BlockPermutation.resolve("minecraft:stone"));
-                    //                 resolve2(null);
-                    //             }, 1);
-                    //         });
-                    //     }else{
-                    //         block.setPermutation(BlockPermutation.resolve("minecraft:stone"));
-                    //     }
-                    // }
-
                     resolve(blocksFound);
                 }
                 
                 if (nextBlocksIteration.value !== undefined){
                     for (const nextBlock of nextBlocksIteration.value){
                         iteratedBlocks.push(nextBlock);
-                    
-                        // Delete this later
-                        // nextBlock.setPermutation(BlockPermutation.resolve("minecraft:stone"));
-                        
                         for (const blockName of blockNamesToMatch){
                             if (nextBlock.permutation.matches(blockName)){
 
