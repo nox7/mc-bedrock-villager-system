@@ -20,6 +20,13 @@ The Behavior Pack and Resource Pack will now be available to use in Minecraft Be
 
 ## Additions
 
+### Systems
+All long-running systems or systems with heavy processing are hooked into the main thread of MC and run quickly (they avoid hanging). If they must process large amounts of data, blocks, etc. then they are set up to allow the main MC thread to continue and will perform their work in partial chunks until completion.
+
+- NPC state machine. Mass manages all NPCs into a unified state machine asynchronously running with the main MC thread 
+- Arbitrary block-finder asynchronously running with the main MC thread
+- A* pathfinding algorithm asynchronously running with the main MC thread
+
 ### NPCs 
 - Woodcutter: Craft a Woodcutter Manager block and place it where you would like a woodcutter to spawn. Make sure to have a chest adjacent. This woodcutter will then roam and cut trees and replant them - adding the obtained logs to the chest adjacent to his Woodcutter Manager block.
 
