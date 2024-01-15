@@ -56,10 +56,8 @@ export default class EntityWalker{
         const startLocation: Vector3 = this.Entity.location;
         this.TargetLocation = location;
 
-        console.warn("Calculating found path");
         const aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation);
         const blockPath: Block[] | null = await aStar.GetBlockPathFromStartToEnd();
-        console.warn("Path found");
 
         // if (blockPath !== null){
         //     for (const block of blockPath){
@@ -111,15 +109,17 @@ export default class EntityWalker{
                     return resolve(true);
                 }else{
                     const isCurrentBlockTheLastBlock = blockPath.length === 0;
+                    const targetBlockCenterLocation: Vector3 = nextBlock.center();
+                    const targetLocation = {x: targetBlockCenterLocation.x, y: targetBlockCenterLocation.y - 0.5, z: targetBlockCenterLocation.z};
                     this.IsWalking = true;
 
                     // Repeatedly walk to nextBlock.location until we're about there
                     await new Promise<void>(innerResolve => {
                         let innerRunId = system.runInterval(() => {
-                            // End this inner walk when the entity is close enough to the nextBlock.location
+                            // End this inner walk when the entity is close enough to the targetLocation
                             // If this is the last block, then use stopAtThreshold instead
-                            if ((isCurrentBlockTheLastBlock === true && Vector3Distance(nextBlock.location, this.Entity.location) < stopAtThreshold)
-                                || (isCurrentBlockTheLastBlock === false && Vector3Distance(nextBlock.location, this.Entity.location) < 0.15)
+                            if ((isCurrentBlockTheLastBlock === true && Vector3Distance(targetLocation, this.Entity.location) < stopAtThreshold)
+                                || (isCurrentBlockTheLastBlock === false && Vector3Distance(targetLocation, this.Entity.location) < 0.15)
                             ){
                                 this.IsWalking = false;
                                 system.clearRun(innerRunId);
@@ -127,9 +127,9 @@ export default class EntityWalker{
                             }
 
                             const direction = ToUnitVector3({
-                                x: nextBlock.location.x - this.Entity.location.x,
-                                y: nextBlock.location.y - this.Entity.location.y,
-                                z: nextBlock.location.z - this.Entity.location.z
+                                x: targetLocation.x - this.Entity.location.x,
+                                y: targetLocation.y - this.Entity.location.y,
+                                z: targetLocation.z - this.Entity.location.z
                             });
 
                             this.Entity.teleport({
@@ -138,7 +138,7 @@ export default class EntityWalker{
                                 z: this.Entity.location.z + direction.z / 8
                                 },
                                 {
-                                    facingLocation: nextBlock.location
+                                    facingLocation: targetLocation
                                 }
                             );
                         });
