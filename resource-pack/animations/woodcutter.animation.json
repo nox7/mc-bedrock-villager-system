@@ -3,7 +3,7 @@
     "animations": {
         "animation.woodcutter.chop" : {
 			"loop" : true,
-			"animation_length": 0.15,
+			"animation_length": 0.1,
 			"bones" : {
 				"body" : {
 					"rotation" : [ 0.0, 0.0, 0.0 ]
