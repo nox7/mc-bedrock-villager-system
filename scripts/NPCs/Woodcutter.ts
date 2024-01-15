@@ -169,7 +169,9 @@ export default class Woodcutter extends NPC{
 
             // TODO
             // Return a value for "didReachDestination" and if it false, try walking again
+            this.Entity?.setProperty("nox:is_moving", true);
             await walker.MoveTo(this.TargetWoodBlock);
+            this.Entity?.setProperty("nox:is_moving", false);
             this.IsReadyForStateChange = true;
         }
     }
@@ -204,7 +206,7 @@ export default class Woodcutter extends NPC{
             for (const block of connectedBlocks){
                 ++iteratorCount;
                 block.setPermutation(BlockPermutation.resolve("minecraft:air"));
-                await Wait(2);
+                // await Wait(2);
             }
 
             // Get the dirt block that should/was under the tree
@@ -242,7 +244,9 @@ export default class Woodcutter extends NPC{
         if (chestToWalkTo !== null){
             const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
             const walker = new EntityWalker(this.Entity!);
-            await walker.MoveTo(chestToWalkTo.location, 1.33);
+            this.Entity?.setProperty("nox:is_moving", true);
+            await walker.MoveTo(chestToWalkTo.location, 2);
+            this.Entity?.setProperty("nox:is_moving", false);
 
             // Deposit items
             for (const typeId in this.BlocksCarrying){
@@ -258,9 +262,8 @@ export default class Woodcutter extends NPC{
 
             this.IsReadyForStateChange = true;
         }else{
-            console.warn("No chest to walk to. Waiting 20 ticks to try again");
             // No chest? Wait some time then try again
-            await Wait(100);
+            await Wait(200);
             // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
             this.State = WoodcutterState.WOODCUTTING;
             this.IsReadyForStateChange = true;

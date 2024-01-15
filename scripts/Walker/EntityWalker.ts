@@ -1,6 +1,7 @@
-import { Entity, Vector2, Vector3, system } from "@minecraft/server";
+import { Block, BlockPermutation, Entity, Vector2, Vector3, system } from "@minecraft/server";
 import Vector3Distance from "../Utilities/Vector3Distance";
 import ToUnitVector3 from "../Utilities/ToUnitVector3";
+import AStar from "./AStar";
 
 /**
  * A walker class that will move an entity from one location to another.
@@ -13,7 +14,7 @@ export default class EntityWalker{
     private IsWalking: boolean = false;
     private TargetLocation: Vector3 | null = null;
     private CurrentSystemRunId: number | null = null;
-    private CurrentMoveToPromiseResolveFunction: (() => void) | null = null;
+    private CurrentMoveToPromiseResolveFunction: ((value: boolean) => void) | null = null;
 
     public constructor(entity: Entity){
         this.Entity = entity;
@@ -22,14 +23,14 @@ export default class EntityWalker{
     /**
      * Stops the current entity's movement that is due to this walker
      */
-    public Stop(): void{
+    public Stop(didReachDestination: boolean): void{
         if (this.IsWalking){
             this.IsWalking = false;
             this.TargetLocation = null;
             this.CurrentSystemRunId = null;
             if (this.CurrentMoveToPromiseResolveFunction !== null){
                 // Call the resolve function for the promise in the MoveTo method
-                this.CurrentMoveToPromiseResolveFunction();
+                this.CurrentMoveToPromiseResolveFunction(didReachDestination);
                 this.CurrentMoveToPromiseResolveFunction = null;
             }
         }
@@ -39,15 +40,59 @@ export default class EntityWalker{
         }
     }
 
-    public MoveTo(location: Vector3, stopAtThreshold: number = 2.0): Promise<void>{
+    /**
+     * Uses A* to find a path to the target location from the entity's current location at the time of calling MoveTo.
+     * If there is no path to the target, then false is returned. Otherwise, this method will walk the entity and return true
+     * after the entity reaches the location.
+     * @param location
+     * @param stopAtThreshold How far to stop at the final block instead. Use something less than 1 if you want the entity to physically be at the last block. Using 0 is not recommended.
+     * @returns 
+     */
+    public async MoveTo(location: Vector3, stopAtThreshold: number = 2.0): Promise<boolean>{
         if (this.IsWalking){
             throw "Entity is currently walking. You must stop the move before calling MoveTo again.";
         }
 
+        const startLocation: Vector3 = this.Entity.location;
         this.TargetLocation = location;
-        return new Promise(resolve => {
+
+        console.warn("Calculating found path");
+        const aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation);
+        const blockPath: Block[] | null = await aStar.GetBlockPathFromStartToEnd();
+        console.warn("Path found");
+
+        // if (blockPath !== null){
+        //     for (const block of blockPath){
+        //         console.warn(block.location.x, block.location.y, block.location.z);
+        //     }
+        // }
+
+        if (blockPath === null){
+            // There is not a path
+            return false;
+        }
+
+
+        // Reverse the block path so the start is at the end 
+        // The walker will pop the blocks off the end of the array and stop when there are no more
+        blockPath.reverse();
+
+        return new Promise(async resolve => {
             this.CurrentMoveToPromiseResolveFunction = resolve;
-            const runId: number = system.runInterval( () => {
+            const runId: number = system.runInterval(async () => {
+
+                if (this.IsWalking){
+                    return;
+                }
+
+                // blockPath is empty, no more blocks to walk
+                if (blockPath.length === 0){
+                    this.Stop(true);
+                    return resolve(true);
+                }
+
+                const nextBlock: Block | undefined = blockPath.pop();
+                // nextBlock?.setPermutation(BlockPermutation.resolve("red_wool"));
 
                 let entityLocation: Vector3;
                 try{
@@ -55,28 +100,53 @@ export default class EntityWalker{
                 }catch(e){
                     // Failed to get location. Probably dead or unloaded
                     // Stop the walker
-                    this.Stop();
-                    return resolve();
+                    this.Stop(false);
+                    return resolve(false);
                 }
 
-                if (Vector3Distance(entityLocation!, location) < stopAtThreshold){
-                    this.Stop();
-                    return resolve();
+                if (nextBlock === undefined){
+                    // nextBlock is undefined, no more blocks in the array
+                    // IS THIS EVEN NEEDED? Since we check for array length at the start of the runInterval
+                    this.Stop(true);
+                    return resolve(true);
                 }else{
-                    const direction = ToUnitVector3({
-                        x: location.x - entityLocation!.x,
-                        y: location.y - entityLocation!.y,
-                        z: location.z - entityLocation!.z
+                    const isCurrentBlockTheLastBlock = blockPath.length === 0;
+                    this.IsWalking = true;
+
+                    // Repeatedly walk to nextBlock.location until we're about there
+                    await new Promise<void>(innerResolve => {
+                        let innerRunId = system.runInterval(() => {
+                            // End this inner walk when the entity is close enough to the nextBlock.location
+                            // If this is the last block, then use stopAtThreshold instead
+                            if ((isCurrentBlockTheLastBlock === true && Vector3Distance(nextBlock.location, this.Entity.location) < stopAtThreshold)
+                                || (isCurrentBlockTheLastBlock === false && Vector3Distance(nextBlock.location, this.Entity.location) < 0.15)
+                            ){
+                                this.IsWalking = false;
+                                system.clearRun(innerRunId);
+                                return innerResolve();
+                            }
+
+                            const direction = ToUnitVector3({
+                                x: nextBlock.location.x - this.Entity.location.x,
+                                y: nextBlock.location.y - this.Entity.location.y,
+                                z: nextBlock.location.z - this.Entity.location.z
+                            });
+
+                            this.Entity.teleport({
+                                x: this.Entity.location.x + direction.x / 8,
+                                y: this.Entity.location.y + direction.y / 8,
+                                z: this.Entity.location.z + direction.z / 8
+                                },
+                                {
+                                    facingLocation: nextBlock.location
+                                }
+                            );
+                        });
                     });
-        
-                    this.Entity.teleport({
-                        x: entityLocation!.x + direction.x / 8,
-                        y: entityLocation!.y + direction.y / 8,
-                        z: entityLocation!.z + direction.z / 8
-                        },
-                    {
-                        facingLocation: location
-                    });
+
+                    // if (!isCurrentBlockTheLastBlock){
+                    //     nextBlock?.setPermutation(BlockPermutation.resolve("minecraft:tallgrass"));
+                    // }
                 }
             });
             this.CurrentSystemRunId = runId;
