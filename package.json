@@ -20,6 +20,7 @@
   "dependencies": {
     "@minecraft/server": "^1.9.0-beta",
     "@minecraft/server-ui": "^1.1.0",
-    "decode-uri-component": "^0.2.2"
+    "decode-uri-component": "^0.2.2",
+    "uuid": "^9.0.1"
   }
 }
