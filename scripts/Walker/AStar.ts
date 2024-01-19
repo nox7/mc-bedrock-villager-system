@@ -22,6 +22,21 @@ export default class AStar{
     private Dimension: Dimension;
 
     /**
+     * Additional block typeIds provided by the caller that can be considered "okay" to move through
+     */
+    private BlockTypeIdsToWhitelist: string[] = [];
+
+    /**
+     * Additional Minecraft Block instances provided by the caller that can be considered "okay" to move through
+     */
+    private BlocksToWhitelist: Block[] = [];
+
+    /**
+     * This is the maximum nodes that can be in the A* closed list before it give sup
+     */
+    private MaximumNodesToConsider: number = 100;
+
+    /**
      * List of blocks that A* can consider moveable
      */
     private CanMoveThroughBlocks: string[] = [
@@ -81,10 +96,12 @@ export default class AStar{
         "minecraft:mud_brick_wall",
     ];
 
-    public constructor(dimension: Dimension,startLocation: Vector3, endLocation: Vector3){
+    public constructor(dimension: Dimension,startLocation: Vector3, endLocation: Vector3, blockTypesToWhitelist: string[], blocksToWhitelist: Block[]){
         this.Dimension = dimension;
         this.Start = startLocation;
         this.End = endLocation;
+        this.BlockTypeIdsToWhitelist = blockTypesToWhitelist;
+        this.BlocksToWhitelist = blocksToWhitelist;
 
         let startBlock: Block | undefined = dimension.getBlock(startLocation);
         let endBlock: Block | undefined = dimension.getBlock(endLocation);
@@ -115,6 +132,12 @@ export default class AStar{
     
             let runId = system.runInterval(() => {
                 if (openList.length == 0){
+                    system.clearRun(runId);
+                    return resolve(null);
+                }
+
+                // Check if we have considered too many nodes and the path may be too difficult or impossible to get to
+                if (Object.keys(closedListLocations).length >= this.MaximumNodesToConsider){
                     system.clearRun(runId);
                     return resolve(null);
                 }
@@ -243,6 +266,7 @@ export default class AStar{
                                 // This block can be added to the walkable blocks if it can be stood on
                                 if (this.CanBlockBeStoodOn(blockAbove)){
                                     newWalkableBlocks.push(blockAbove);
+                                }else{
                                 }
                             }
                         }
@@ -261,6 +285,7 @@ export default class AStar{
                             // No, so that means blockAtLocation is our best move if it can be stood on
                             if (this.CanBlockBeStoodOn(blockAtLocation)){
                                 newWalkableBlocks.push(blockAtLocation);
+                            }else{
                             }
                         }else{
                             // Yes, that means we need to drop down to it if it's safe
@@ -325,7 +350,11 @@ export default class AStar{
      */
     private IsBlockInCanMoveList(block: Block): boolean{
         for (const typeId of this.CanMoveThroughBlocks){
-            if (block.typeId === typeId){
+            if (
+                block.typeId === typeId
+                || this.BlockTypeIdsToWhitelist.indexOf(block.typeId) > -1
+                || this.BlocksToWhitelist.indexOf(block) > -1
+                ){
                 return true;
             }
         }

@@ -46,9 +46,11 @@ export default class EntityWalker{
      * after the entity reaches the location.
      * @param location
      * @param stopAtThreshold How far to stop at the final block instead. Use something less than 1 if you want the entity to physically be at the last block. Using 0 is not recommended.
+     * @param blockTypesToWhitelist A list of block TypeIds to provide to the A* pathfinder to tell are okay to be moved through in addition to the standard air blocks
+     * @param blocksToWhitelist A liset of Minecraft Block instances to provide to the A* pathfinder to tell are okay to be moved through in addition to the standard air blocks
      * @returns 
      */
-    public async MoveTo(location: Vector3, stopAtThreshold: number = 2.0): Promise<boolean>{
+    public async MoveTo(location: Vector3, stopAtThreshold: number = 2.0, blockTypesToWhitelist: string[], blocksToWhitelist: Block[]): Promise<boolean>{
         if (this.IsWalking){
             throw "Entity is currently walking. You must stop the move before calling MoveTo again.";
         }
@@ -56,7 +58,7 @@ export default class EntityWalker{
         const startLocation: Vector3 = this.Entity.location;
         this.TargetLocation = location;
 
-        const aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation);
+        const aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation, blockTypesToWhitelist, blocksToWhitelist);
         const blockPath: Block[] | null = await aStar.GetBlockPathFromStartToEnd();
 
         // if (blockPath !== null){
@@ -69,7 +71,6 @@ export default class EntityWalker{
             // There is not a path
             return false;
         }
-
 
         // Reverse the block path so the start is at the end 
         // The walker will pop the blocks off the end of the array and stop when there are no more

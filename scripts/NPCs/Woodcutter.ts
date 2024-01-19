@@ -33,6 +33,11 @@ export default class Woodcutter extends NPC{
         "minecraft:dark_oak_log": "dark_oak", // Will need special treatment, because it places four
     };
 
+    public static LEAVES_NAMES = [
+        "minecraft:leaves", "minecraft:leaves2", "minecraft:mangrove_leaves", 
+        "minecraft:cherry_leaves", "minecraft:azalea_leaves", "minecraft:azalea_leaves_flowered"
+    ];
+
     /**
      * Gets the name of the sapling related to a log provided a BlockPermutation
      * @returns 
@@ -262,6 +267,13 @@ export default class Woodcutter extends NPC{
             return;
         }
 
+        if (!this.Entity?.isValid()){
+            // TODO
+            // Remove from NPC manager
+            Woodcutter.ClearFromCache(this);
+            return;
+        }
+
         return new Promise(resolve => {
 
             // If this entity is not ready to change states, go ahead and resolve the promise
@@ -337,10 +349,14 @@ export default class Woodcutter extends NPC{
         }else{
             const walker = new EntityWalker(this.Entity!);
 
-            // TODO
-            // Return a value for "didReachDestination" and if it false, try walking again
             this.Entity?.setProperty("nox:is_moving", true);
-            await walker.MoveTo(this.TargetWoodBlock);
+            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, Woodcutter.LEAVES_NAMES, []);
+
+            if (!didReachDestination){
+                // Try again
+                this.SetState(WoodcutterState.SEARCHING);
+            }
+
             this.Entity?.setProperty("nox:is_moving", false);
             this.IsReadyForStateChange = true;
         }
@@ -415,7 +431,7 @@ export default class Woodcutter extends NPC{
             const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
             const walker = new EntityWalker(this.Entity!);
             this.Entity?.setProperty("nox:is_moving", true);
-            await walker.MoveTo(chestToWalkTo.location, 2);
+            await walker.MoveTo(chestToWalkTo.location, 2, [], []);
             this.Entity?.setProperty("nox:is_moving", false);
 
             // Deposit items
