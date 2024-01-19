@@ -1,4 +1,4 @@
-import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, Vector3, system } from "@minecraft/server";
+import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, Vector3, system, world } from "@minecraft/server";
 import WoodcutterManagerBlock from "../BlockHandlers/WoodcutterManagerBlock";
 import NPC from "./NPC";
 import BlockFinder from "../Utilities/BlockFinder";
@@ -6,10 +6,16 @@ import EntityWalker from "../Walker/EntityWalker";
 import { WoodcutterState } from "./States/WoodcutterState";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Wait from "../Utilities/Wait";
+import NPCHandler from "../NPCHandler";
 
 export default class Woodcutter extends NPC{
 
     public static ENTITY_NAME = "nox:woodcutter";
+
+    /**
+     * A cache of known Woodcutter instances in memory
+     */
+    public static Cache: Woodcutter[] = [];
 
     // Do not use "minecraft:log" as it matches all logs
     public static LOG_NAMES_TO_FIND = [
@@ -41,23 +47,162 @@ export default class Woodcutter extends NPC{
         return null;
     }
 
+    /**
+     * Clears a Woodcutter instance from the cache and also deletes the entity from the world
+     * @param woodcutter
+     */
+    public static ClearFromCache(woodcutter: Woodcutter): void{
+        for (const woodcutterInstanceIndex in Woodcutter.Cache){
+            if (Woodcutter.Cache[woodcutterInstanceIndex] === woodcutter){
+                Woodcutter.Cache[woodcutterInstanceIndex].Entity?.remove();
+                Woodcutter.Cache.slice(parseInt(woodcutterInstanceIndex), 1);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Fetches a Woodcutter class instance by an Entity object. If it is not registered in the cache, then null is returned.
+     * @param entity 
+     */
+    public static GetFromCache(entity: Entity): Woodcutter | null{
+        for (const woodcutterInstance of Woodcutter.Cache){
+            const noxId = woodcutterInstance.Id;
+            if (noxId !== undefined){
+                const noxIdFromEntity = entity.getProperty("nox:id");
+                if (noxIdFromEntity !== undefined){
+                    if (noxId === noxIdFromEntity){
+                        return woodcutterInstance;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Loads a Woodcutter instance from an existing Entity that is not yet registered in the server memory with the Woodcutter.Cache property
+     * @param entity
+     */
+    public static async LoadFromExistingEntity(entity: Entity, npcHandlerInstance: NPCHandler): Promise<Woodcutter | null>{
+        const managerBlockLocationX = entity.getProperty("nox:woodcutter_manager_block_location_x");
+        const managerBlockLocationY = entity.getProperty("nox:woodcutter_manager_block_location_y");
+        const managerBlockLocationZ = entity.getProperty("nox:woodcutter_manager_block_location_z");
+
+        if (managerBlockLocationX === undefined || managerBlockLocationY === undefined || managerBlockLocationZ === undefined){
+            // Cannot load this entity - no saved manager block. Just delete them
+            entity.remove();
+        }else{
+            // Instantiate the Woodcutter
+            const woodcutter = new Woodcutter(entity.dimension, null);
+            woodcutter.IsLoading = true;
+            woodcutter.SetEntity(entity);
+            
+            // Find the block
+            const locationOfManagerBlock: Vector3 = {
+                x: Number(managerBlockLocationX),
+                y: Number(managerBlockLocationY),
+                z: Number(managerBlockLocationZ),
+            }
+
+            let blockFromLocation: Block | undefined;
+            
+            await new Promise<void>(resolve => {
+                let runId = system.runInterval(() => {
+                    // Throws an exception if the block is in an unloaded chunk
+                    try{
+                        blockFromLocation = entity.dimension.getBlock(locationOfManagerBlock);
+                    }catch(e){}
+
+                    if (blockFromLocation !== undefined){
+                        // Found it
+                        system.clearRun(runId);
+                        return resolve();
+                    }
+                }, 10);
+            });
+
+            // blockFromLocation is no longer undefined here
+            if (blockFromLocation !== undefined){
+                if (blockFromLocation?.typeId === WoodcutterManagerBlock.BlockTypeId){
+                    // This is the management block
+                    const managementBlock = new WoodcutterManagerBlock(blockFromLocation);
+                    woodcutter.SetWoodcutterManagerBlock(managementBlock);
+                    woodcutter.IsLoading = false;
+
+                    // Register the NPC
+                    npcHandlerInstance.RegisterNPC(woodcutter);
+                }else{
+                    // The block at the stored location is no longer a manager block
+                    // Remove this entity
+                    Woodcutter.ClearFromCache(woodcutter);
+                }
+
+            }else{
+                // How did we get here?
+                throw "Unreachable code got reached in Woodcutter.js somehow";
+            }
+            
+            
+            return woodcutter;
+        }
+
+        return null;
+    }
+
+    private Id: number | undefined;
     private Dimension: Dimension;
     private State: WoodcutterState;
     private Entity: Entity | null = null;
-    private WoodcutterManagerBlock: WoodcutterManagerBlock;
+    private WoodcutterManagerBlock: WoodcutterManagerBlock | null;
     private TargetWoodBlock: Block | null = null;
     private BlocksCarrying: {[key: string]: number} = {};
+
+    /**
+     * Flag for if the Woodcutter class is currently being loaded
+     */
+    public IsLoading: boolean = false;
 
     /**
      * If this entity is ready for a state change on the next game tick
      */
     public IsReadyForStateChange: boolean = true;
 
-    public constructor(dimension: Dimension, woodcutterManagerBlockInstance: WoodcutterManagerBlock){
+    public constructor(dimension: Dimension, woodcutterManagerBlockInstance: WoodcutterManagerBlock | null){
         super();
         this.State = WoodcutterState.NONE;
         this.Dimension = dimension;
         this.WoodcutterManagerBlock = woodcutterManagerBlockInstance;
+        Woodcutter.Cache.push(this);
+    }
+    
+    /**
+     * Gets the nox:id stored in memory that was loaded from the Entity
+     */
+    public GetId(): number | undefined{
+        return this.Id
+    }
+
+    /**
+     * Gets the nox:id of the Entity, or undefined if it doesn't exist
+     */
+    public GetIdFromEntity(): number | undefined{
+        const noxId = this.Entity?.getDynamicProperty("nox:id");
+        if (noxId !== undefined){
+            return Number(noxId);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Sets the enum state of this NPC by the name of the enum as a string
+     * @param enumState
+     */
+    public SetState(enumState: WoodcutterState): void{
+        this.State = enumState;
+        this.Entity?.setProperty("nox:state_enum", WoodcutterState[enumState]);
     }
 
     /**
@@ -74,10 +219,23 @@ export default class Woodcutter extends NPC{
     }
 
     /**
-     * Creates a new entity and sets the Entity property
+     * Creates a new entity and sets the Entity property of this class. The new entity is assigned a unique Id for this world.
      */
     public CreateEntity(location: Vector3): void{
-        this.Entity = this.Dimension.spawnEntity(Woodcutter.ENTITY_NAME, location);
+        const nextWoodcutterId = world.getDynamicProperty("nox:next_woodcutter_id");
+        if (nextWoodcutterId !== undefined){
+            // Increment the world's next_woodcutter_id
+            world.setDynamicProperty("nox:next_woodcutter_id", Number(nextWoodcutterId) + 1);
+    
+            this.Entity = this.Dimension.spawnEntity(Woodcutter.ENTITY_NAME, location);
+            this.Entity.setProperty("nox:id", Number(nextWoodcutterId));
+            this.Entity.setProperty("nox:woodcutter_manager_block_location_x", this.WoodcutterManagerBlock!.GetBlock().location.x);
+            this.Entity.setProperty("nox:woodcutter_manager_block_location_y", this.WoodcutterManagerBlock!.GetBlock().location.y);
+            this.Entity.setProperty("nox:woodcutter_manager_block_location_z", this.WoodcutterManagerBlock!.GetBlock().location.z);
+
+            // Set the state (will set the Entity property nox:state_enum) to the currently loaded state in memory
+            this.SetState(this.State);
+        }
     }
 
     /**
@@ -88,10 +246,22 @@ export default class Woodcutter extends NPC{
         return this.Entity;
     }
 
+    public SetEntity(entity: Entity): void{
+        this.Entity = entity;
+    }
+
+    public SetWoodcutterManagerBlock(managerBlockInstance: WoodcutterManagerBlock): void{
+        this.WoodcutterManagerBlock = managerBlockInstance;
+    }
+
     /**
      * Called by the NPC handler. Avoid ever calling this manually
      */
     public override async OnGameTick(): Promise<void>{
+        if (this.IsLoading){
+            return;
+        }
+
         return new Promise(resolve => {
 
             // If this entity is not ready to change states, go ahead and resolve the promise
@@ -100,28 +270,28 @@ export default class Woodcutter extends NPC{
             }
 
             if (this.State === WoodcutterState.NONE){
-                this.State = WoodcutterState.SEARCHING;
+                this.SetState(WoodcutterState.SEARCHING);
                 this.IsReadyForStateChange = false;
                 this.OnStateChangeToSearching();
                 return resolve();
             }else if (this.State === WoodcutterState.SEARCHING){
-                this.State = WoodcutterState.WALKING_TO_WOOD;
+                this.SetState(WoodcutterState.WALKING_TO_WOOD);
                 this.IsReadyForStateChange = false;
                 this.OnStateChangeToWalkingToWood();
                 return resolve();
             }else if (this.State === WoodcutterState.WALKING_TO_WOOD){
-                this.State = WoodcutterState.WOODCUTTING;
+                this.SetState(WoodcutterState.WOODCUTTING);
                 this.IsReadyForStateChange = false;
                 this.OnStateChangeToWoodcutting();
                 return resolve();
             }else if (this.State === WoodcutterState.WOODCUTTING){
-                this.State = WoodcutterState.WALKING_TO_CHEST
+                this.SetState(WoodcutterState.WALKING_TO_CHEST);
                 this.IsReadyForStateChange = false;
                 this.OnStateChangedToWalkingToChest();
                 return resolve();
             }else if (this.State === WoodcutterState.WALKING_TO_CHEST){
                 // Done. Restart everything
-                this.State = WoodcutterState.NONE;
+                this.SetState(WoodcutterState.NONE);
                 this.IsReadyForStateChange = true;
                 return resolve();
             }
@@ -146,7 +316,7 @@ export default class Woodcutter extends NPC{
             await Wait(50);
 
             // Revert state backwards
-            this.State = WoodcutterState.NONE;
+            this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
         }else{
             this.TargetWoodBlock = nearestOakLog;
@@ -162,7 +332,7 @@ export default class Woodcutter extends NPC{
     public async OnStateChangeToWalkingToWood(): Promise<void>{
         if (this.TargetWoodBlock === null){
             // Revert state to searching for wood
-            this.State = WoodcutterState.SEARCHING;
+            this.SetState(WoodcutterState.SEARCHING);
             this.IsReadyForStateChange = true;
         }else{
             const walker = new EntityWalker(this.Entity!);
@@ -240,7 +410,7 @@ export default class Woodcutter extends NPC{
      * When the state has changed for the woodcutter to walk back to the chest adjacent to his manager block
      */
     public async OnStateChangedToWalkingToChest(): Promise<void>{
-        const chestToWalkTo: Block | null = this.WoodcutterManagerBlock.GetAdjacentChest();
+        const chestToWalkTo: Block | null = this.WoodcutterManagerBlock!.GetAdjacentChest();
         if (chestToWalkTo !== null){
             const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
             const walker = new EntityWalker(this.Entity!);
@@ -265,7 +435,7 @@ export default class Woodcutter extends NPC{
             // No chest? Wait some time then try again
             await Wait(200);
             // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
-            this.State = WoodcutterState.WOODCUTTING;
+            this.SetState(WoodcutterState.WOODCUTTING);
             this.IsReadyForStateChange = true;
         }
     }

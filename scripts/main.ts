@@ -2,7 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, BlockPermutation, EntityInventoryComponent, ItemStack, DisplaySlotId, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent } from "@minecraft/server";
 import NPCHandler from "./NPCHandler.js";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
@@ -39,5 +39,25 @@ world.beforeEvents.itemUseOn.subscribe((itemUseOnBeforeEvent : ItemUseOnBeforeEv
     }
   }else{
     // world.sendMessage("Is not woodcutter");
+  }
+});
+
+world.afterEvents.worldInitialize.subscribe( () => {
+  // Check if there is a world-scoped dynamic property for the Woodcutter NPC
+  const nextWoodCutterId = world.getDynamicProperty("nox:next_woodcutter_id");
+  if (nextWoodCutterId === undefined){
+    // This property needs to be registered to this world
+    world.setDynamicProperty("nox:next_woodcutter_id", 1);
+  }
+});
+
+world.afterEvents.entityLoad.subscribe( (e: EntityLoadAfterEvent) => {
+  const entity: Entity = e.entity;
+  // Did we just load a Woodcutter?
+  if (entity.typeId === "nox:woodcutter"){
+    // If it is not already cached in memory, then this woodcutter needs to be registered on the server
+    if (Woodcutter.GetFromCache(entity) === null){
+      Woodcutter.LoadFromExistingEntity(entity, npcManager);
+    }
   }
 });

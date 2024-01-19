@@ -6,10 +6,41 @@
             "is_spawnable": false,
             "is_summonable": true,
             "properties": {
-                "nox:chop_time":{
+                "nox:id":{
+                    "type": "int",
+                    "default": 0,
+                    "range": [0,25000],
+                    "client_sync": true
+                },
+                "nox:state_enum": {
+                    "type": "enum",
+                    "default": "NONE",
+                    "values": [
+                        "NONE",
+                        "SEARCHING",
+                        "WALKING_TO_WOOD",
+                        "WOODCUTTING",
+                        "WALKING_TO_CHEST",
+                        "DEPOSITING_WOOD"
+                    ],
+                    "client_sync": true
+                },
+                "nox:woodcutter_manager_block_location_x": {
                     "type": "float",
                     "default": 0.0,
-                    "range": [-10.0,10.0],
+                    "range": [-29999984.0, 29999984.0],
+                    "client_sync": true
+                },
+                "nox:woodcutter_manager_block_location_y": {
+                    "type": "float",
+                    "default": 0.0,
+                    "range": [-29999984.0, 29999984.0],
+                    "client_sync": true
+                },
+                "nox:woodcutter_manager_block_location_z": {
+                    "type": "float",
+                    "default": 0.0,
+                    "range": [-29999984.0, 29999984.0],
                     "client_sync": true
                 },
                 "nox:is_chopping":{

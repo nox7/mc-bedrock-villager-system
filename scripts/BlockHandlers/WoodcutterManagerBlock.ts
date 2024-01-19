@@ -5,13 +5,20 @@ import Woodcutter from "../NPCs/Woodcutter";
 
 export default class WoodcutterManagerBlock{
 
+    public static BlockTypeId = "nox:woodcutter-manager";
     public static Cache: WoodcutterManagerBlock[] = [];
 
     private Block: Block;
+    private BlockLocationX: number;
+    private BlockLocationY: number;
+    private BlockLocationZ: number;
     private WoodcutterNPC: Woodcutter | null = null;
 
     public constructor(block: Block){
         this.Block = block;
+        this.BlockLocationX = block.location.x;
+        this.BlockLocationY = block.location.y;
+        this.BlockLocationZ = block.location.z;
         WoodcutterManagerBlock.Cache.push(this);
     }
 
