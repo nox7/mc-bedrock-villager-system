@@ -57,6 +57,14 @@
         },
         "components": {
             "minecraft:physics": {},
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "cause": "all",
+                        "deals_damage": false
+                    }
+                ]
+            },
             "minecraft:equipment": {
                 "table":"loot_tables/entities/woodcutter.json"
             },
