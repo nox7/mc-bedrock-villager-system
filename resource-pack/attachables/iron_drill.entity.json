@@ -1,0 +1,36 @@
+{
+	"format_version": "1.20.0",
+	"minecraft:attachable": {
+		"description": {
+			"identifier": "nox:iron_drill",
+			"materials": {
+				"default": "entity_alphatest",
+				"enchanted": "entity_alphatest_glint"
+			},
+			"textures": {
+				"default": "textures/items/nox_iron_drill",
+				"enchanted": "textures/misc/enchanted_item_glint"
+			},
+			"geometry": {
+				"default": "geometry.nox.iron_drill"
+			},
+			"animations": {
+				"hold_first_person": "animation.drill.holding_first_person",
+				"hold_third_person": "animation.player.holding"
+			},
+			"scripts": {
+				"animate": [
+					{
+						"hold_first_person": "context.is_first_person == 1.0"
+					},
+					{
+						"hold_third_person": "context.is_first_person == 0.0"
+					}
+				]
+			},
+			"render_controllers": [
+				"controller.render.item_default"
+			]
+		}
+	}
+}

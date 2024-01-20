@@ -32,3 +32,7 @@ All long-running systems or systems with heavy processing are hooked into the ma
 
 ### Recipes
 - Leather can be obtained by smelting Rotten Flesh in a furnace
+- Iron Drill can be made with 3 Oak Logs on the bottom row, 3 Iron Ingots on the middle row, and 3 Stone (not Cobblestone) on the top row
+
+### Items
+- Iron Drill has been added. It specializes in mining basic stones (not ores, dirt, trees, or anything else) in high speeds compared to pickaxes.

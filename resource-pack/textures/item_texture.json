@@ -1,0 +1,9 @@
+{
+	"resource_pack_name": "VillageSystem",
+	"texture_name": "atlas.items",
+	"texture_data": {
+		"nox_iron_drill": {
+			"textures": "textures/items/nox_iron_drill_icon"
+		}
+	}
+}
