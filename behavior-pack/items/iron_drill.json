@@ -26,6 +26,42 @@
                     {
                         "block":"minecraft:stone",
                         "speed": 8
+                    },
+					{
+                        "block":"minecraft:diorite",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:andesite",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:granite",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:sandstone",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:pointed_dripstone",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:mossy_cobblestone",
+                        "speed": 8
+                    },
+					{
+                        "block":"minecraft:deepslate",
+                        "speed": 7
+                    },
+					{
+                        "block":"minecraft:blackstone",
+                        "speed": 7
+                    },
+					{
+                        "block":"minecraft:netherrack",
+                        "speed": 7
                     }
                 ]
             },
