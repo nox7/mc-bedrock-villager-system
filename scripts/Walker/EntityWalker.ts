@@ -58,14 +58,15 @@ export default class EntityWalker{
         const startLocation: Vector3 = this.Entity.location;
         this.TargetLocation = location;
 
-        const aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation, blockTypesToWhitelist, blocksToWhitelist);
-        const blockPath: Block[] | null = await aStar.GetBlockPathFromStartToEnd();
+        let aStar: AStar;
+        try{
+            aStar = new AStar(this.Entity.dimension, startLocation, this.TargetLocation, blockTypesToWhitelist, blocksToWhitelist);
+        }catch(e){
+            // Failed to construct - start/end blocks probably not loaded
+            return false;
+        }
 
-        // if (blockPath !== null){
-        //     for (const block of blockPath){
-        //         console.warn(block.location.x, block.location.y, block.location.z);
-        //     }
-        // }
+        const blockPath: Block[] | null = await aStar.GetBlockPathFromStartToEnd();
 
         if (blockPath === null){
             // There is not a path
@@ -93,6 +94,12 @@ export default class EntityWalker{
                 const nextBlock: Block | undefined = blockPath.pop();
                 // nextBlock?.setPermutation(BlockPermutation.resolve("red_wool"));
 
+                // Cancel everything if this entity suddenly becomes invalid
+                if (!this.Entity.isValid()){
+                    this.Stop(false);
+                    return resolve(false);
+                }
+
                 let entityLocation: Vector3;
                 try{
                     entityLocation = this.Entity.location;
@@ -117,6 +124,14 @@ export default class EntityWalker{
                     // Repeatedly walk to nextBlock.location until we're about there
                     await new Promise<void>(innerResolve => {
                         let innerRunId = system.runInterval(() => {
+
+                            // Cancel everything if this entity suddenly becomes invalid
+                            if (!this.Entity.isValid()){
+                                this.Stop(false);
+                                system.clearRun(innerRunId);
+                                return innerResolve();
+                            }
+
                             // End this inner walk when the entity is close enough to the targetLocation
                             // If this is the last block, then use stopAtThreshold instead
                             if ((isCurrentBlockTheLastBlock === true && Vector3Distance(targetLocation, this.Entity.location) < stopAtThreshold)

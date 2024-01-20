@@ -103,8 +103,13 @@ export default class AStar{
         this.BlockTypeIdsToWhitelist = blockTypesToWhitelist;
         this.BlocksToWhitelist = blocksToWhitelist;
 
-        let startBlock: Block | undefined = dimension.getBlock(startLocation);
-        let endBlock: Block | undefined = dimension.getBlock(endLocation);
+        let startBlock: Block | undefined;
+        let endBlock: Block | undefined;
+
+        try{
+            startBlock = dimension.getBlock(startLocation);
+            endBlock = dimension.getBlock(endLocation);
+        }catch(e){}
 
         if (startBlock !== undefined && endBlock !== undefined){
             this.StartBlock = startBlock;

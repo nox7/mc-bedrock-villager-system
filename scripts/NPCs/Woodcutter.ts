@@ -267,10 +267,8 @@ export default class Woodcutter extends NPC{
             return;
         }
 
+        // Do nothing if the entity is invalid
         if (!this.Entity?.isValid()){
-            // TODO
-            // Remove from NPC manager
-            Woodcutter.ClearFromCache(this);
             return;
         }
 
@@ -316,16 +314,28 @@ export default class Woodcutter extends NPC{
      */
     public async OnStateChangeToSearching(): Promise<void>{
         const blockFinder: BlockFinder = new BlockFinder();
-        const nearestOakLog: Block | null = await blockFinder.FindFirstBlockMatchingPermutation(
-            this.Entity!.location,
-            15,
-            Woodcutter.LOG_NAMES_TO_FIND,
-            this.Entity!.dimension
-        );
+
+        let nearestOakLog: Block | null;
+        try{
+            nearestOakLog = await blockFinder.FindFirstBlockMatchingPermutation(
+                this.Entity!.location,
+                15,
+                Woodcutter.LOG_NAMES_TO_FIND,
+                this.Entity!.dimension
+            );
+        }catch(e){
+            // Exception happened while searching for a block - most likely the starting location is
+            // undefined or unloaded
+            // Wait a bit and then reset this Woodcutter's state to NONE for now
+            await Wait(100);
+            this.SetState(WoodcutterState.NONE);
+            this.IsReadyForStateChange = true;
+            return;
+        }
 
         if (nearestOakLog === null){
-            // Couldn't find an oak log. Wait 50 ticks and try again
-            await Wait(50);
+            // Couldn't find an oak log. Wait 100 ticks and try again
+            await Wait(100);
 
             // Revert state backwards
             this.SetState(WoodcutterState.NONE);
@@ -369,11 +379,14 @@ export default class Woodcutter extends NPC{
     public async OnStateChangeToWoodcutting(): Promise<void>{
         this.Entity?.setProperty("nox:is_chopping", true);
         
-        await new Promise<void>(resolve => {
-            system.runTimeout(() => {
-                resolve();
-            }, 100);
-        });
+        await Wait(100);
+
+        // Did the entity become invalid after waiting? If so, just reset the entire state
+        if (!this.Entity?.isValid()){
+            this.SetState(WoodcutterState.NONE)
+            this.IsReadyForStateChange = true;
+            return;
+        }
         
         this.Entity?.setProperty("nox:is_chopping", false);
         
@@ -392,7 +405,6 @@ export default class Woodcutter extends NPC{
             for (const block of connectedBlocks){
                 ++iteratorCount;
                 block.setPermutation(BlockPermutation.resolve("minecraft:air"));
-                // await Wait(2);
             }
 
             // Get the dirt block that should/was under the tree
@@ -432,6 +444,14 @@ export default class Woodcutter extends NPC{
             const walker = new EntityWalker(this.Entity!);
             this.Entity?.setProperty("nox:is_moving", true);
             await walker.MoveTo(chestToWalkTo.location, 2, [], []);
+
+            // Did the entity become invalid after waiting/walking? If so, just reset the entire state
+            if (!this.Entity?.isValid()){
+                this.SetState(WoodcutterState.NONE)
+                this.IsReadyForStateChange = true;
+                return;
+            }
+
             this.Entity?.setProperty("nox:is_moving", false);
 
             // Deposit items

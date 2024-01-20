@@ -1,6 +1,7 @@
 import { Block, BlockPermutation, Dimension, Vector3 } from "@minecraft/server"
 import Queue from "../DataStructures/Queue.js";
 import Vector3Distance from "../Utilities/Vector3Distance.js";
+import TryGetBlock from "../Utilities/TryGetBlock.js";
 
 /**
  * Flood-fill style BFS iterator that will iterate over "empty" blocks starting at a center location. It will also iterate over any blocks
@@ -110,7 +111,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                 return null;
             }
 
-            const blockBelow = this.World.getBlock(locationBelow);
+            const blockBelow: Block | undefined = TryGetBlock(this.World, locationBelow);
             if (blockBelow?.permutation.matches(this.BlockNameToConsiderEmpty)){
                 // Block below 'block' is also air - is the block y - 2 non-air? If so, we can fall to it safely
                 const locationFurtherBelow: Vector3 = {
@@ -123,7 +124,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                     return null;
                 }
 
-                const blockFurtherBelow = this.World.getBlock(locationFurtherBelow);
+                const blockFurtherBelow: Block | undefined = TryGetBlock(this.World, locationFurtherBelow);
                 if (blockFurtherBelow?.permutation.matches(this.BlockNameToConsiderEmpty)){
                     // We cannot use this 'block'
                     return null;
@@ -147,7 +148,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                 return null;
             }
 
-            const blockAbove = this.World.getBlock(locationAbove);
+            const blockAbove = TryGetBlock(this.World, locationAbove);
             if (blockAbove?.permutation.matches(this.BlockNameToConsiderEmpty)){
                 // TODO, check if blockFurtherAbove (y+2) is also air, so we can jump to it
                 return this.HasBlockLocationBeenClosed(blockAbove) ? null : this.AddBlockLocationToClosedList(blockAbove);
@@ -187,7 +188,11 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                 continue;
             }
 
-            const block: Block | undefined = this.World.getBlock(location);
+            let block: Block | undefined;
+            try{
+                block = this.World.getBlock(location);
+            }catch(e){}
+            
             if (block !== undefined){
 
                 // Check if this block is one of the blocks the requester wants to include in all cases
@@ -210,10 +215,10 @@ export default class FloodFillIterator implements Iterable<Block[]> {
      */
     public *[Symbol.iterator](): IterableIterator<Block[]> {
       const visited: {[key: string]: boolean} = {};
-      const startingBlock: Block | undefined = this.World.getBlock(this.CenterLocation);
+      const startingBlock: Block | undefined = TryGetBlock(this.World, this.CenterLocation);
 
       if (startingBlock === undefined){
-        throw "Starting location for GroundBlockIterator cannot resolve to an undefined block.";
+        throw "Starting location for FloodFillIterator cannot resolve to an undefined block.";
       }
 
       // Hashmap of locations that have already been 
@@ -227,7 +232,6 @@ export default class FloodFillIterator implements Iterable<Block[]> {
         for (const block of blocks){
             queue.EnqueueList(this.GetAdjacentAirOrIncludedBlocks(block));
         }
-        
       }
     }
   }

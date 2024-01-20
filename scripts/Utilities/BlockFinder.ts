@@ -25,31 +25,47 @@ export default class BlockFinder{
             dimension,
             blockNamesToMatch
             );
-        const iterator = floodFillIterator[Symbol.iterator]();
+
+        let iterator: IterableIterator<Block[]>;
+        try{
+            iterator = floodFillIterator[Symbol.iterator]();
+        }catch(e){
+            // Starting location is unloaded - just return blank
+            return [];
+        }
+
         const iteratedBlocks: Block[] = [];
         
         return new Promise(async resolve => {
             let runId = system.runInterval(async () => {
-                let nextBlocksIteration = iterator.next();
+                let nextBlocksIteration: IteratorResult<Block[] | any>;
+                try{
+                    nextBlocksIteration = iterator.next();
+                }catch(e){
+                    // Out of bounds now, I guess
+                    system.clearRun(runId);
+                    return resolve(blocksFound);
+                }
 
                 // If this iteration marks the end, then clear the run interval and resolve the promise
                 if (nextBlocksIteration.done == true){
                     system.clearRun(runId);
-                    resolve(blocksFound);
+                    return resolve(blocksFound);
                 }
                 
                 if (nextBlocksIteration.value !== undefined){
                     for (const nextBlock of nextBlocksIteration.value){
                         iteratedBlocks.push(nextBlock);
-                        for (const blockName of blockNamesToMatch){
-                            if (nextBlock.permutation.matches(blockName)){
-
-                                if (endOnFirstMatch){
-                                    system.clearRun(runId);
-                                    resolve([nextBlock]);
-                                }else{
-                                    blocksFound.push(nextBlock);
-                                    break;
+                        if (nextBlock.isValid()){
+                            for (const blockName of blockNamesToMatch){
+                                if (nextBlock.typeId === blockName){
+                                    if (endOnFirstMatch){
+                                        system.clearRun(runId);
+                                        return resolve([nextBlock]);
+                                    }else{
+                                        blocksFound.push(nextBlock);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -73,9 +89,13 @@ export default class BlockFinder{
         blockNamesToMatch: string[],
         dimension: Dimension,
     ): Promise<Block | null>{
-        const blocks: Block[] = await this.FindBlocksMatchingPermuations(startingLocation, maxDistance, blockNamesToMatch, dimension, true);
-        if (blocks.length === 1){
-            return blocks[0];
+        try{
+            const blocks: Block[] = await this.FindBlocksMatchingPermuations(startingLocation, maxDistance, blockNamesToMatch, dimension, true);
+            if (blocks.length === 1){
+                return blocks[0];
+            }
+        }catch(e){
+            return null;
         }
 
         return null;
