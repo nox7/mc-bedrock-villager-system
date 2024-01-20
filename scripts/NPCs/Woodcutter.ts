@@ -321,7 +321,7 @@ export default class Woodcutter extends NPC{
         try{
             Debug.Info("Searching for log blocks");
             nearestOakLog = await blockFinder.FindFirstBlockMatchingPermutation(
-                this.Entity!.location,
+                this.WoodcutterManagerBlock!.GetBlock()!.location,
                 15,
                 Woodcutter.LOG_NAMES_TO_FIND,
                 this.Entity!.dimension
