@@ -6,6 +6,10 @@ import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent
 import NPCHandler from "./NPCHandler.js";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
+import Debug from "./Debug/Debug.js";
+import { LogLevel } from "./Debug/LogLevel.js";
+
+Debug.LogLevel = LogLevel.None;
 
 const npcManager = new NPCHandler();
 system.runInterval(() => {

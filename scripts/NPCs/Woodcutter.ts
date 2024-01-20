@@ -7,6 +7,7 @@ import { WoodcutterState } from "./States/WoodcutterState";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Wait from "../Utilities/Wait";
 import NPCHandler from "../NPCHandler";
+import Debug from "../Debug/Debug";
 
 export default class Woodcutter extends NPC{
 
@@ -313,16 +314,19 @@ export default class Woodcutter extends NPC{
      * Find wood
      */
     public async OnStateChangeToSearching(): Promise<void>{
+        Debug.Info("Woodcutter state changed to Searching.");
         const blockFinder: BlockFinder = new BlockFinder();
 
         let nearestOakLog: Block | null;
         try{
+            Debug.Info("Searching for log blocks");
             nearestOakLog = await blockFinder.FindFirstBlockMatchingPermutation(
                 this.Entity!.location,
                 15,
                 Woodcutter.LOG_NAMES_TO_FIND,
                 this.Entity!.dimension
             );
+            Debug.Info("Search finished");
         }catch(e){
             // Exception happened while searching for a block - most likely the starting location is
             // undefined or unloaded
@@ -352,6 +356,7 @@ export default class Woodcutter extends NPC{
      * Walk to the target block
      */
     public async OnStateChangeToWalkingToWood(): Promise<void>{
+        Debug.Info("Woodcutter state changed to WalkingToWood.");
         if (this.TargetWoodBlock === null){
             // Revert state to searching for wood
             this.SetState(WoodcutterState.SEARCHING);
@@ -377,6 +382,7 @@ export default class Woodcutter extends NPC{
      * Chop down the TargetWoodBlock
      */
     public async OnStateChangeToWoodcutting(): Promise<void>{
+        Debug.Info("Woodcutter state changed to Woodcutting.");
         this.Entity?.setProperty("nox:is_chopping", true);
         
         await Wait(100);
@@ -390,23 +396,28 @@ export default class Woodcutter extends NPC{
         
         this.Entity?.setProperty("nox:is_chopping", false);
         
-        if (this.TargetWoodBlock !== null){
+        if (this.TargetWoodBlock !== null && this.TargetWoodBlock.isValid()){
             const targetBlockPermutation = this.TargetWoodBlock.permutation;
             const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
             const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
 
+            Debug.Info("Getting all connected log blocks from target block.");
             // Chop all the wood
             const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND);
 
             // Add the logs to this NPC's inventory
             this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
 
+            Debug.Info("Chopping down all logs.");
             let iteratorCount = 0;
             for (const block of connectedBlocks){
-                ++iteratorCount;
-                block.setPermutation(BlockPermutation.resolve("minecraft:air"));
+                if (block.isValid()){
+                    ++iteratorCount;
+                    block.setPermutation(BlockPermutation.resolve("minecraft:air"));
+                }
             }
 
+            Debug.Info("Raycasting down from target block to plant sapling.");
             // Get the dirt block that should/was under the tree
             const raycastOptions: BlockRaycastOptions = {
                 includeLiquidBlocks: false,
@@ -416,18 +427,28 @@ export default class Woodcutter extends NPC{
 
             const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
             if (blockRaycastHit !== undefined){
+                Debug.Info("Hit a block. Checking if valid and if it is dirt or grass.");
                 const blockHit = blockRaycastHit.block;
-                if (blockHit.permutation.matches("minecraft:dirt") || blockHit.permutation.matches("minecraft:grass")){
-                    // Place a sapling
-                    const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
-                    if (saplingToPlace !== null){
-                        const blockAboveLocation: Block | undefined = blockHit.above(1);
-                        if (blockAboveLocation !== undefined){
-                            blockAboveLocation.setPermutation(saplingToPlace);
+                if (blockHit.isValid()){
+                    if (blockHit.typeId ==="minecraft:dirt" || blockHit.typeId === "minecraft:grass"){
+                        Debug.Info("Planting the sapling on the block hit from the raycast.");
+                        // Place a sapling
+                        const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
+                        if (saplingToPlace !== null){
+                            let blockAboveLocation: Block | undefined;
+                            try{
+                                blockAboveLocation = blockHit.above(1);
+                            }catch(e){}
+
+                            if (blockAboveLocation !== undefined){
+                                blockAboveLocation.setPermutation(saplingToPlace);
+                            }
                         }
                     }
                 }
             }
+
+            Debug.Info("Done chopping down wood and planing the sapling.");
         }
 
 
@@ -438,6 +459,7 @@ export default class Woodcutter extends NPC{
      * When the state has changed for the woodcutter to walk back to the chest adjacent to his manager block
      */
     public async OnStateChangedToWalkingToChest(): Promise<void>{
+        Debug.Info("Woodcutter state changed to WalkingToChest.");
         const chestToWalkTo: Block | null = this.WoodcutterManagerBlock!.GetAdjacentChest();
         if (chestToWalkTo !== null){
             const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");

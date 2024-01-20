@@ -2,6 +2,7 @@ import { Block, Vector2, Vector3, world } from "@minecraft/server";
 import EmptySpaceFinder from "../Utilities/EmptySpaceFinder";
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
 import Woodcutter from "../NPCs/Woodcutter";
+import TryGetBlock from "../Utilities/TryGetBlock";
 
 export default class WoodcutterManagerBlock{
 
@@ -54,17 +55,19 @@ export default class WoodcutterManagerBlock{
      * Finds a chest that is adjacent to this manager block, if there is one
      */
     public GetAdjacentChest(): Block | null{
+
+        // Block isn't loaded in
+        if (!this.Block.isValid()){
+            return null;
+        }
+
         // Vertically flat
         const cuboidRegionAroundSpawn: CuboidRegion = CuboidRegion.FromCenterLocation(this.Block.location, 1, true);
         const locations: Vector3[] = cuboidRegionAroundSpawn.GetAllLocationsInRegion();
         for (const location of locations){
-            let block: Block | undefined;
-            try{
-                block = this.Block.dimension.getBlock(location);
-            }catch(e){}
-
+            const block: Block | undefined = TryGetBlock(this.Block.dimension, location);
             if (block !== undefined){
-                if (block.permutation.matches("minecraft:chest")){
+                if (block.typeId === "minecraft:chest"){
                     return block;
                 }
             }
