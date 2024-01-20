@@ -18,6 +18,9 @@
 				"hold_first_person": "animation.drill.holding_first_person",
 				"hold_third_person": "animation.player.holding"
 			},
+			"sound_effects":{
+				"nox.drill":"nox.drill"
+			},
 			"scripts": {
 				"animate": [
 					{
