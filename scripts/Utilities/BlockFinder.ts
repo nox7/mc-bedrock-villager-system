@@ -16,14 +16,16 @@ export default class BlockFinder{
         maxDistance: number,
         blockNamesToMatch: string[],
         dimension: Dimension,
-        endOnFirstMatch: boolean = false
+        endOnFirstMatch: boolean = false,
+        locationsToIgnore: Vector3[]
         ): Promise<Block[]>{
         const blocksFound: Block[] = [];
         const floodFillIterator = new FloodFillIterator(
             startingLocation, 
             maxDistance, 
             dimension,
-            blockNamesToMatch
+            blockNamesToMatch,
+            locationsToIgnore
             );
 
         let iterator: IterableIterator<Block[]>;
@@ -88,9 +90,10 @@ export default class BlockFinder{
         maxDistance: number,
         blockNamesToMatch: string[],
         dimension: Dimension,
+        locationsToIgnore: Vector3[]
     ): Promise<Block | null>{
         try{
-            const blocks: Block[] = await this.FindBlocksMatchingPermuations(startingLocation, maxDistance, blockNamesToMatch, dimension, true);
+            const blocks: Block[] = await this.FindBlocksMatchingPermuations(startingLocation, maxDistance, blockNamesToMatch, dimension, true, locationsToIgnore);
             if (blocks.length === 1){
                 return blocks[0];
             }

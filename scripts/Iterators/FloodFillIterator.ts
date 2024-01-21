@@ -16,6 +16,7 @@ export default class FloodFillIterator implements Iterable<Block[]> {
 
     private BlockNameToConsiderEmpty: string = "minecraft:air";
     private CenterLocation: Vector3;
+    private LocationsToIgnore: Vector3[] = [];
     private MaxDistanceFromCenter: number;
     private World: Dimension;
     private YieldedChunkSize: number = 8;
@@ -34,12 +35,20 @@ export default class FloodFillIterator implements Iterable<Block[]> {
       centerLocation: Vector3,
       maxDistanceFromCenter: number,
       world: Dimension,
-      blockNamesToInclude: string[]
+      blockNamesToInclude: string[],
+      locationsToIgnore: Vector3[]
     ) {
         this.CenterLocation = centerLocation;
         this.MaxDistanceFromCenter = maxDistanceFromCenter;
         this.World = world;
         this.BlockNamesToInclude = blockNamesToInclude;
+        this.LocationsToIgnore = locationsToIgnore;
+
+        // Start by adding the LocationsToIgnore to the ClosedList
+        for (const location of locationsToIgnore){
+            this.AddLocationToClosedList(location);
+        }
+
     }
 
     /**
@@ -61,12 +70,21 @@ export default class FloodFillIterator implements Iterable<Block[]> {
     }
 
     /**
-     * Adds the block, after fetching a hash for its Vector3 location, to this iterator's closed list
+     * Adds the Vector 3location, after fetching a hash for its Vector3 location, to this iterator's closed list
+     * @param block 
+     * @returns 
+     */
+    private AddLocationToClosedList(location: Vector3): void{
+        this.ClosedList[this.GetHashForLocation(location)] = true;
+    }
+
+    /**
+     * Adds the block's location, after fetching a hash for its Vector3 location, to this iterator's closed list
      * @param block 
      * @returns 
      */
     private AddBlockLocationToClosedList(block: Block): Block{
-        this.ClosedList[this.GetHashForLocation(block.location)] = true;
+        this.AddLocationToClosedList(block.location);
         return block;
     }
 
