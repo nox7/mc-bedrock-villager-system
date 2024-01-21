@@ -17,51 +17,63 @@
 			"minecraft:durability": {
 				"max_durability": 600,
                 "damage_chance": {
-                    "min": 0,
-                    "max": 1
+                    "min": 10,
+                    "max": 50
                 }
 			},
 			"minecraft:digger": {
                 "destroy_speeds": [
                     {
                         "block":"minecraft:stone",
-                        "speed": 8
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:diorite",
-                        "speed": 8
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:andesite",
-                        "speed": 8
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:granite",
-                        "speed": 8
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:sandstone",
-                        "speed": 8
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:pointed_dripstone",
-                        "speed": 8
+                        "speed": 11
+                    },
+					{
+                        "block":"minecraft:cobblestone",
+                        "speed": 11
+                    },
+					{
+                        "block":"minecraft:cobblestone_wall",
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:mossy_cobblestone",
-                        "speed": 8
+                        "speed": 11
+                    },
+					{
+                        "block":"minecraft:stone_stairs",
+                        "speed": 11
                     },
 					{
                         "block":"minecraft:deepslate",
-                        "speed": 7
+                        "speed": 10
                     },
 					{
                         "block":"minecraft:blackstone",
-                        "speed": 7
+                        "speed": 8
                     },
 					{
                         "block":"minecraft:netherrack",
-                        "speed": 7
+                        "speed": 8
                     }
                 ]
             },
