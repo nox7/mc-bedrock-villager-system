@@ -8,6 +8,7 @@ import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfTyp
 import Wait from "../Utilities/Wait";
 import NPCHandler from "../NPCHandler";
 import Debug from "../Debug/Debug";
+import CuboidRegion from "../Utilities/Region/CuboidRegion";
 
 export default class Woodcutter extends NPC{
 
@@ -21,7 +22,8 @@ export default class Woodcutter extends NPC{
     // Do not use "minecraft:log" as it matches all logs
     public static LOG_NAMES_TO_FIND = [
         "minecraft:oak_log", "minecraft:birch_log", "minecraft:spruce_log", "minecraft:jungle_log", 
-        "minecraft:acacia_log", "minecraft:dark_oak_log",
+        "minecraft:acacia_log", 
+        "minecraft:dark_oak_log",
     ];
 
     // Do not use "minecraft:log" as it matches all logs
@@ -31,7 +33,7 @@ export default class Woodcutter extends NPC{
         "minecraft:spruce_log": "spruce",
         "minecraft:jungle_log": "mjungle",
         "minecraft:acacia_log": "acacia",
-        "minecraft:dark_oak_log": "dark_oak", // Will need special treatment, because it places four
+        "minecraft:dark_oak_log": "dark_oak",
     };
 
     public static LEAVES_NAMES = [
@@ -164,6 +166,7 @@ export default class Woodcutter extends NPC{
     private WoodcutterManagerBlock: WoodcutterManagerBlock | null;
     private TargetWoodBlock: Block | null = null;
     private BlocksCarrying: {[key: string]: number} = {};
+    private CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
 
     /**
      * Flag for if the Woodcutter class is currently being loaded
@@ -225,6 +228,36 @@ export default class Woodcutter extends NPC{
     }
 
     /**
+     * Checks if a log is part of a valid tree - for most trees, it must be connected to some form of leaves
+     * For dark oak, the provided log is assumed to be one of the bases and it must be surrounded by at least 3 other dark oak logs
+     * @param log
+     */
+    private IsLogPartOfAValidTree(log: Block): boolean{
+        const isDarkOak = log.typeId == "minecraft:dark_oak_log";
+        const logsAndLeaves: Block[] = GetAllConnectedBlocksOfType(log, [log.typeId, ...Woodcutter.LEAVES_NAMES], 100);
+        let numberOfConnectedLeaves: number = 0;
+
+        for (const block of logsAndLeaves){
+            if (Woodcutter.LEAVES_NAMES.indexOf(block.typeId) > -1){
+                ++numberOfConnectedLeaves;
+            }
+        }
+
+        // Check there are at least four leaves
+        if (numberOfConnectedLeaves < 4){
+            return false;
+        }
+
+        // TODO probably ignore dark oak requirements for now
+        // the NPC will replant in the nearest 4 free spaces from where the original found log was on the ground
+        if (isDarkOak){
+            // Check there are at least 3 other dark oak logs in a 1 cuboid radius around the provided log
+        }
+
+        return true;
+    }
+
+    /**
      * Creates a new entity and sets the Entity property of this class. The new entity is assigned a unique Id for this world.
      */
     public CreateEntity(location: Vector3): void{
@@ -281,6 +314,7 @@ export default class Woodcutter extends NPC{
             }
 
             if (this.State === WoodcutterState.NONE){
+                this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
                 this.SetState(WoodcutterState.SEARCHING);
                 this.IsReadyForStateChange = false;
                 this.OnStateChangeToSearching();
@@ -317,15 +351,44 @@ export default class Woodcutter extends NPC{
         Debug.Info("Woodcutter state changed to Searching.");
         const blockFinder: BlockFinder = new BlockFinder();
 
-        let nearestOakLog: Block | null;
+        let nearestLogFind: Block | null = null;
+
+        // We need to keep track of locations to ignore in case they are not valid trees
+        // E.g., a dark oak log on its own without 3 others around it is not a valid dark oak tree
+        // or a few logs but with no leaves attached to them are probably not trees and may be part
+        // of a player's home
+        const locationsToIgnore: Vector3[] = [];
         try{
-            Debug.Info("Searching for log blocks");
-            nearestOakLog = await blockFinder.FindFirstBlockMatchingPermutation(
-                this.WoodcutterManagerBlock!.GetBlock()!.location,
-                15,
-                Woodcutter.LOG_NAMES_TO_FIND,
-                this.Entity!.dimension
-            );
+            
+            // Keep trying to find an oak log until its not null
+            await new Promise<void>(logFindResolve => {
+                let logFindRunId = system.runInterval(async () => {
+                    Debug.Info("Searching for log blocks");
+                    nearestLogFind = await blockFinder.FindFirstBlockMatchingPermutation(
+                        this.WoodcutterManagerBlock!.GetBlock()!.location,
+                        15,
+                        Woodcutter.LOG_NAMES_TO_FIND,
+                        this.Entity!.dimension,
+                        locationsToIgnore
+                    );
+
+                    if (nearestLogFind !== null){
+                        Debug.Info("Checking if log found is part of a valid tree...");
+                        // Check that the found log is a valid tree
+                        if (this.IsLogPartOfAValidTree(nearestLogFind)){
+                            Debug.Info("Log found is a valid tree.");
+                            // Done with the run, let the rest of the code continue
+                            system.clearRun(logFindRunId);
+                            return logFindResolve();
+                        }else{
+                            Debug.Info("Found a log, but it doesn't appear to be part of a tree. So we're ignoring it.");
+                            // Add this location as a location we should not consider in further searches
+                            locationsToIgnore.push(nearestLogFind.location);
+                        }
+
+                    }
+                }, 75);
+            });
             Debug.Info("Search finished");
         }catch(e){
             // Exception happened while searching for a block - most likely the starting location is
@@ -337,7 +400,7 @@ export default class Woodcutter extends NPC{
             return;
         }
 
-        if (nearestOakLog === null){
+        if (nearestLogFind === null){
             // Couldn't find an oak log. Wait 100 ticks and try again
             await Wait(100);
 
@@ -345,7 +408,7 @@ export default class Woodcutter extends NPC{
             this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
         }else{
-            this.TargetWoodBlock = nearestOakLog;
+            this.TargetWoodBlock = nearestLogFind;
             // NPC is now ready to change states
             this.IsReadyForStateChange = true;
         }
@@ -356,20 +419,31 @@ export default class Woodcutter extends NPC{
      * Walk to the target block
      */
     public async OnStateChangeToWalkingToWood(): Promise<void>{
-        Debug.Info("Woodcutter state changed to WalkingToWood.");
+        Debug.Info("Woodcutter state changed to WalkingToWood");
         if (this.TargetWoodBlock === null){
             // Revert state to searching for wood
             this.SetState(WoodcutterState.SEARCHING);
             this.IsReadyForStateChange = true;
         }else{
+            Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
             const walker = new EntityWalker(this.Entity!);
 
             this.Entity?.setProperty("nox:is_moving", true);
-            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, Woodcutter.LEAVES_NAMES, []);
+            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
 
             if (!didReachDestination){
                 // Try again
-                this.SetState(WoodcutterState.SEARCHING);
+                ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
+
+                if (this.CurrentNumTimesTriedToWalkToTargetAndFailed > 4){
+                    // Tried too many times, reset to NONE and try again
+                    Debug.Info("Failed to walk to the target too many times. Setting Woodcutter state back to NONE.");
+                    this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
+                    this.SetState(WoodcutterState.NONE);
+                }else{
+                    Debug.Info("Failed to find a path. Trying again.");
+                    this.SetState(WoodcutterState.SEARCHING);
+                }
             }
 
             this.Entity?.setProperty("nox:is_moving", false);
@@ -385,25 +459,33 @@ export default class Woodcutter extends NPC{
         Debug.Info("Woodcutter state changed to Woodcutting.");
         this.Entity?.setProperty("nox:is_chopping", true);
         
-        await Wait(100);
-
-        // Did the entity become invalid after waiting? If so, just reset the entire state
-        if (!this.Entity?.isValid()){
-            this.SetState(WoodcutterState.NONE)
-            this.IsReadyForStateChange = true;
-            return;
-        }
-        
-        this.Entity?.setProperty("nox:is_chopping", false);
-        
         if (this.TargetWoodBlock !== null && this.TargetWoodBlock.isValid()){
+            const targetBlockTypeId = this.TargetWoodBlock.typeId;
             const targetBlockPermutation = this.TargetWoodBlock.permutation;
             const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
             const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
 
+            // Wait 100 ticks for normal trees
+            // but 300 ticks for dark oak
+            if (targetBlockTypeId !== "minecraft:dark_oak_log"){
+                await Wait(100);
+            }else{
+                await Wait(300);
+            }
+
+            // Did the entity become invalid after waiting? If so, just reset the entire state
+            if (!this.Entity?.isValid()){
+                this.SetState(WoodcutterState.NONE)
+                this.IsReadyForStateChange = true;
+                return;
+            }
+            
+            this.Entity?.setProperty("nox:is_chopping", false);
+        
+
             Debug.Info("Getting all connected log blocks from target block.");
             // Chop all the wood
-            const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND);
+            const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND, 75);
 
             // Add the logs to this NPC's inventory
             this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
@@ -417,31 +499,144 @@ export default class Woodcutter extends NPC{
                 }
             }
 
-            Debug.Info("Raycasting down from target block to plant sapling.");
-            // Get the dirt block that should/was under the tree
-            const raycastOptions: BlockRaycastOptions = {
-                includeLiquidBlocks: false,
-                includePassableBlocks: false,
-                maxDistance: 5
-            };
+            if (targetBlockTypeId !== "minecraft:dark_oak_log"){
+                Debug.Info("Raycasting down from target block to plant sapling.");
+                // Get the dirt block that should/was under the tree
+                const raycastOptions: BlockRaycastOptions = {
+                    includeLiquidBlocks: false,
+                    includePassableBlocks: false,
+                    maxDistance: 5
+                };
 
-            const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
-            if (blockRaycastHit !== undefined){
-                Debug.Info("Hit a block. Checking if valid and if it is dirt or grass.");
-                const blockHit = blockRaycastHit.block;
-                if (blockHit.isValid()){
-                    if (blockHit.typeId ==="minecraft:dirt" || blockHit.typeId === "minecraft:grass"){
-                        Debug.Info("Planting the sapling on the block hit from the raycast.");
-                        // Place a sapling
-                        const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
-                        if (saplingToPlace !== null){
-                            let blockAboveLocation: Block | undefined;
-                            try{
-                                blockAboveLocation = blockHit.above(1);
-                            }catch(e){}
+                const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
+                if (blockRaycastHit !== undefined){
+                    Debug.Info("Hit a block. Checking if valid and if it is dirt or grass.");
+                    const blockHit = blockRaycastHit.block;
+                    if (blockHit.isValid()){
+                        if (blockHit.typeId ==="minecraft:dirt" || blockHit.typeId === "minecraft:grass"){
+                            Debug.Info("Planting the sapling on the block hit from the raycast.");
+                            // Place a sapling
+                            const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
+                            if (saplingToPlace !== null){
+                                let blockAboveLocation: Block | undefined;
+                                try{
+                                    blockAboveLocation = blockHit.above(1);
+                                }catch(e){}
 
-                            if (blockAboveLocation !== undefined){
-                                blockAboveLocation.setPermutation(saplingToPlace);
+                                if (blockAboveLocation !== undefined){
+                                    blockAboveLocation.setPermutation(saplingToPlace);
+                                }
+                            }
+                        }
+                    }
+                }
+            }else{
+                Debug.Info("Handling dark oak sapling");
+                // Special handling for dark oak
+                // const cuboidRegion: CuboidRegion = CuboidRegion.FromCenterLocation(targetBlockLocation, 1, true);
+                // const corner1 = cuboidRegion.Corner1;
+                // const corner2 = cuboidRegion.Corner2;
+                const raycastOptions: BlockRaycastOptions = {
+                    includeLiquidBlocks: false,
+                    includePassableBlocks: false,
+                    maxDistance: 5
+                };
+
+                // Try searching in grids of 4 until we find 4 places where raycasting downwards hits 4 free spaces on the same Y axis to plant 4 dark oak 
+                // saplings
+                /**
+                 * [x] [x] []
+                 * [x] [x] []
+                 * [] [] []
+                 * --
+                 * [] [x] [x]
+                 * [] [x] [x]
+                 * [] [] []
+                 * --
+                 * [] [] []
+                 * [x] [x] []
+                 * [x] [x] []
+                 * --
+                 * [] [] []
+                 * [] [x] [x]
+                 * [] [x] [x]
+                 */
+                let needsToBreakOutOfLoops = false;
+                for (let xShift = -1; xShift <= 0; xShift++){
+
+                    if (needsToBreakOutOfLoops){
+                        break;
+                    }
+
+                    for (let zShift = -1; zShift <= 0; zShift++){
+                        // Perform 4 raycasts
+                        const location1: Vector3 = {x: targetBlockLocation.x + xShift, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift};
+                        const location2: Vector3 = {x: targetBlockLocation.x + xShift + 1, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift};
+                        const location3: Vector3 = {x: targetBlockLocation.x + xShift, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift + 1};
+                        const location4: Vector3 = {x: targetBlockLocation.x + xShift + 1, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift + 1};
+
+                        const blockRaycastHit1: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location1, {x: 0, y:-1, z:0}, raycastOptions);
+                        const blockRaycastHit2: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location2, {x: 0, y:-1, z:0}, raycastOptions);
+                        const blockRaycastHit3: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location3, {x: 0, y:-1, z:0}, raycastOptions);
+                        const blockRaycastHit4: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location4, {x: 0, y:-1, z:0}, raycastOptions);
+
+                        if (
+                            blockRaycastHit1 !== undefined
+                            && blockRaycastHit2 !== undefined
+                            && blockRaycastHit3 !== undefined
+                            && blockRaycastHit4 !== undefined
+                        ){
+                            // All four locations hit
+                            // Check they are all valid blocks
+                            if (
+                                blockRaycastHit1.block.isValid()
+                                && blockRaycastHit2.block.isValid()
+                                && blockRaycastHit3.block.isValid()
+                                && blockRaycastHit4.block.isValid()
+                            ){
+                                // Are they all on the same Y axis?
+                                if (
+                                    blockRaycastHit1.block.location.y === blockRaycastHit2.block.location.y 
+                                    && blockRaycastHit1.block.location.y === blockRaycastHit3.block.location.y 
+                                    && blockRaycastHit1.block.location.y === blockRaycastHit4.block.location.y 
+                                ){
+                                    // On the same axis
+                                    // Are they all dirt or grass blocks?
+                                    if (
+                                        (blockRaycastHit1.block.typeId ==="minecraft:dirt" || blockRaycastHit1.block.typeId === "minecraft:grass")
+                                        && (blockRaycastHit2.block.typeId ==="minecraft:dirt" || blockRaycastHit2.block.typeId === "minecraft:grass")
+                                        && (blockRaycastHit3.block.typeId ==="minecraft:dirt" || blockRaycastHit3.block.typeId === "minecraft:grass")
+                                        && (blockRaycastHit4.block.typeId ==="minecraft:dirt" || blockRaycastHit4.block.typeId === "minecraft:grass")
+                                    ){
+                                        // Everything checks out. Get the blocks above them.
+                                        let blockAbove1: Block | undefined;
+                                        let blockAbove2: Block | undefined;
+                                        let blockAbove3: Block | undefined;
+                                        let blockAbove4: Block | undefined;
+                                        try{
+                                            blockAbove1 = blockRaycastHit1.block.above(1);
+                                            blockAbove2 = blockRaycastHit2.block.above(1);
+                                            blockAbove3 = blockRaycastHit3.block.above(1);
+                                            blockAbove4 = blockRaycastHit4.block.above(1);
+                                        }catch(e){}
+
+                                        if (
+                                            blockAbove1 && blockAbove1.isValid()
+                                            && blockAbove2 && blockAbove2.isValid()
+                                            && blockAbove3 && blockAbove3.isValid()
+                                            && blockAbove4 && blockAbove4.isValid()
+                                        ){
+                                            const darkOakSaplingPermutation: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(BlockPermutation.resolve("minecraft:dark_oak_log"));
+                                            // Plant the 4 dark oak saplings on the blocks above them
+                                            blockAbove1.setPermutation(darkOakSaplingPermutation!);
+                                            blockAbove2.setPermutation(darkOakSaplingPermutation!);
+                                            blockAbove3.setPermutation(darkOakSaplingPermutation!);
+                                            blockAbove4.setPermutation(darkOakSaplingPermutation!);
+                                            needsToBreakOutOfLoops = true;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -449,6 +644,12 @@ export default class Woodcutter extends NPC{
             }
 
             Debug.Info("Done chopping down wood and planing the sapling.");
+        }else{
+            // Target block is now out of bounds I guess
+            // Restart everything
+            this.SetState(WoodcutterState.NONE)
+            this.IsReadyForStateChange = true;
+            return;
         }
 
 
@@ -465,7 +666,7 @@ export default class Woodcutter extends NPC{
             const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
             const walker = new EntityWalker(this.Entity!);
             this.Entity?.setProperty("nox:is_moving", true);
-            await walker.MoveTo(chestToWalkTo.location, 2, [], []);
+            await walker.MoveTo(chestToWalkTo.location, 2, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
 
             // Did the entity become invalid after waiting/walking? If so, just reset the entire state
             if (!this.Entity?.isValid()){
