@@ -16,6 +16,7 @@
 			},
 			"animations": {
 				"hold_first_person": "animation.drill.holding_first_person",
+				"drilling_first_person": "animation.drill.drilling_first_person",
 				"hold_third_person": "animation.player.holding"
 			},
 			"sound_effects":{
@@ -24,7 +25,10 @@
 			"scripts": {
 				"animate": [
 					{
-						"hold_first_person": "context.is_first_person == 1.0"
+						"hold_first_person": "context.is_first_person == 1.0 && context.owning_entity -> query.is_digging == 0.0f"
+					},
+					{
+						"drilling_first_person": "context.is_first_person == 1.0 && context.owning_entity -> query.is_digging > 0.0f"
 					},
 					{
 						"hold_third_person": "context.is_first_person == 0.0"

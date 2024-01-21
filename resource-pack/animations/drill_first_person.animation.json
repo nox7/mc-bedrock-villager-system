@@ -31,6 +31,37 @@
 					"effect": "nox.drill"
 				}
 			}
+		},
+		"animation.drill.drilling_first_person" : {
+			"loop" : true,
+			"animation_length": 10,
+			"bones" : {
+				"rightArm":{
+					"rotation":[
+						0,
+						0,
+						0
+					]
+				},
+				"rightItem" : {
+					"rotation" : [ 60.0, 0.0, -45.0 ],
+					"scale":"(4.5)"
+				},
+				"drill_head":{
+					"rotation" : {
+						"0.0": [0,0,0],
+						"2.5": [0,0,90],
+						"5.0": [0,0,180],
+						"7.5": [0,0,270],
+						"10.0": [0,0,360]
+					}
+				}
+			},
+			"sound_effects": {
+				"0.0":{
+					"effect": "nox.drill"
+				}
+			}
 		}
     }
 }
