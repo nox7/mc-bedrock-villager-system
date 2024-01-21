@@ -14,7 +14,7 @@
 				},
 				"rightItem" : {
 					"rotation" : [ 60.0, 0.0, -45.0 ],
-					"scale":"(4.0)"
+					"scale":"(4.5)"
 				},
 				"drill_head":{
 					"rotation" : {

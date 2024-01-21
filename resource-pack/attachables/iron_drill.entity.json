@@ -16,6 +16,7 @@
 			},
 			"animations": {
 				"hold_first_person": "animation.drill.holding_first_person",
+				"drilling_first_person": "animation.drill.drilling_first_person",
 				"hold_third_person": "animation.player.holding"
 			},
 			"sound_effects":{
