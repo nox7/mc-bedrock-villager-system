@@ -16,6 +16,9 @@
         "nox-light-stone-countertop":{
             "textures":"textures/blocks/light-stone-countertop"
         },
+        "nox-dark-stone-countertop":{
+            "textures":"textures/blocks/dark-stone-countertop"
+        },
         "nox-dark-wood-cabinet":{
             "textures":"textures/blocks/dark-wood-cabinet"
         },
