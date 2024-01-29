@@ -25,7 +25,7 @@
                 "destroy_speeds": [
                     {
                         "block":"minecraft:stone",
-                        "speed": 13
+                        "speed": 15
                     },
 					{
                         "block":"minecraft:diorite",
@@ -52,6 +52,14 @@
                         "speed": 13
                     },
 					{
+                        "block":"minecraft:double_stone_block_slab",
+                        "speed": 13
+                    },
+					{
+                        "block":"minecraft:stone_block_slab",
+                        "speed": 13
+                    },
+					{
                         "block":"minecraft:cobblestone_wall",
                         "speed": 13
                     },
@@ -61,6 +69,14 @@
                     },
 					{
                         "block":"minecraft:stone_stairs",
+                        "speed": 13
+                    },
+					{
+                        "block":"minecraft:gravel",
+                        "speed": 13
+                    },
+					{
+                        "block":"minecraft:sandstone",
                         "speed": 13
                     },
 					{
@@ -74,6 +90,14 @@
 					{
                         "block":"minecraft:netherrack",
                         "speed": 11
+                    },
+					{
+                        "block":"minecraft:dirt",
+                        "speed": 15
+                    },
+					{
+                        "block":"minecraft:grass",
+                        "speed": 15
                     }
                 ]
             },

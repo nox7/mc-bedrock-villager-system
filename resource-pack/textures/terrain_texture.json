@@ -6,6 +6,24 @@
     "texture_data": {
         "nox-woodcutter-manager":{
             "textures":"textures/blocks/woodcutter-manager"
+        },
+        "nox-uv-filter":{
+            "textures":"textures/blocks/uv-filter"
+        },
+        "nox-stove-oven":{
+            "textures":"textures/blocks/stove-oven"
+        },
+        "nox-light-stone-countertop":{
+            "textures":"textures/blocks/light-stone-countertop"
+        },
+        "nox-dark-wood-cabinet":{
+            "textures":"textures/blocks/dark-wood-cabinet"
+        },
+        "nox-white-wood-cabinet":{
+            "textures":"textures/blocks/white-wood-cabinet"
+        },
+        "nox-stack-of-gold-bars":{
+            "textures":"textures/blocks/stack-of-gold-bars"
         }
     }
 }

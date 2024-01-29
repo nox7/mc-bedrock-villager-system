@@ -1,0 +1,31 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:white-wood-cabinet"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern":[
+            " I ",
+            " D ",
+            "OOO"
+        ],
+        "key": {
+            "I":{
+                "item": "minecraft:iron_nugget"
+            },
+            "D":{
+                "item": "minecraft:diorite"
+            },
+            "O":{
+                "item": "minecraft:oak_planks"
+            }
+        },
+        "result":{
+            "item":"nox:white-wood-cabinet",
+            "count": 12
+        }
+    }
+}

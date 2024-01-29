@@ -1,0 +1,71 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:stack-of-gold-bars",
+            "menu_category": {
+                "category": "construction"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"]
+                }
+            }
+        },
+        "permutations": [
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.stack-of-gold-bars"
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "nox-stack-of-gold-bars",
+                    "render_method": "opaque",
+                    "face_dimming": true,
+                    "ambient_occlusion": true
+                }
+            },
+            "minecraft:collision_box": {
+                "origin": [-8, 0, -8],
+                "size": [16, 4, 16]
+            },
+            "minecraft:selection_box": {
+                "origin": [-8, 0, -8],
+                "size": [16, 4, 16]
+            }
+        }
+    }
+}

@@ -36,3 +36,11 @@ All long-running systems or systems with heavy processing are hooked into the ma
 
 ### Items
 - Iron Drill has been added. It specializes in mining basic stones (not ores, dirt, trees, or anything else) in high speeds compared to pickaxes.
+
+### Blocks
+The following blocks with recipes (find them in the in-game recipe book in the crafting menu) have been added.
+- Oven (Not furnace functional yet until Mojang let's us have custom furnaces)
+- Light stone countertops
+- White wood cabinets
+- Dark wood cabinets
+- Stack of gold bars (RTX supported)
