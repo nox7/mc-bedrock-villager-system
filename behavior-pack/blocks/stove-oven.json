@@ -8,7 +8,8 @@
             },
             "traits":{
                 "minecraft:placement_direction":{
-                    "enabled_states":["minecraft:cardinal_direction"]
+                    "enabled_states":["minecraft:cardinal_direction"],
+                    "y_rotation_offset": 180
                 }
             }
         },
@@ -22,10 +23,10 @@
                 }
             },
             {
-                "condition": "query.block_state('minecraft:cardinal_direction') == 'south'",
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
                 "components":{
                     "minecraft:transformation": {
-                        "rotation": [0,0,0]
+                        "rotation": [0,-90,0]
                     }
                 }
             },
@@ -34,14 +35,6 @@
                 "components":{
                     "minecraft:transformation": {
                         "rotation": [0,90,0]
-                    }
-                }
-            },
-            {
-                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
-                "components":{
-                    "minecraft:transformation": {
-                        "rotation": [0,-90,0]
                     }
                 }
             }
