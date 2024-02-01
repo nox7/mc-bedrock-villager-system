@@ -1,0 +1,25 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:dark-stone-countertop"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern":[
+            "   ",
+            "   ",
+            "DDD"
+        ],
+        "key": {
+            "D":{
+                "item": "minecraft:cobbled_deepslate_slab"
+            }
+        },
+        "result":{
+            "item":"nox:dark-stone-countertop",
+            "count": 12
+        }
+    }
+}
