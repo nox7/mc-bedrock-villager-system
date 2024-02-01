@@ -40,7 +40,8 @@ All long-running systems or systems with heavy processing are hooked into the ma
 ### Blocks
 The following blocks with recipes (find them in the in-game recipe book in the crafting menu) have been added.
 - Oven (Not furnace functional yet until Mojang let's us have custom furnaces)
-- Light stone countertops
+- Light stone countertops (RTX supported)
+- Dark stone countertops (RTX supported)
 - White wood cabinets
 - Dark wood cabinets
 - Stack of gold bars (RTX supported)
