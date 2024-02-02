@@ -2,18 +2,31 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent } from "@minecraft/server";
 import NPCHandler from "./NPCHandler.js";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 import Debug from "./Debug/Debug.js";
 import { LogLevel } from "./Debug/LogLevel.js";
+import { UVFilterBlock } from "./BlockHandlers/UVFilterBlock.js";
 
 Debug.LogLevel = LogLevel.None;
 
 const npcManager = new NPCHandler();
 system.runInterval(() => {
   npcManager.OnGameTick();
+});
+
+system.afterEvents.scriptEventReceive.subscribe( (event: ScriptEventCommandMessageAfterEvent) => {
+  if (event.id === "nox:uv-block-tick"){
+    system.run(() => {
+      if (event.sourceBlock !== undefined){
+        if (event.sourceBlock.isValid()){
+          UVFilterBlock.OnBlockTick(event.sourceBlock);
+        }
+      }
+    })
+  }
 });
 
 world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : PlayerPlaceBlockAfterEvent) => {

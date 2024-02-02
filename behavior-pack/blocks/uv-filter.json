@@ -8,6 +8,14 @@
             }
 
         },
+        "events": {
+            "nox:uv-block-tick":{
+                "run_command":{
+                    "command": "scriptevent nox:uv-block-tick Hello World",
+                    "target": "self"
+                }
+            }
+        },
         "components": {
             "minecraft:geometry":{
                 "identifier": "geometry.nox.uv-filter"
@@ -28,6 +36,18 @@
             "minecraft:selection_box": {
                 "origin": [-8, 0, -8],
                 "size": [16, 4, 16]
+            },
+            "minecraft:queued_ticking":{
+                "on_tick": {
+                    "event": "nox:uv-block-tick",
+                    "target": "self",
+                    "condition": "1"
+                },
+                "looping": true,
+                "interval_range": [
+                    50,
+                    1000
+                ]
             }
         }
     }
