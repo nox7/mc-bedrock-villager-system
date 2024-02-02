@@ -1,4 +1,4 @@
-import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions } from "@minecraft/server";
+import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Vector3 } from "@minecraft/server";
 
 export class UVFilterBlock{
     /**
@@ -31,8 +31,9 @@ export class UVFilterBlock{
             maxDistance: 10
         };
         
+        const blockCenter: Vector3 = block.center();
         const blockRaycastHit: BlockRaycastHit | undefined = block.dimension.getBlockFromRay(
-            {x: block.location.x, y: block.location.y - 1, z: block.location.z},
+            {x: blockCenter.x, y: blockCenter.y - 1, z: blockCenter.z},
             {x: 0, y:-1, z:0}, 
             raycastOptions
             );
