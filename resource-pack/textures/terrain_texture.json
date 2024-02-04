@@ -27,6 +27,12 @@
         },
         "nox-stack-of-gold-bars":{
             "textures":"textures/blocks/stack-of-gold-bars"
+        },
+        "nox-dark-wood-floating-pot-rack":{
+            "textures":"textures/blocks/dark-wood-floating-pot-rack"
+        },
+        "nox-dark-wood-cup-holder-filled":{
+            "textures":"textures/blocks/dark-wood-cup-holder-filled"
         }
     }
 }

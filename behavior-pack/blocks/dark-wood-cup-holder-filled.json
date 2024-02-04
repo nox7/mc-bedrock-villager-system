@@ -1,0 +1,75 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:dark-wood-cup-holder-filled",
+            "menu_category": {
+                "category": "construction"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"],
+                    "y_rotation_offset": 180
+                }
+            }
+        },
+        "permutations": [
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.dark-wood-cup-holder-filled"
+            },
+            "minecraft:collision_box": {
+                "origin": [-8, 0, -8],
+                "size": [16, 16, 16]
+            },
+            "minecraft:selection_box": {
+                "origin": [-8, 0, -8],
+                "size": [16, 16, 16]
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "nox-dark-wood-cup-holder-filled",
+                    "render_method": "blend",
+                    "face_dimming": true,
+                    "ambient_occlusion": true
+                }
+            },
+            "minecraft:destructible_by_mining":{
+                "seconds_to_destroy": 1
+            }
+        }
+    }
+}
