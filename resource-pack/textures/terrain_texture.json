@@ -33,6 +33,9 @@
         },
         "nox-dark-wood-cup-holder-filled":{
             "textures":"textures/blocks/dark-wood-cup-holder-filled"
+        },
+        "nox-dark-wood-cup-holder-empty":{
+            "textures":"textures/blocks/dark-wood-cup-holder-empty"
         }
     }
 }
