@@ -1,0 +1,76 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:horizontal-hanging-lantern",
+            "menu_category": {
+                "category": "construction"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"],
+                    "y_rotation_offset": 180
+                }
+            }
+        },
+        "permutations": [
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:light_emission": 15,
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.horizontal-hanging-lantern"
+            },
+            "minecraft:collision_box": {
+                "origin": [-4, 0, -8],
+                "size": [8, 16, 6]
+            },
+            "minecraft:selection_box": {
+                "origin": [-4, 0, -8],
+                "size": [8, 16, 6]
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "nox-horizontal-hanging-lantern",
+                    "render_method": "blend",
+                    "face_dimming": true,
+                    "ambient_occlusion": true
+                }
+            },
+            "minecraft:destructible_by_mining":{
+                "seconds_to_destroy": 1
+            }
+        }
+    }
+}

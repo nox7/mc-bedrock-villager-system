@@ -36,6 +36,9 @@
         },
         "nox-dark-wood-cup-holder-empty":{
             "textures":"textures/blocks/dark-wood-cup-holder-empty"
+        },
+        "nox-horizontal-hanging-lantern":{
+            "textures":"textures/blocks/horizontal-hanging-lantern"
         }
     }
 }
