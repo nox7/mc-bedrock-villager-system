@@ -1,0 +1,319 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:grapevine",
+            "menu_category": {
+                "category": "nature"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"]
+                }
+            },
+            "states":{
+                "nox:growth_stage":[0,1,2,3,4,5,6,7,8,9,10]
+            }
+        },
+        "permutations": [
+
+
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && q.block_state('nox:growth_stage') < 3",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": false, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && (q.block_state('nox:growth_stage') >= 3 && q.block_state('nox:growth_stage') < 5)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && (q.block_state('nox:growth_stage') >= 5 && q.block_state('nox:growth_stage') < 7)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && (q.block_state('nox:growth_stage') >= 7 && q.block_state('nox:growth_stage') < 10)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && q.block_state('nox:growth_stage') == 10",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": true}
+                    }
+                }
+            },
+
+
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south' && q.block_state('nox:growth_stage') < 3",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": false, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south' && (q.block_state('nox:growth_stage') >= 3 && q.block_state('nox:growth_stage') < 5)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south' && (q.block_state('nox:growth_stage') >= 5 && q.block_state('nox:growth_stage') < 7)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south' && (q.block_state('nox:growth_stage') >= 7 && q.block_state('nox:growth_stage') < 10)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'south' && q.block_state('nox:growth_stage') == 10",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": true}
+                    }
+                }
+            },
+
+
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east' && q.block_state('nox:growth_stage') < 3",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": false, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east' && (q.block_state('nox:growth_stage') >= 3 && q.block_state('nox:growth_stage') < 5)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east' && (q.block_state('nox:growth_stage') >= 5 && q.block_state('nox:growth_stage') < 7)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east' && (q.block_state('nox:growth_stage') >= 7 && q.block_state('nox:growth_stage') < 10)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east' && q.block_state('nox:growth_stage') == 10",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": true}
+                    }
+                }
+            },
+
+
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west' && q.block_state('nox:growth_stage') < 3",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": false, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west' && (q.block_state('nox:growth_stage') >= 3 && q.block_state('nox:growth_stage') < 5)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": false, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west' && (q.block_state('nox:growth_stage') >= 5 && q.block_state('nox:growth_stage') < 7)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": false, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west' && (q.block_state('nox:growth_stage') >= 7 && q.block_state('nox:growth_stage') < 10)",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": false}
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west' && q.block_state('nox:growth_stage') == 10",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    },
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.grapevine",
+                        "bone_visibility": {"wood": true, "vines_1": true, "vines_2": true, "vines_3": true, "vines_4": true, "grapes": true}
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:flammable":true,
+            "minecraft:placement_filter": {
+                "conditions": [
+                    {
+                        "allowed_faces": ["up"],
+                        "block_filter": ["minecraft:farmland"]
+                    }
+                ]
+            },
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.grapevine",
+                "bone_visibility": {"wood": false, "vines_1": false, "vines_2": false, "vines_3": false, "vines_4": false, "grapes": false}
+            },
+            "minecraft:collision_box": {
+                "origin": [-8,0,-3.5],
+                "size": [16, 16, 7]
+            },
+            "minecraft:selection_box": {
+                "origin": [-8,0,-3.5],
+                "size": [16, 16, 7]
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "nox-grapevine",
+                    "render_method": "alpha_test",
+                    "face_dimming": true,
+                    "ambient_occlusion": false
+                }
+            },
+            "minecraft:destructible_by_mining":{
+                "seconds_to_destroy": 8
+            },
+            "minecraft:queued_ticking": {
+                "interval_range": [100, 1000],
+                "looping": true,
+                "on_tick": {
+                    "event": "nox:grow",
+                    "target": "self",
+                    "condition": "q.block_state('nox:growth_stage') < 10"
+                }
+            }
+        },
+        "events": {
+            "nox:grow": {
+                "set_block_state": {
+                    "nox:growth_stage": "q.block_state('nox:growth_stage') + 1"
+                }
+            }
+        }
+    }
+}

@@ -39,6 +39,9 @@
         },
         "nox-horizontal-hanging-lantern":{
             "textures":"textures/blocks/horizontal-hanging-lantern"
+        },
+        "nox-grapevine":{
+            "textures":"textures/blocks/grapevine"
         }
     }
 }
