@@ -42,6 +42,12 @@
         },
         "nox-grapevine":{
             "textures":"textures/blocks/grapevine"
+        },
+        "nox-wine-barrel-grapes":{
+            "textures":"textures/blocks/wine-barrel-grapes"
+        },
+        "nox-wine-barrel-top-closed":{
+            "textures":"textures/blocks/wine-barrel-top-closed"
         }
     }
 }

@@ -1,0 +1,93 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:wine-barrel",
+            "menu_category": {
+                "category": "construction"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"],
+                    "y_rotation_offset": 180
+                }
+            },
+            "states": {
+                "nox:grape-count":{
+                    "values":{
+                        "min":0,
+                        "max":12
+                    }
+                },
+                "nox:step-on-count":[0,1,2,3]
+            }
+        },
+        "permutations": [
+            {
+                "condition": "q.block_state('nox:grape-count') == 0",
+                "components":{
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.wine-barrel",
+                        "bone_visibility": {"barrel": true, "grape_level_1": false, "grape_level_2": false, "grape_level_3": false}
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('nox:grape-count') > 0 && q.block_state('nox:grape-count') < 6",
+                "components":{
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.wine-barrel",
+                        "bone_visibility": {"barrel": true, "grape_level_1": true, "grape_level_2": false, "grape_level_3": false}
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('nox:grape-count') >= 6 && q.block_state('nox:grape-count') < 12",
+                "components":{
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.wine-barrel",
+                        "bone_visibility": {"barrel": true, "grape_level_1": true, "grape_level_2": true, "grape_level_3": false}
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('nox:grape-count') == 12",
+                "components":{
+                    "minecraft:geometry":{
+                        "identifier": "geometry.nox.wine-barrel",
+                        "bone_visibility": {"barrel": true, "grape_level_1": true, "grape_level_2": true, "grape_level_3": true}
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.wine-barrel"
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "barrel_side",
+                    "render_method": "opaque"
+                },
+                "grapes":{
+                    "texture": "nox-wine-barrel-grapes",
+                    "render_method": "opaque"
+                }
+            },
+            "minecraft:on_fall_on": {
+                "condition": "q.block_state('nox:grape-count') == 12",
+                "min_fall_distance": 1,
+                "event": "nox:increment-step-on",
+                "target": "self"
+            }
+        },
+        "events": {
+            "nox:increment-step-on":{
+                "run_command":{
+                    "command": "scriptevent nox:open-wine-barrel-step-on Hello World",
+                    "target": "self"
+                }
+            }
+        }
+    }
+}
