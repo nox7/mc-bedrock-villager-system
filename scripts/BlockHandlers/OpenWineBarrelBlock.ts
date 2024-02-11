@@ -8,7 +8,6 @@ export class OpenWineBarrelBlock{
         const stepOnMeStage = Number(block.permutation.getState("nox:step-on-count"));
 
         if (stepOnMeStage < 3){
-            console.warn("Step on me");
             // Increment the stage
             block.setPermutation(
                 BlockPermutation.resolve("nox:wine-barrel")
