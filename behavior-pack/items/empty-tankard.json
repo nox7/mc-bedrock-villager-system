@@ -1,0 +1,21 @@
+{
+	"format_version": "1.20.40",
+	"minecraft:item": {
+		"description": {
+			"identifier": "nox:empty-tankard",
+            "menu_category": {
+                "category": "equipment"
+            }
+		},
+		"components": {
+			"minecraft:icon": {
+				"texture": "nox_empty_tankard_cup"
+			},
+			"minecraft:max_stack_size": 64,
+			"minecraft:hand_equipped": true,
+			"minecraft:display_name": {
+				"value": "Empty Tankard Cup"
+			}
+		}
+	}
+}

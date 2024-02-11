@@ -1,0 +1,71 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:wine-barrel-finished",
+            "menu_category": {
+                "category": "construction"
+            },
+            "traits":{
+                "minecraft:placement_direction":{
+                    "enabled_states":["minecraft:cardinal_direction"],
+                    "y_rotation_offset": 180
+                }
+            },
+            "states": {
+                "nox:cups-used":{
+                    "values":{
+                        "min":0,
+                        "max":15
+                    }
+                }
+            }
+        },
+        "permutations": [
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'north'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,180,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,-90,0]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'east'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,90,0]
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.wine-barrel-finished"
+            },
+            "minecraft:destructible_by_mining":true,
+            "minecraft:material_instances": {
+                "*":{
+                    "texture": "barrel_side",
+                    "render_method": "opaque"
+                },
+                "top": {
+                    "texture": "barrel_top",
+                    "render_method": "opaque"
+                },
+                "bottom": {
+                    "texture": "barrel_bottom",
+                    "render_method": "opaque"
+                }
+            }
+        }
+    }
+}

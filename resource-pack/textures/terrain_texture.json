@@ -48,6 +48,9 @@
         },
         "nox-wine-barrel-top-closed":{
             "textures":"textures/blocks/wine-barrel-top-closed"
+        },
+        "barrel_top_open":{
+            "textures":"textures/blocks/barrel_top_open"
         }
     }
 }

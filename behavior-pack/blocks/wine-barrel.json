@@ -64,6 +64,7 @@
             "minecraft:geometry":{
                 "identifier": "geometry.nox.wine-barrel"
             },
+            "minecraft:destructible_by_mining":true,
             "minecraft:material_instances": {
                 "*": {
                     "texture": "barrel_side",

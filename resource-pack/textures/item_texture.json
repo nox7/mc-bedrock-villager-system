@@ -7,6 +7,12 @@
 		},
 		"nox_grapes": {
 			"textures": "textures/items/grapes"
+		},
+		"nox_empty_tankard_cup": {
+			"textures": "textures/items/empty-tankard-cup"
+		},
+		"nox_wine_tankard_cup": {
+			"textures": "textures/items/wine-tankard-cup"
 		}
 	}
 }

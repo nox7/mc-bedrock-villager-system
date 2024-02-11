@@ -11,6 +11,8 @@ import { LogLevel } from "./Debug/LogLevel.js";
 import { UVFilterBlock } from "./BlockHandlers/UVFilterBlock.js";
 import { OpenWineBarrelBlock } from "./BlockHandlers/OpenWineBarrelBlock.js";
 import { PlayerDebounceManager } from "./Utilities/PlayerDebounceManager.js";
+import { ClosedWineBarrelBlock } from "./BlockHandlers/ClosedWineBarrelBlock.js";
+import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock.js";
 
 Debug.LogLevel = LogLevel.None;
 
@@ -36,6 +38,12 @@ system.afterEvents.scriptEventReceive.subscribe( (event: ScriptEventCommandMessa
         //}
       }
     }
+  }else if (event.id === "nox:closed-wine-barrel-tick"){
+    if (event.sourceBlock !== undefined){
+      if (event.sourceBlock.isValid()){
+        ClosedWineBarrelBlock.OnQueuedTicking(event.sourceBlock);
+      }
+    }
   }
 });
 
@@ -53,7 +61,13 @@ world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : Play
 });
 
 world.beforeEvents.itemUseOn.subscribe((itemUseOnBeforeEvent : ItemUseOnBeforeEvent) => {
-  // world.sendMessage("ITEM USED ON BLOCK");
+  // if (itemUseOnBeforeEvent.itemStack.typeId === "nox:grapes"){
+  //   if (itemUseOnBeforeEvent.block.typeId === "nox:wine-barrel"){
+  //     itemUseOnBeforeEvent.cancel = true;
+  //     return;
+  //   }
+  // }
+
   if (itemUseOnBeforeEvent.block.permutation.matches("nox:woodcutter-manager")){
     const player: Player = itemUseOnBeforeEvent.source;
     if (player.isSneaking){
@@ -89,9 +103,13 @@ world.beforeEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInte
     return;
   }
 
+  const targetBlock = interactEvent.block;
+  if (!targetBlock.isValid()){
+    return;
+  }
+
   if (slot !== undefined && slot.isValid() && slot.hasItem()){
     if (slot.typeId === "nox:grapes"){
-      const targetBlock = interactEvent.block;
       if (targetBlock.typeId === "nox:wine-barrel"){
         const grapeCount = targetBlock.permutation.getState("nox:grape-count");
         if (grapeCount !== undefined){
@@ -114,6 +132,14 @@ world.beforeEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInte
             });
           }
         }
+      }
+    }else if (slot.typeId === "nox:empty-tankard"){
+      if (targetBlock.typeId === "nox:wine-barrel-finished"){
+        system.run(() => {
+          if (slot !== undefined && slot?.isValid()){
+            FinishedWineBarrelBlock.OnEmptyTankardUsedOn(targetBlock, slot, player);
+          }
+        });
       }
     }
   }

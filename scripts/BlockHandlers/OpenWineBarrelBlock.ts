@@ -16,7 +16,7 @@ export class OpenWineBarrelBlock{
             );
         }else{
             // Replace the block with the closed, fermenting barrel
-            block.setPermutation(BlockPermutation.resolve("nox:wine-barrel-closed"));
+            block.setPermutation(BlockPermutation.resolve("nox:wine-barrel-closed").withState("nox:fermentation-stage", 0));
         }
     }
 }

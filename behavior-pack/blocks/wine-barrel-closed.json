@@ -13,7 +13,7 @@
                 }
             },
             "states": {
-                "nox:fermentation-count":{
+                "nox:fermentation-stage":{
                     "values":{
                         "min":0,
                         "max":10
@@ -25,6 +25,7 @@
             "minecraft:geometry":{
                 "identifier": "geometry.nox.wine-barrel-closed"
             },
+            "minecraft:destructible_by_mining":true,
             "minecraft:material_instances": {
                 "*":{
                     "texture": "barrel_side",
@@ -41,6 +42,15 @@
                 "top":{
                     "texture": "nox-wine-barrel-top-closed",
                     "render_method": "opaque"
+                }
+            },
+            "minecraft:queued_ticking": {
+                "looping": true,
+                "interval_range": [500,5000],
+                "on_tick": {
+                    "event": "nox:on-wine-barrel-tick",
+                    "condition": "q.block_state('nox:on-wine-barrel-tick') < 10",
+                    "target": "self"
                 }
             }
         },
