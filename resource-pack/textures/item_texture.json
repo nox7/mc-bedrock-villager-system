@@ -4,6 +4,9 @@
 	"texture_data": {
 		"nox_iron_drill": {
 			"textures": "textures/items/nox_iron_drill_icon"
+		},
+		"nox_grapes": {
+			"textures": "textures/items/grapes"
 		}
 	}
 }

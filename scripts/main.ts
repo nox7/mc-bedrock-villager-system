@@ -2,7 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack } from "@minecraft/server";
 import NPCHandler from "./NPCHandler.js";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
@@ -56,6 +56,36 @@ world.beforeEvents.itemUseOn.subscribe((itemUseOnBeforeEvent : ItemUseOnBeforeEv
     }
   }else{
     // world.sendMessage("Is not woodcutter");
+  }
+});
+
+world.afterEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInteractWithBlockAfterEvent) => {
+  const player: Player = interactEvent.player;
+  const equipmentComponent: EntityEquippableComponent | undefined = player.getComponent(EntityEquippableComponent.componentId);
+  const inventoryComponent: EntityInventoryComponent | undefined = player.getComponent(EntityInventoryComponent.componentId);
+  const slot = equipmentComponent?.getEquipmentSlot(EquipmentSlot.Mainhand);
+  if (slot !== undefined){
+    if (slot.typeId === "minecraft:shears"){
+      const targetBlock: Block = interactEvent.block;
+      if (targetBlock.typeId === "nox:grapevine"){
+        const grapevineGrowthStage = targetBlock.permutation.getState("nox:growth_stage");
+        if (grapevineGrowthStage === 10){
+          if (inventoryComponent !== undefined){
+            targetBlock.setPermutation(BlockPermutation.resolve("nox:grapevine").withState("nox:growth_stage", 7));
+            // inventoryComponent.container?.addItem(new ItemStack("nox:grapes", 6));
+            // Just spawn the item instead
+            const blockCenter: Vector3 = targetBlock.center();
+            const spawnLocation: Vector3 = {
+              x: blockCenter.x,
+              y: blockCenter.y + 0.5,
+              z: blockCenter.z
+            };
+            player.dimension.spawnItem(new ItemStack("nox:grapes", 6), spawnLocation);
+            player.playSound("mob.sheep.shear");
+          }
+        }
+      }
+    }
   }
 });
 

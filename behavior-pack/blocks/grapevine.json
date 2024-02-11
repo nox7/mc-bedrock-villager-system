@@ -16,8 +16,6 @@
             }
         },
         "permutations": [
-
-
             {
                 "condition": "query.block_state('minecraft:cardinal_direction') == 'north' && q.block_state('nox:growth_stage') < 3",
                 "components":{
