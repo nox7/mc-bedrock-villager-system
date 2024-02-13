@@ -1,6 +1,7 @@
 import { Block, BlockPermutation, Dimension, Vector3, system } from "@minecraft/server";
 import Vector3Distance from "../Utilities/Vector3Distance";
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
+import Debug from "../Debug/Debug";
 
 interface AStarNode {
     block: Block;
@@ -106,11 +107,12 @@ export default class AStar{
         let startBlock: Block | undefined;
         let endBlock: Block | undefined;
 
+        
         try{
             startBlock = dimension.getBlock(startLocation);
             endBlock = dimension.getBlock(endLocation);
         }catch(e){}
-
+        
         if (startBlock !== undefined && endBlock !== undefined){
             this.StartBlock = startBlock;
             this.EndBlock = endBlock;
@@ -198,13 +200,6 @@ export default class AStar{
                         break;
                     }
 
-                    // EDIT: All blocks provided should already have been checked for walkability by the call to MutateSurroundingLocationsToCheckForJumpableLocations
-                    // Check if it is not walkable
-                    // if (!this.IsBlockInCanMoveList(surroundingBlock)){
-                    //     // Skip this block
-                    //     continue;
-                    // }
-
                     // Check if the block is in the closed list
                     if (surroundingBlockLocationHash in closedListLocations){
                         // Skip this block
@@ -215,7 +210,12 @@ export default class AStar{
                     const indexOfExistingNodeInOpenList: number | null = this.GetIndexOfNodeIfInList(surroundingNode, openList);
                     if (indexOfExistingNodeInOpenList === null){
                         // It is not in the openList, add it to the open list
-                        // surroundingNode.block.setPermutation(BlockPermutation.resolve("minecraft:glass"));
+                        // const blockAbove = surroundingBlock.dimension.getBlock({
+                        //     x: surroundingBlock.location.x,
+                        //     y: surroundingBlock.location.y + 10,
+                        //     z: surroundingBlock.location.z,
+                        // }); 
+                        // blockAbove?.setPermutation(BlockPermutation.resolve("stone"));
                         openList.push(surroundingNode);
                     }else{
                         // It's already in the openList
@@ -360,10 +360,12 @@ export default class AStar{
                 || this.BlockTypeIdsToWhitelist.indexOf(block.typeId) > -1
                 || this.BlocksToWhitelist.indexOf(block) > -1
                 ){
+                // Debug.Info(block.typeId + " can be moved to.");
                 return true;
             }
         }
 
+        // Debug.Info(block.typeId + " cannot be moved to.");
         return false;
     }
 
