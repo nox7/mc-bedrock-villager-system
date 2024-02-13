@@ -17,7 +17,8 @@ export default class BlockFinder{
         blockNamesToMatch: string[],
         dimension: Dimension,
         endOnFirstMatch: boolean = false,
-        locationsToIgnore: Vector3[]
+        locationsToIgnore: Vector3[],
+        typeIdsToConsiderEmpty: string[] = ["minecraft:air"]
         ): Promise<Block[]>{
         const blocksFound: Block[] = [];
         const floodFillIterator = new FloodFillIterator(
@@ -27,6 +28,8 @@ export default class BlockFinder{
             blockNamesToMatch,
             locationsToIgnore
             );
+
+        floodFillIterator.SetBlockNamesToConsiderEmpty(typeIdsToConsiderEmpty);
 
         let iterator: IterableIterator<Block[]>;
         try{
@@ -90,10 +93,13 @@ export default class BlockFinder{
         maxDistance: number,
         blockNamesToMatch: string[],
         dimension: Dimension,
-        locationsToIgnore: Vector3[]
+        locationsToIgnore: Vector3[],
+        typeIdsToConsiderEmpty: string[] = ["minecraft:air"]
     ): Promise<Block | null>{
         try{
-            const blocks: Block[] = await this.FindBlocksMatchingPermuations(startingLocation, maxDistance, blockNamesToMatch, dimension, true, locationsToIgnore);
+            const blocks: Block[] = await this.FindBlocksMatchingPermuations(
+                startingLocation, maxDistance, blockNamesToMatch, dimension, true, locationsToIgnore, typeIdsToConsiderEmpty
+                );
             if (blocks.length === 1){
                 return blocks[0];
             }
