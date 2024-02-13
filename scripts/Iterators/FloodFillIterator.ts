@@ -1,4 +1,4 @@
-import { Block, BlockPermutation, Dimension, Vector3 } from "@minecraft/server"
+import { Block, BlockPermutation, Dimension, Vector, Vector3 } from "@minecraft/server"
 import Queue from "../DataStructures/Queue.js";
 import Vector3Distance from "../Utilities/Vector3Distance.js";
 import TryGetBlock from "../Utilities/TryGetBlock.js";
@@ -14,7 +14,7 @@ import TryGetBlock from "../Utilities/TryGetBlock.js";
  */
 export default class FloodFillIterator implements Iterable<Block[]> {
 
-    private BlockNameToConsiderEmpty: string = "minecraft:air";
+    private BlockNamesToConsiderEmpty: string[] = ["minecraft:air"];
     private CenterLocation: Vector3;
     private LocationsToIgnore: Vector3[] = [];
     private MaxDistanceFromCenter: number;
@@ -48,7 +48,14 @@ export default class FloodFillIterator implements Iterable<Block[]> {
         for (const location of locationsToIgnore){
             this.AddLocationToClosedList(location);
         }
+    }
 
+    /**
+     * Sets the list of block type Ids to consider empty and passable
+     * @param listOfBlockNames
+     */
+    public SetBlockNamesToConsiderEmpty(listOfBlockNames: string[]){
+        this.BlockNamesToConsiderEmpty = listOfBlockNames;
     }
 
     /**
