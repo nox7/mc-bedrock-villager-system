@@ -259,7 +259,7 @@ export default class AStar{
                 }
 
                 if (!this.IsBlockInCanMoveList(blockAtLocation)){
-                    // Check block above, only if the currnet block could be jumped over
+                    // Check block above, only if the current block could be jumped over
                     if (this.CanBlockBeJumpedOver(blockAtLocation)){
                         let blockAbove: Block | undefined;
                         try{
