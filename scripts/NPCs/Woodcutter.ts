@@ -369,7 +369,8 @@ export default class Woodcutter extends NPC{
                         15,
                         Woodcutter.LOG_NAMES_TO_FIND,
                         this.Entity!.dimension,
-                        locationsToIgnore
+                        locationsToIgnore,
+                        ["minecraft:air", "minecraft:vine", "minecraft:tallgrass"]
                     );
 
                     if (nearestLogFind !== null){
@@ -429,7 +430,7 @@ export default class Woodcutter extends NPC{
             const walker = new EntityWalker(this.Entity!);
 
             this.Entity?.setProperty("nox:is_moving", true);
-            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
+            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES], []);
 
             if (!didReachDestination){
                 // Try again
@@ -485,7 +486,20 @@ export default class Woodcutter extends NPC{
 
             Debug.Info("Getting all connected log blocks from target block.");
             // Chop all the wood
-            const connectedBlocks: Block[] = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND, 75);
+            let connectedBlocks: Block[] | undefined = undefined;
+            try{
+                connectedBlocks = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND, 75);
+            }catch(e){}
+
+            // Was there an error (Probably unloaded chunk error) when fetching all connected blocks?
+            if (connectedBlocks === undefined){
+                // Revert the stage
+                Debug.Info("Couldn't get all connected logs. Reverting state to 'Woodcutting'")
+                this.SetState(WoodcutterState.WOODCUTTING);
+                this.IsReadyForStateChange = true;
+                await Wait(100);
+                return;
+            }
 
             // Add the logs to this NPC's inventory
             this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
