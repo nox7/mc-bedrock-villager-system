@@ -118,6 +118,16 @@ export default class FloodFillIterator implements Iterable<Block[]> {
         return Vector3Distance(location, this.CenterLocation) > this.MaxDistanceFromCenter;
     }
 
+    private IsLocationIgnored(location: Vector3){
+        for (const vectorToIgnore of this.LocationsToIgnore){
+            if (vectorToIgnore.x === location.x && vectorToIgnore.y === location.y && vectorToIgnore.z === location.z){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Returns the provided block if it is air and has ground beneath it. If there is air beneath it, then checks for the block -2 beneath the provided block for ground.
      * If the block at y - 2 is ground, then returns the block that is y - 1 the provided block.
@@ -125,58 +135,71 @@ export default class FloodFillIterator implements Iterable<Block[]> {
      * If the provided block is not air, then checks if the block above the provided block (y + 1) is air. If
      */
     private GetBlockIfAirOrAboveBlockIfAboveIsAir(block: Block): Block | null{
-        if (block.permutation.matches(this.BlockNameToConsiderEmpty)){
-            const locationBelow: Vector3 = {
-                x: block.location.x,
-                y: block.location.y - 1,
-                z: block.location.z
-            }
+        if (block.isValid()){
 
-            if (this.IsLocationOutOfBounds(locationBelow)){
+            if (this.IsLocationIgnored(block.location)){
                 return null;
             }
 
-            const blockBelow: Block | undefined = TryGetBlock(this.World, locationBelow);
-            if (blockBelow?.permutation.matches(this.BlockNameToConsiderEmpty)){
-                // Block below 'block' is also air - is the block y - 2 non-air? If so, we can fall to it safely
-                const locationFurtherBelow: Vector3 = {
+            if (this.BlockNamesToConsiderEmpty.indexOf(block.typeId) > -1){
+                const locationBelow: Vector3 = {
                     x: block.location.x,
-                    y: block.location.y - 2,
+                    y: block.location.y - 1,
                     z: block.location.z
                 }
-
-                if (this.IsLocationOutOfBounds(locationFurtherBelow)){
+    
+                if (this.IsLocationOutOfBounds(locationBelow)){
                     return null;
                 }
-
-                const blockFurtherBelow: Block | undefined = TryGetBlock(this.World, locationFurtherBelow);
-                if (blockFurtherBelow?.permutation.matches(this.BlockNameToConsiderEmpty)){
-                    // We cannot use this 'block'
-                    return null;
-                }else{
-                    // We can safely drop down to block at 'blockBelow'
-                    return this.HasBlockLocationBeenClosed(blockBelow) ? null : this.AddBlockLocationToClosedList(blockBelow);
+    
+                const blockBelow: Block | undefined = TryGetBlock(this.World, locationBelow);
+                if (blockBelow !== undefined){
+                    if (this.BlockNamesToConsiderEmpty.indexOf(blockBelow.typeId) > -1){
+                        // Block below 'block' is also air - is the block y - 2 non-air? If so, we can fall to it safely
+                        const locationFurtherBelow: Vector3 = {
+                            x: block.location.x,
+                            y: block.location.y - 2,
+                            z: block.location.z
+                        }
+        
+                        if (this.IsLocationOutOfBounds(locationFurtherBelow)){
+                            return null;
+                        }
+        
+                        const blockFurtherBelow: Block | undefined = TryGetBlock(this.World, locationFurtherBelow);
+                        if (blockFurtherBelow !== undefined){
+                            if (this.BlockNamesToConsiderEmpty.indexOf(blockFurtherBelow.typeId) > -1){
+                                // We cannot use this 'block'
+                                return null;
+                            }else{
+                                // We can safely drop down to block at 'blockBelow'
+                                return this.HasBlockLocationBeenClosed(blockBelow) ? null : this.AddBlockLocationToClosedList(blockBelow);
+                            }
+                        }
+                    }else{
+                        // 'block' is air, and beneath it is non-air
+                        // We can move to 'block' safely
+                        return this.HasBlockLocationBeenClosed(block) ? null : this.AddBlockLocationToClosedList(block);
+                    }
                 }
             }else{
-                // 'block' is air, and beneath it is non-air
-                // We can move to 'block' safely
-                return this.HasBlockLocationBeenClosed(block) ? null : this.AddBlockLocationToClosedList(block);
-            }
-        }else{
-            const locationAbove: Vector3 = {
-                x: block.location.x,
-                y: block.location.y + 1,
-                z: block.location.z
-            };
-
-            if (this.IsLocationOutOfBounds(locationAbove)){
-                return null;
-            }
-
-            const blockAbove = TryGetBlock(this.World, locationAbove);
-            if (blockAbove?.permutation.matches(this.BlockNameToConsiderEmpty)){
-                // TODO, check if blockFurtherAbove (y+2) is also air, so we can jump to it
-                return this.HasBlockLocationBeenClosed(blockAbove) ? null : this.AddBlockLocationToClosedList(blockAbove);
+                const locationAbove: Vector3 = {
+                    x: block.location.x,
+                    y: block.location.y + 1,
+                    z: block.location.z
+                };
+    
+                if (this.IsLocationOutOfBounds(locationAbove)){
+                    return null;
+                }
+    
+                const blockAbove = TryGetBlock(this.World, locationAbove);
+                if (blockAbove !== undefined){
+                    if (this.BlockNamesToConsiderEmpty.indexOf(blockAbove.typeId) > -1){
+                        // TODO, check if blockFurtherAbove (y+2) is also air, so we can jump to it
+                        return this.HasBlockLocationBeenClosed(blockAbove) ? null : this.AddBlockLocationToClosedList(blockAbove);
+                    }
+                }
             }
         }
 
