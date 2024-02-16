@@ -166,7 +166,14 @@ world.afterEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInter
         const grapevineGrowthStage = targetBlock.permutation.getState("nox:growth_stage");
         if (grapevineGrowthStage === 10){
           if (inventoryComponent !== undefined){
-            targetBlock.setPermutation(BlockPermutation.resolve("nox:grapevine").withState("nox:growth_stage", 7));
+            // Get the direction
+            const currentCardinalDirection = targetBlock.permutation.getState("minecraft:cardinal_direction");
+            targetBlock.setPermutation(
+              BlockPermutation
+              .resolve("nox:grapevine")
+              .withState("nox:growth_stage", 7)
+              .withState("minecraft:cardinal_direction", currentCardinalDirection != undefined ? currentCardinalDirection : "north")
+              );
             // inventoryComponent.container?.addItem(new ItemStack("nox:grapes", 6));
             // Just spawn the item instead
             const blockCenter: Vector3 = targetBlock.center();
