@@ -1,0 +1,28 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:grapevine"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern":[
+            "LWL",
+            "WWW",
+            " W "
+        ],
+        "key": {
+            "W":{
+                "item": "minecraft:oak_planks"
+            },
+            "L":{
+                "item": "minecraft:leaves"
+            }
+        },
+        "result":{
+            "item":"nox:grapevine",
+            "count": 1
+        }
+    }
+}

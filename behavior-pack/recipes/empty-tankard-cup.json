@@ -1,0 +1,28 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:empty-tankard"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern":[
+            "   ",
+            "SWW",
+            "SWW"
+        ],
+        "key": {
+            "W":{
+                "item": "minecraft:stick"
+            },
+            "L":{
+                "item": "minecraft:oak_planks"
+            }
+        },
+        "result":{
+            "item":"nox:empty-tankard",
+            "count": 1
+        }
+    }
+}

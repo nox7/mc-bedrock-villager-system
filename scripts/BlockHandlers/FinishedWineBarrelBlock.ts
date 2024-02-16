@@ -43,7 +43,6 @@ export class FinishedWineBarrelBlock{
     public static EmptyBarrel(block: Block){
         // Turn to empty barrel
         const currentBarrelCardinalDirection = block.permutation.getState("minecraft:cardinal_direction");
-        console.warn(currentBarrelCardinalDirection);
         block.setPermutation(BlockPermutation.resolve("nox:wine-barrel-empty").withState("minecraft:cardinal_direction", currentBarrelCardinalDirection ?? "north"));
     }
 }

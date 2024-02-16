@@ -15,3 +15,6 @@ tile.nox:dark-wood-cup-holder-filled.name=Filled Wall Cup Holder
 tile.nox:horizontal-hanging-lantern.name=Horizontal Hanging Lantern
 tile.nox:grapevine.name=Grapevine Post
 tile.nox:wine-barrel.name=Wine Barrel
+tile.nox:wine-barrel-finished.name=Empty Wine Keg
+tile.nox:wine-barrel-empty.name=Wine Keg
+tile.nox:wine-barrel-closed.name=Closed Wine Barrel

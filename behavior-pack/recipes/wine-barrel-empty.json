@@ -1,0 +1,28 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:wine-barrel"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern":[
+            "W W",
+            "LWL",
+            "WWW"
+        ],
+        "key": {
+            "W":{
+                "item": "minecraft:oak_planks"
+            },
+            "L":{
+                "item": "minecraft:iron_ingot"
+            }
+        },
+        "result":{
+            "item":"nox:wine-barrel",
+            "count": 1
+        }
+    }
+}
