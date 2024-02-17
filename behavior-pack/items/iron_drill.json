@@ -24,6 +24,102 @@
 			"minecraft:digger": {
                 "destroy_speeds": [
                     {
+                        "block":"minecraft:polished_andesite",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:polished_diorite",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:polished_granite",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:coal_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_coal_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:iron_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_iron_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:gold_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_gold_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:copper_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_copper_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:redstone_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_redstone_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:lapis_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_lapis_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:nether_gold_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:diamond_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_diamond_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:emerald_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:deepslate_emerald_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:stonebrick",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:stone_block_slab",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:double_stone_block_slab",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:stone_brick_stairs",
+                        "speed": 15
+                    },
+                    {
                         "block":"minecraft:stone",
                         "speed": 15
                     },
@@ -91,6 +187,7 @@
                         "block":"minecraft:netherrack",
                         "speed": 11
                     },
+                    
 					{
                         "block":"minecraft:dirt",
                         "speed": 15
