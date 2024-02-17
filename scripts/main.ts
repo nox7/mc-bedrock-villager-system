@@ -14,7 +14,7 @@ import { ClosedWineBarrelBlock } from "./BlockHandlers/ClosedWineBarrelBlock.js"
 import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock.js";
 import { NPCHandler } from "./NPCHandler.js";
 
-Debug.LogLevel = LogLevel.All;
+Debug.LogLevel = LogLevel.None;
 
 const npcHandler = new NPCHandler();
 system.runInterval(() => {
