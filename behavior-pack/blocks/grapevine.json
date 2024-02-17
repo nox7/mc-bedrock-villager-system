@@ -294,7 +294,7 @@
                 }
             },
             "minecraft:destructible_by_mining":{
-                "seconds_to_destroy": 8
+                "seconds_to_destroy": 2
             },
             "minecraft:queued_ticking": {
                 "interval_range": [100, 1000],

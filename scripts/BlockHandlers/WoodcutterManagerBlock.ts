@@ -3,6 +3,7 @@ import EmptySpaceFinder from "../Utilities/EmptySpaceFinder";
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
 import Woodcutter from "../NPCs/Woodcutter";
 import TryGetBlock from "../Utilities/TryGetBlock";
+import { NPCHandler } from "../NPCHandler";
 
 export default class WoodcutterManagerBlock{
 
@@ -34,13 +35,13 @@ export default class WoodcutterManagerBlock{
     /**
      * Finds an empty space around the placed block and spawns a woodcutter at that empty space
      */
-    public SpawnWoodcutter(): Woodcutter | null{
+    public SpawnWoodcutter(npcHandler: NPCHandler): Woodcutter | null{
         const cuboidRegionAroundSpawn = CuboidRegion.FromCenterLocation(this.Block.location, 1, true);
         const emptySpaceFinder: EmptySpaceFinder = new EmptySpaceFinder(cuboidRegionAroundSpawn, this.Block.dimension);
         const emptyLocations: Vector3[] = emptySpaceFinder.GetAllEmptyLocations();
         if (emptyLocations.length > 0){
             const location: Vector3 = emptyLocations[Math.floor(Math.random() * (emptyLocations.length - 1))];
-            this.WoodcutterNPC = new Woodcutter(this.Block.dimension, this);
+            this.WoodcutterNPC = new Woodcutter(this.Block.dimension, this, npcHandler);
             this.WoodcutterNPC.CreateEntity(location);
             return this.WoodcutterNPC;
         }else{

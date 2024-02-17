@@ -2,8 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot } from "@minecraft/server";
-import NPCHandler from "./NPCHandler.js";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot, PlayerBreakBlockAfterEvent } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 import Debug from "./Debug/Debug.js";
@@ -13,12 +12,13 @@ import { OpenWineBarrelBlock } from "./BlockHandlers/OpenWineBarrelBlock.js";
 import { PlayerDebounceManager } from "./Utilities/PlayerDebounceManager.js";
 import { ClosedWineBarrelBlock } from "./BlockHandlers/ClosedWineBarrelBlock.js";
 import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock.js";
+import { NPCHandler } from "./NPCHandler.js";
 
-Debug.LogLevel = LogLevel.None;
+Debug.LogLevel = LogLevel.All;
 
-const npcManager = new NPCHandler();
+const npcHandler = new NPCHandler();
 system.runInterval(() => {
-  npcManager.OnGameTick();
+  npcHandler.OnGameTick();
 });
 
 system.afterEvents.scriptEventReceive.subscribe( (event: ScriptEventCommandMessageAfterEvent) => {
@@ -53,10 +53,20 @@ world.afterEvents.playerPlaceBlock.subscribe(async (playerPlaceBlockEvent : Play
   // Player placed a woodcutter-manager block
   if (block.permutation.matches("nox:woodcutter-manager")){
     const woodcutterManagerBlock: WoodcutterManagerBlock = new WoodcutterManagerBlock(block);
-    const woodcutterNpc: Woodcutter | null = woodcutterManagerBlock.SpawnWoodcutter();
+    const woodcutterNpc: Woodcutter | null = woodcutterManagerBlock.SpawnWoodcutter(npcHandler);
     if (woodcutterNpc){
-      npcManager.RegisterNPC(woodcutterNpc);
+      npcHandler.RegisterNPC(woodcutterNpc);
     }
+  }
+});
+
+world.beforeEvents.playerBreakBlock.subscribe(async (event: PlayerBreakBlockBeforeEvent) => {
+  const block: Block = event.block;
+  if (block.typeId === "nox:woodcutter-manager"){
+    const blockLocation: Vector3 = block.location;
+    system.run(() => {
+      Woodcutter.OnWoodcutterManagerBlockBroke(blockLocation);
+    });
   }
 });
 
@@ -206,7 +216,13 @@ world.afterEvents.entityLoad.subscribe( (e: EntityLoadAfterEvent) => {
   if (entity.typeId === "nox:woodcutter"){
     // If it is not already cached in memory, then this woodcutter needs to be registered on the server
     if (Woodcutter.GetFromCache(entity) === null){
-      Woodcutter.LoadFromExistingEntity(entity, npcManager);
+      Woodcutter.LoadFromExistingEntity(entity, npcHandler);
     }
+  }else if (entity.typeId === "minecraft:creeper"){
+    system.runTimeout(() => {
+      if (entity.isValid()){
+        entity.kill();
+      }
+    }, 15);
   }
 });

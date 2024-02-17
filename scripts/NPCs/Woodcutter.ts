@@ -1,14 +1,15 @@
 import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, Vector3, system, world } from "@minecraft/server";
 import WoodcutterManagerBlock from "../BlockHandlers/WoodcutterManagerBlock";
 import NPC from "./NPC";
-import BlockFinder from "../Utilities/BlockFinder";
 import EntityWalker from "../Walker/EntityWalker";
 import { WoodcutterState } from "./States/WoodcutterState";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Wait from "../Utilities/Wait";
-import NPCHandler from "../NPCHandler";
+import { NPCHandler } from "../NPCHandler";
 import Debug from "../Debug/Debug";
-import CuboidRegion from "../Utilities/Region/CuboidRegion";
+import { BlockFinderOptions } from "../Utilities/BlockFinder/BlockFinderOptions";
+import { BlockFinder } from "../Utilities/BlockFinder/BlockFinder";
+import { VectorUtils } from "../Utilities/Vector/VectorUtils";
 
 export default class Woodcutter extends NPC{
 
@@ -20,13 +21,20 @@ export default class Woodcutter extends NPC{
     public static Cache: Woodcutter[] = [];
 
     // Do not use "minecraft:log" as it matches all logs
-    public static LOG_NAMES_TO_FIND = [
-        "minecraft:oak_log", "minecraft:birch_log", "minecraft:spruce_log", "minecraft:jungle_log", 
+    public static LOG_TYPE_IDS_TO_FIND = [
+        "minecraft:oak_log", 
+        "minecraft:birch_log", 
+        "minecraft:spruce_log", 
+        "minecraft:jungle_log", 
         "minecraft:acacia_log", 
         "minecraft:dark_oak_log",
+        "minecraft:mangrove_log",
+        "minecraft:mangrove_roots",
+        "minecraft:cherry_log",
     ];
 
     // Do not use "minecraft:log" as it matches all logs
+    // Cherry and mangrove have special scenarios and are not listed here
     public static LOG_NAMES_TO_SAPLING_NAMES_MAP: {[key: string]: string} = {
         "minecraft:oak_log": "oak",
         "minecraft:birch_log": "birch",
@@ -42,7 +50,7 @@ export default class Woodcutter extends NPC{
     ];
 
     /**
-     * Gets the name of the sapling related to a log provided a BlockPermutation
+     * Gets the permutation of the sapling related to a log provided a BlockPermutation
      * @returns 
      */
     public static GetSaplingPermuationFromLogPermutation(blockPermutation: BlockPermutation): BlockPermutation | null{
@@ -50,6 +58,14 @@ export default class Woodcutter extends NPC{
             if (blockPermutation.matches(logName)){
                 return BlockPermutation.resolve("minecraft:sapling").withState("sapling_type", Woodcutter.LOG_NAMES_TO_SAPLING_NAMES_MAP[logName]);
             }
+        }
+
+        if (blockPermutation.matches("minecraft:cherry_log")){
+            return BlockPermutation.resolve("minecraft:cherry_sapling");
+        }
+
+        if (blockPermutation.matches("minecraft:mangrove_log")){
+            return BlockPermutation.resolve("minecraft:mangrove_propagule");
         }
 
         return null;
@@ -103,7 +119,7 @@ export default class Woodcutter extends NPC{
             entity.remove();
         }else{
             // Instantiate the Woodcutter
-            const woodcutter = new Woodcutter(entity.dimension, null);
+            const woodcutter = new Woodcutter(entity.dimension, null, npcHandlerInstance);
             woodcutter.IsLoading = true;
             woodcutter.SetEntity(entity);
             
@@ -128,7 +144,7 @@ export default class Woodcutter extends NPC{
                         system.clearRun(runId);
                         return resolve();
                     }
-                }, 10);
+                }, 50);
             });
 
             // blockFromLocation is no longer undefined here
@@ -159,6 +175,35 @@ export default class Woodcutter extends NPC{
         return null;
     }
 
+    /**
+     * Whenever a nox:woodcutter-manager block is broken. This checks all entities to see if any of them have that block
+     * as their management block. It will remove the NPC if they do.
+     */
+    public static OnWoodcutterManagerBlockBroke(location: Vector3): void{
+        // Keep track of a new Cache array with Woodcutters that were not removed
+        const newCache: Woodcutter[] = [];
+
+        for (const index in Woodcutter.Cache){
+            const woodcutter = Woodcutter.Cache[index];
+            const managerBlockLocation = woodcutter.GetLocatioNofWoodcutterManagerBlockFromProperties();
+            if (managerBlockLocation !== null){
+                if (VectorUtils.AreEqual(managerBlockLocation, location)){
+                    // Remove him, his block was broken
+                    woodcutter.Remove();
+                }else{
+                    newCache.push(woodcutter);
+                }
+            }else{
+                // It's null
+                // Remove this entity
+                woodcutter.Remove();
+            }
+        }
+
+        // Set the new cache with woodcutters that are not removed
+        Woodcutter.Cache = newCache;
+    }
+
     private Id: number | undefined;
     private Dimension: Dimension;
     private State: WoodcutterState;
@@ -166,7 +211,13 @@ export default class Woodcutter extends NPC{
     private WoodcutterManagerBlock: WoodcutterManagerBlock | null;
     private TargetWoodBlock: Block | null = null;
     private BlocksCarrying: {[key: string]: number} = {};
+    private MaxDistanceToSearchForWood: number = 11;
     private CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
+    private NPCHandlerInstance: NPCHandler;
+    /**
+     * The current Vector3 locations to ignore when seareching for a log. This is reset after a successful find of a log.
+     */
+    private CurrentLocationsToIgnoreWhenSearchingForLogs: Vector3[] = [];
 
     /**
      * Flag for if the Woodcutter class is currently being loaded
@@ -178,11 +229,16 @@ export default class Woodcutter extends NPC{
      */
     public IsReadyForStateChange: boolean = true;
 
-    public constructor(dimension: Dimension, woodcutterManagerBlockInstance: WoodcutterManagerBlock | null){
+    public constructor(
+        dimension: Dimension, 
+        woodcutterManagerBlockInstance: WoodcutterManagerBlock | null,
+        npcHandlerInstance: NPCHandler
+        ){
         super();
         this.State = WoodcutterState.NONE;
         this.Dimension = dimension;
         this.WoodcutterManagerBlock = woodcutterManagerBlockInstance;
+        this.NPCHandlerInstance = npcHandlerInstance;
         Woodcutter.Cache.push(this);
     }
     
@@ -211,7 +267,11 @@ export default class Woodcutter extends NPC{
      */
     public SetState(enumState: WoodcutterState): void{
         this.State = enumState;
-        this.Entity?.setProperty("nox:state_enum", WoodcutterState[enumState]);
+        if (this.Entity !== null){
+            if (this.Entity.isValid()){
+                this.Entity?.setProperty("nox:state_enum", WoodcutterState[enumState]);
+            }
+        }
     }
 
     /**
@@ -278,6 +338,26 @@ export default class Woodcutter extends NPC{
     }
 
     /**
+     * Gets the location of this Woodcutter's manager block from its properties. Returns null if it is not currently possible.
+     */
+    public GetLocatioNofWoodcutterManagerBlockFromProperties(): Vector3 | null{
+        if (this.Entity?.isValid()){
+            try{
+                return {
+                    x: Number(this.Entity?.getProperty("nox:woodcutter_manager_block_location_x")),
+                    y: Number(this.Entity?.getProperty("nox:woodcutter_manager_block_location_y")),
+                    z: Number(this.Entity?.getProperty("nox:woodcutter_manager_block_location_z"))
+                };
+            }catch(e){
+                Debug.Warn(String(e));
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the Entity property
      * @returns
      */
@@ -306,13 +386,12 @@ export default class Woodcutter extends NPC{
             return;
         }
 
+        // If this entity is not ready to change states, go ahead and resolve the promise
+        if (!this.IsReadyForStateChange){
+            return;
+        }
+
         return new Promise(resolve => {
-
-            // If this entity is not ready to change states, go ahead and resolve the promise
-            if (!this.IsReadyForStateChange){
-                return resolve();
-            }
-
             if (this.State === WoodcutterState.NONE){
                 this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
                 this.SetState(WoodcutterState.SEARCHING);
@@ -349,69 +428,80 @@ export default class Woodcutter extends NPC{
      */
     public async OnStateChangeToSearching(): Promise<void>{
         Debug.Info("Woodcutter state changed to Searching.");
-        const blockFinder: BlockFinder = new BlockFinder();
+        const woodcutterManager = this.WoodcutterManagerBlock;
 
-        let nearestLogFind: Block | null = null;
+        if (woodcutterManager === null){
+            this.Remove();
+            return;
+        }
 
-        // We need to keep track of locations to ignore in case they are not valid trees
-        // E.g., a dark oak log on its own without 3 others around it is not a valid dark oak tree
-        // or a few logs but with no leaves attached to them are probably not trees and may be part
-        // of a player's home
-        const locationsToIgnore: Vector3[] = [];
-        try{
-            
-            // Keep trying to find an oak log until its not null
-            await new Promise<void>(logFindResolve => {
-                let logFindRunId = system.runInterval(async () => {
-                    Debug.Info("Searching for log blocks");
-                    nearestLogFind = await blockFinder.FindFirstBlockMatchingPermutation(
-                        this.WoodcutterManagerBlock!.GetBlock()!.location,
-                        15,
-                        Woodcutter.LOG_NAMES_TO_FIND,
-                        this.Entity!.dimension,
-                        locationsToIgnore,
-                        ["minecraft:air", "minecraft:vine", "minecraft:tallgrass"]
-                    );
+        const woodcutterManagerBlock: Block = woodcutterManager.GetBlock();
 
-                    if (nearestLogFind !== null){
-                        Debug.Info("Checking if log found is part of a valid tree...");
-                        // Check that the found log is a valid tree
-                        if (this.IsLogPartOfAValidTree(nearestLogFind)){
-                            Debug.Info("Log found is a valid tree.");
-                            // Done with the run, let the rest of the code continue
-                            system.clearRun(logFindRunId);
-                            return logFindResolve();
-                        }else{
-                            Debug.Info("Found a log, but it doesn't appear to be part of a tree. So we're ignoring it.");
-                            // Add this location as a location we should not consider in further searches
-                            locationsToIgnore.push(nearestLogFind.location);
-                        }
-
-                    }
-                }, 75);
-            });
-            Debug.Info("Search finished");
-        }catch(e){
-            // Exception happened while searching for a block - most likely the starting location is
-            // undefined or unloaded
-            // Wait a bit and then reset this Woodcutter's state to NONE for now
+        // Block is invalid. Wait 100 ticks and try again
+        if (!woodcutterManagerBlock.isValid()){
             await Wait(100);
             this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
             return;
         }
 
-        if (nearestLogFind === null){
-            // Couldn't find an oak log. Wait 100 ticks and try again
-            await Wait(100);
+        // We need to keep track of locations to ignore in case they are not valid trees
+        // E.g., a dark oak log on its own without 3 others around it is not a valid dark oak tree
+        // or a few logs but with no leaves attached to them are probably not trees and may be part
+        // of a player's home
+        // This is done with this.CurrentLocationsToIgnoreWhenSearchingForLogs
 
-            // Revert state backwards
+        // Set up the finder options
+        const blockFinderOptions: BlockFinderOptions = {
+            StartLocation: woodcutterManagerBlock.location,
+            Dimension: woodcutterManagerBlock.dimension,
+            TypeIdsToFind: Woodcutter.LOG_TYPE_IDS_TO_FIND,
+            TagsToFind: [],
+            TagsToIgnore: ["flowers", "small_flowers", "tall_flowers"],
+            TypeIdsToIgnore: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves"],
+            LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
+            MaxDistance: this.MaxDistanceToSearchForWood,
+            MaxBlocksToFind: 1,
+        };
+        
+        // Try to find an oak log
+        Debug.Info("Searching for log blocks");
+        const blocksFound: Block[] = await BlockFinder.FindBlocks(blockFinderOptions);
+        Debug.Info("Search finished");
+
+        if (blocksFound.length > 0){
+            Debug.Info("Search found a block");
+            // Found a block we wanted
+            const blockFound: Block = blocksFound[0];
+            if (blockFound.isValid()){
+                Debug.Info("Checking if log found is part of a valid tree...");
+                if (this.IsLogPartOfAValidTree(blockFound)){
+                    // NPC is now ready to change states
+                    this.TargetWoodBlock = blockFound;
+                    this.IsReadyForStateChange = true;
+
+                    // Reset the ignored locations
+                    this.CurrentLocationsToIgnoreWhenSearchingForLogs = [];
+                    return;
+                }else{
+                    // Add this location as a location we should not consider in further searches
+                    Debug.Info("Found a log, but it doesn't appear to be part of a tree. So we're ignoring it.");
+                    this.CurrentLocationsToIgnoreWhenSearchingForLogs.push(blockFound.location);
+
+                    // Wait a bit, then reset the state
+                    await Wait(100);
+                    this.SetState(WoodcutterState.NONE);
+                    this.IsReadyForStateChange = true;
+                    return;
+                }
+            }
+        }else{
+            // Wait some time before resetting the state to try again
+            Debug.Info("Search did not find a block. Waiting some time then resetting state.");
+            await Wait(200);
             this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
-        }else{
-            this.TargetWoodBlock = nearestLogFind;
-            // NPC is now ready to change states
-            this.IsReadyForStateChange = true;
+            return;
         }
     }
 
@@ -488,7 +578,7 @@ export default class Woodcutter extends NPC{
             // Chop all the wood
             let connectedBlocks: Block[] | undefined = undefined;
             try{
-                connectedBlocks = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_NAMES_TO_FIND, 75);
+                connectedBlocks = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_TYPE_IDS_TO_FIND, 75);
             }catch(e){}
 
             // Was there an error (Probably unloaded chunk error) when fetching all connected blocks?
@@ -695,8 +785,12 @@ export default class Woodcutter extends NPC{
             for (const typeId in this.BlocksCarrying){
                 const amount: number = this.BlocksCarrying[typeId];
                 if (chestInventory !== undefined){
-                    const itemStack: ItemStack = new ItemStack(typeId, amount);
-                    chestInventory.container?.addItem(itemStack);
+                    if (amount > 0){
+                        const itemStack: ItemStack = new ItemStack(typeId, amount);
+                        try{
+                            chestInventory.container?.addItem(itemStack);
+                        }catch(e){}
+                    }
                 }
             }
 
@@ -705,11 +799,24 @@ export default class Woodcutter extends NPC{
 
             this.IsReadyForStateChange = true;
         }else{
+            Debug.Info("No chest to walk to.");
             // No chest? Wait some time then try again
             await Wait(200);
             // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
             this.SetState(WoodcutterState.WOODCUTTING);
             this.IsReadyForStateChange = true;
         }
+    }
+
+    /**
+     * Removes this entity entirely
+     */
+    public Remove(): void{
+        if (this.Entity !== null){
+            if (this.Entity.isValid()){
+                this.Entity.kill();
+            }
+        }
+        this.NPCHandlerInstance.UnregisterNPC(this);
     }
 }

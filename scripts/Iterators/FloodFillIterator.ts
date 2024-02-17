@@ -1,7 +1,8 @@
 import { Block, BlockPermutation, Dimension, Vector, Vector3 } from "@minecraft/server"
 import Queue from "../DataStructures/Queue.js";
-import Vector3Distance from "../Utilities/Vector3Distance.js";
-import TryGetBlock from "../Utilities/TryGetBlock.js";
+import { VectorUtils } from "../Utilities/Vector/VectorUtils.js";
+import { FloodFillIteratorOptions } from "./FloodFillIIteratorOptions.js";
+import Debug from "../Debug/Debug.js";
 
 /**
  * Flood-fill style BFS iterator that will iterate over "empty" blocks starting at a center location. It will also iterate over any blocks
@@ -12,59 +13,42 @@ import TryGetBlock from "../Utilities/TryGetBlock.js";
  * 
  * This iterator does not iterate up or down on the Y axis _unless_ the entity needs to jump up a block or jump down a block safely.
  */
-export default class FloodFillIterator implements Iterable<Block[]> {
+export default class FloodFillIterator {
 
-    private BlockNamesToConsiderEmpty: string[] = ["minecraft:air"];
-    private CenterLocation: Vector3;
-    private LocationsToIgnore: Vector3[] = [];
-    private MaxDistanceFromCenter: number;
-    private World: Dimension;
+    private Queue: Queue<Block> = new Queue<Block>();
+    private StartingBlock: Block;
+    private Options: FloodFillIteratorOptions;
     private YieldedChunkSize: number = 8;
-
-    /**
-     * List of block names to allow in the iterator
-     */
-    private BlockNamesToInclude: string[];
 
     /**
      * List of hashed locations (comma separated) that have already been considered/visited
      */
     private ClosedList: {[key: string]: boolean} = {};
 
-    public constructor (
-      centerLocation: Vector3,
-      maxDistanceFromCenter: number,
-      world: Dimension,
-      blockNamesToInclude: string[],
-      locationsToIgnore: Vector3[]
-    ) {
-        this.CenterLocation = centerLocation;
-        this.MaxDistanceFromCenter = maxDistanceFromCenter;
-        this.World = world;
-        this.BlockNamesToInclude = blockNamesToInclude;
-        this.LocationsToIgnore = locationsToIgnore;
+    public constructor (options: FloodFillIteratorOptions) {
+        this.Options = options;
+
+        // Try to get the starting block
+        let startingBlock: Block | undefined;
+        try{
+            startingBlock = options.Dimension.getBlock(options.StartLocation);
+        }catch(e){
+            throw "Could not use starting block. It is invalid.";
+        }
+
+        if (startingBlock !== undefined){
+            this.StartingBlock = startingBlock;
+        }else{
+            throw "Could not use starting block. It is undefined.";
+        }
 
         // Start by adding the LocationsToIgnore to the ClosedList
-        for (const location of locationsToIgnore){
+        for (const location of this.Options.LocationsToIgnore){
             this.AddLocationToClosedList(location);
         }
-    }
 
-    /**
-     * Sets the list of block type Ids to consider empty and passable
-     * @param listOfBlockNames
-     */
-    public SetBlockNamesToConsiderEmpty(listOfBlockNames: string[]){
-        this.BlockNamesToConsiderEmpty = listOfBlockNames;
-    }
-
-    /**
-     * Gets a basic string to represent the Vector3 location in a hash map
-     * @param location
-     * @returns 
-     */
-    private GetHashForLocation(location: Vector3): string{
-        return `${location.x}, ${location.y}, ${location.z}`;
+        // Enqueue the first blocks
+        this.Queue.EnqueueList(this.GetAdjacentPassableBlocks(startingBlock));
     }
 
     /**
@@ -73,40 +57,101 @@ export default class FloodFillIterator implements Iterable<Block[]> {
      * @returns 
      */
     private HasBlockLocationBeenClosed(block: Block): boolean{
-        return this.GetHashForLocation(block.location) in this.ClosedList;
+        return VectorUtils.GetAsString(block.location) in this.ClosedList;
     }
 
     /**
-     * Adds the Vector 3location, after fetching a hash for its Vector3 location, to this iterator's closed list
+     * Determines if the provided location has already been added to this iterator's "closed" list of already-visited blocks.
+     * @param block 
+     * @returns 
+     */
+    private HasLocationBeenClosed(location: Vector3): boolean{
+        return VectorUtils.GetAsString(location) in this.ClosedList;
+    }
+
+    /**
+     * Adds the Vector3 location, after fetching a hash for its Vector3 location, to this iterator's closed list
      * @param block 
      * @returns 
      */
     private AddLocationToClosedList(location: Vector3): void{
-        this.ClosedList[this.GetHashForLocation(location)] = true;
+        this.ClosedList[VectorUtils.GetAsString(location)] = true;
     }
 
     /**
-     * Adds the block's location, after fetching a hash for its Vector3 location, to this iterator's closed list
-     * @param block 
-     * @returns 
-     */
-    private AddBlockLocationToClosedList(block: Block): Block{
-        this.AddLocationToClosedList(block.location);
-        return block;
-    }
-
-    /**
-     * Checks if the provided permutation is included in the iterators match
+     * Checks if the provided block has any notion that the Options have ignored it
      * @param blockPermutation
      * @returns 
      */
-    private IsBlockPermutationIncluded(blockPermutation: BlockPermutation): boolean{
-        for (const blockName of this.BlockNamesToInclude){
-            if (blockPermutation.matches(blockName)){
+    private IsBlockIgnored(block: Block): boolean {
+        if (block.isValid()){
+            // Check if the block has a tag that is ignored
+            if (this.Options.TagsToIgnore.length > 0){
+                const anyTagIsIgnored = block.getTags().some(tag => this.Options.TagsToIgnore.indexOf(tag) > -1);
+                if (anyTagIsIgnored){
+                    return true;
+                }
+            }
+
+            // Check if the block's typeId is ignored
+            if (this.Options.TypeIdsToIgnore.indexOf(block.typeId) > -1){
                 return true;
             }
+
+            // No need to check if the location is ignored,
+            // as all ignored locations are added to the ClosedList when this iterator is instantiated
         }
 
+        return false;
+    }
+
+    /**
+     * Returns if the provided block is passable.
+     * @param block 
+     * @returns 
+     */
+    private IsBlockPassable(block: Block): boolean{
+        if (block.isValid()){
+            // Check if the block's typeId is passable
+            if (this.Options.TypeIdsToConsiderPassable.indexOf(block.typeId) > -1){
+                return true;
+            }
+
+            // Check if the block has any tags that are passable
+            if (this.Options.TagsToConsiderPassable.length > 0){
+                const blockTags: string[] = block.getTags();
+                const anyTagsArePassable: boolean = this.Options.TagsToConsiderPassable.some(tag => blockTags.indexOf(tag) > -1);
+                if (anyTagsArePassable){
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Returns if the provided block has been defined to always be included in a result set regardless if it is passable.
+     * @param block 
+     * @returns 
+     */
+    private IsBlockAlwaysIncluded(block: Block): boolean{
+        if (block.isValid()){
+            // Check if the block's typeId is included
+            if (this.Options.TypeIdsToAlwaysIncludeInResult.indexOf(block.typeId) > -1){
+                return true;
+            }
+
+            // Check if the block has any tags that are included
+            if (this.Options.TagsToAlwaysIncludeInResult.length > 0){
+                const blockTags: string[] = block.getTags();
+                const anyTagsAreIncluded: boolean = this.Options.TagsToAlwaysIncludeInResult.some(tag => blockTags.indexOf(tag) > -1);
+                if (anyTagsAreIncluded){
+                    return true;
+                }
+            }
+        }
+        
         return false;
     }
 
@@ -115,89 +160,72 @@ export default class FloodFillIterator implements Iterable<Block[]> {
      * @param location
      */
     private IsLocationOutOfBounds(location: Vector3): boolean{
-        return Vector3Distance(location, this.CenterLocation) > this.MaxDistanceFromCenter;
-    }
-
-    private IsLocationIgnored(location: Vector3){
-        for (const vectorToIgnore of this.LocationsToIgnore){
-            if (vectorToIgnore.x === location.x && vectorToIgnore.y === location.y && vectorToIgnore.z === location.z){
-                return true;
-            }
-        }
-
-        return false;
+        return Vector.distance(location, this.Options.StartLocation) > this.Options.MaxDistance;
     }
 
     /**
-     * Returns the provided block if it is air and has ground beneath it. If there is air beneath it, then checks for the block -2 beneath the provided block for ground.
-     * If the block at y - 2 is ground, then returns the block that is y - 1 the provided block.
+     * Returns the provided block if it is an empty block with ground beneath it.
      * 
-     * If the provided block is not air, then checks if the block above the provided block (y + 1) is air. If
+     * Returns the block below if the provided block is passable, but so is the one beneath it and there is ground beneath the below block to stand on.
+     * 
+     * Returns the block above if the provided block is not passable, but there is space above it to go over that block.
      */
-    private GetBlockIfAirOrAboveBlockIfAboveIsAir(block: Block): Block | null{
+    private GetBlockIfPassableOrNearestVerticalPassableBlock(block: Block): Block | null{
         if (block.isValid()){
 
-            if (this.IsLocationIgnored(block.location)){
-                return null;
-            }
+            if (this.IsBlockPassable(block)){
 
-            if (this.BlockNamesToConsiderEmpty.indexOf(block.typeId) > -1){
-                const locationBelow: Vector3 = {
-                    x: block.location.x,
-                    y: block.location.y - 1,
-                    z: block.location.z
-                }
-    
-                if (this.IsLocationOutOfBounds(locationBelow)){
-                    return null;
-                }
-    
-                const blockBelow: Block | undefined = TryGetBlock(this.World, locationBelow);
+                // Check if the block below is passable
+                let blockBelow: Block | undefined;
+                try{
+                    blockBelow = block.below(1);
+                }catch(e){}
+
                 if (blockBelow !== undefined){
-                    if (this.BlockNamesToConsiderEmpty.indexOf(blockBelow.typeId) > -1){
-                        // Block below 'block' is also air - is the block y - 2 non-air? If so, we can fall to it safely
-                        const locationFurtherBelow: Vector3 = {
-                            x: block.location.x,
-                            y: block.location.y - 2,
-                            z: block.location.z
-                        }
-        
-                        if (this.IsLocationOutOfBounds(locationFurtherBelow)){
-                            return null;
-                        }
-        
-                        const blockFurtherBelow: Block | undefined = TryGetBlock(this.World, locationFurtherBelow);
+                    if (this.IsBlockPassable(blockBelow)){
+                        // Check if the block below this one is safe ground
+                        let blockFurtherBelow: Block | undefined;
+                        try{
+                            blockFurtherBelow = blockBelow.below(1);
+                        }catch(e){}
                         if (blockFurtherBelow !== undefined){
-                            if (this.BlockNamesToConsiderEmpty.indexOf(blockFurtherBelow.typeId) > -1){
-                                // We cannot use this 'block'
-                                return null;
-                            }else{
-                                // We can safely drop down to block at 'blockBelow'
-                                return this.HasBlockLocationBeenClosed(blockBelow) ? null : this.AddBlockLocationToClosedList(blockBelow);
+                            if (!this.IsBlockPassable(blockFurtherBelow)){
+                                // Safe to move to blockBelow, as it has ground beneath it
+                                if (!this.HasBlockLocationBeenClosed(blockBelow)){
+                                    this.AddLocationToClosedList(blockBelow.location);
+                                    return blockBelow;
+                                }
                             }
                         }
+
                     }else{
-                        // 'block' is air, and beneath it is non-air
-                        // We can move to 'block' safely
-                        return this.HasBlockLocationBeenClosed(block) ? null : this.AddBlockLocationToClosedList(block);
+                        // This is ground. "block" is a safe empty block to return
+                        if (!this.HasBlockLocationBeenClosed(block)){
+                            this.AddLocationToClosedList(block.location);
+                            return block;
+                        }
                     }
                 }
             }else{
-                const locationAbove: Vector3 = {
-                    x: block.location.x,
-                    y: block.location.y + 1,
-                    z: block.location.z
-                };
-    
-                if (this.IsLocationOutOfBounds(locationAbove)){
-                    return null;
-                }
-    
-                const blockAbove = TryGetBlock(this.World, locationAbove);
-                if (blockAbove !== undefined){
-                    if (this.BlockNamesToConsiderEmpty.indexOf(blockAbove.typeId) > -1){
-                        // TODO, check if blockFurtherAbove (y+2) is also air, so we can jump to it
-                        return this.HasBlockLocationBeenClosed(blockAbove) ? null : this.AddBlockLocationToClosedList(blockAbove);
+                // Check if the block passed can be jumped onto
+                // It must have two free spaces of air above it
+                let blockAbove: Block | undefined;
+                let blockFurtherAbove: Block | undefined;
+                try{
+                    blockAbove = block.above(1);
+                    blockFurtherAbove = block.above(2);
+                }catch(e){}
+
+                if (blockAbove !== undefined && blockFurtherAbove !== undefined){
+                    if (this.IsBlockPassable(blockAbove)){
+                        if (this.IsBlockPassable(blockFurtherAbove)){
+                            // Both blocks above are free
+                            // "blockAbove" is safe to move to
+                            if (!this.HasBlockLocationBeenClosed(blockAbove)){
+                                this.AddLocationToClosedList(blockAbove.location);
+                                return blockAbove;
+                            }
+                        }
                     }
                 }
             }
@@ -215,18 +243,21 @@ export default class FloodFillIterator implements Iterable<Block[]> {
     }
 
     /**
-     * Fetches the blocks adjacent to the provided block.
-     * If an adjacent block is a non-air block, but the block above it is air - then the air block above is returned instead as 
-     * it's possible that block can be traversed if the entity jumps.
+     * Fetches all adjacent blocks to the provided fromBlock if they can be passed to. It may return a block above or below the adjacent space
+     * if the adjacent space is "fallable" safely to a block below it, or if the adjacent space is a block that can be stood on.
      */
-    public GetAdjacentAirOrIncludedBlocks(fromBlock: Block): Block[]{
+    public GetAdjacentPassableBlocks(fromBlock: Block): Block[]{
         const includedBlocks: Block[] = [];
         const fromBlockLocation: Vector3 = fromBlock.location;
         const adjacentPositions: Vector3[] = [
             {x: fromBlockLocation.x + 1, y: fromBlockLocation.y, z: fromBlockLocation.z},
-            {x: fromBlockLocation.x - 1, y: fromBlockLocation.y, z: fromBlockLocation.z},
+            {x: fromBlockLocation.x + 1, y: fromBlockLocation.y, z: fromBlockLocation.z + 1},
+            {x: fromBlockLocation.x + 1, y: fromBlockLocation.y, z: fromBlockLocation.z - 1},
             {x: fromBlockLocation.x, y: fromBlockLocation.y, z: fromBlockLocation.z + 1},
-            {x: fromBlockLocation.x, y: fromBlockLocation.y, z: fromBlockLocation.z - 1},
+            {x: fromBlockLocation.x, y: fromBlockLocation.y, z: fromBlockLocation.z - 2},
+            {x: fromBlockLocation.x - 1, y: fromBlockLocation.y, z: fromBlockLocation.z},
+            {x: fromBlockLocation.x - 1, y: fromBlockLocation.y, z: fromBlockLocation.z + 1},
+            {x: fromBlockLocation.x - 1, y: fromBlockLocation.y, z: fromBlockLocation.z - 1},
         ];
 
         for (const location of adjacentPositions){
@@ -236,21 +267,31 @@ export default class FloodFillIterator implements Iterable<Block[]> {
                 continue;
             }
 
+            // Do not check or include locations already closed
+            if (this.HasLocationBeenClosed(location)){
+                continue;
+            }
+
             let block: Block | undefined;
             try{
-                block = this.World.getBlock(location);
+                block = this.Options.Dimension.getBlock(location);
             }catch(e){}
             
             if (block !== undefined){
+                if (block.isValid()){
 
-                // Check if this block is one of the blocks the requester wants to include in all cases
-                if (this.IsBlockPermutationIncluded(block.permutation)){
-                    includedBlocks.push(block);
-                }
-
-                const airBlock: Block | null = this.GetBlockIfAirOrAboveBlockIfAboveIsAir(block);
-                if (airBlock !== null){
-                    includedBlocks.push(airBlock);
+                    // Check if this block is always included
+                    if (this.IsBlockAlwaysIncluded(block)){
+                        includedBlocks.push(block);
+                    }else{
+                        // It's not always included, so
+                        // get the nearest air block (vertically). It may be itself
+                        const availableBlock: Block | null = this.GetBlockIfPassableOrNearestVerticalPassableBlock(block);
+                        if (availableBlock !== null){
+                            includedBlocks.push(availableBlock);
+                        }
+                    }
+                    
                 }
             }
         }
@@ -259,27 +300,23 @@ export default class FloodFillIterator implements Iterable<Block[]> {
     }
   
     /**
-     * Iterates the cuboid in chunks
+     * Gets the next set of blocks in iteration.
      */
-    public *[Symbol.iterator](): IterableIterator<Block[]> {
-      const visited: {[key: string]: boolean} = {};
-      const startingBlock: Block | undefined = TryGetBlock(this.World, this.CenterLocation);
+    public GetNext(): Block[] {
+        if (!this.Queue.IsEmpty){
+            const blocks: Block[] = this.Queue.DequeueChunk(this.YieldedChunkSize);
+            
+            // Queue up more
+            for (const block of blocks){
+                if (block.isValid()){
+                    this.Queue.EnqueueList(this.GetAdjacentPassableBlocks(block));
+                }
+            }
 
-      if (startingBlock === undefined){
-        throw "Starting location for FloodFillIterator cannot resolve to an undefined block.";
-      }
-
-      // Hashmap of locations that have already been 
-      const closedList: {[key: string]: boolean} = {};
-      const queue = new Queue<Block>();
-      queue.EnqueueList(this.GetAdjacentAirOrIncludedBlocks(startingBlock));
-
-      while (!queue.IsEmpty){
-        const blocks: Block[] = queue.DequeueChunk(this.YieldedChunkSize);
-        yield blocks;
-        for (const block of blocks){
-            queue.EnqueueList(this.GetAdjacentAirOrIncludedBlocks(block));
+            // Return the dequeued chunk of blocks
+            return blocks;
         }
-      }
+
+        return [];
     }
   }
