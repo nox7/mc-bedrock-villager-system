@@ -10,6 +10,8 @@ import Debug from "../Debug/Debug";
 import { BlockFinderOptions } from "../Utilities/BlockFinder/BlockFinderOptions";
 import { BlockFinder } from "../Utilities/BlockFinder/BlockFinder";
 import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { DarkOakSaplingLocationFinder } from "../Utilities/DarkOakSaplingLocationFinder";
+import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
 
 export default class Woodcutter extends NPC{
 
@@ -594,6 +596,20 @@ export default class Woodcutter extends NPC{
             // Add the logs to this NPC's inventory
             this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
 
+            // If this is a dark oak log, then we must (before chopping it down)
+            // try and calculate the _original_ root position of the tree
+            // so that the Woodcutter can replant it where it originally grew from
+            let darkOakSaplingPositions: Vector3[] = [];
+            if (targetBlockTypeId === "minecraft:dark_oak_log"){
+                Debug.Info("This is a dark oak log being chopped down. Calculating where it will be replanted before chopping it down.");
+                const darkOakSaplingFinder = new DarkOakSaplingLocationFinder(this.TargetWoodBlock!);
+                try{
+                    darkOakSaplingPositions = darkOakSaplingFinder.GetSaplingLocationsForReplanting();
+                }catch(e){
+                    Debug.Info("Got error from dark oak sapling finder: " + String(e));
+                }
+            }
+
             Debug.Info("Chopping down all logs.");
             let iteratorCount = 0;
             for (const block of connectedBlocks){
@@ -636,118 +652,30 @@ export default class Woodcutter extends NPC{
                 }
             }else{
                 Debug.Info("Handling dark oak sapling");
-                // Special handling for dark oak
-                // const cuboidRegion: CuboidRegion = CuboidRegion.FromCenterLocation(targetBlockLocation, 1, true);
-                // const corner1 = cuboidRegion.Corner1;
-                // const corner2 = cuboidRegion.Corner2;
-                const raycastOptions: BlockRaycastOptions = {
-                    includeLiquidBlocks: false,
-                    includePassableBlocks: false,
-                    maxDistance: 5
-                };
-
-                // Try searching in grids of 4 until we find 4 places where raycasting downwards hits 4 free spaces on the same Y axis to plant 4 dark oak 
-                // saplings
-                /**
-                 * [x] [x] []
-                 * [x] [x] []
-                 * [] [] []
-                 * --
-                 * [] [x] [x]
-                 * [] [x] [x]
-                 * [] [] []
-                 * --
-                 * [] [] []
-                 * [x] [x] []
-                 * [x] [x] []
-                 * --
-                 * [] [] []
-                 * [] [x] [x]
-                 * [] [x] [x]
-                 */
-                let needsToBreakOutOfLoops = false;
-                for (let xShift = -1; xShift <= 0; xShift++){
-
-                    if (needsToBreakOutOfLoops){
-                        break;
-                    }
-
-                    for (let zShift = -1; zShift <= 0; zShift++){
-                        // Perform 4 raycasts
-                        const location1: Vector3 = {x: targetBlockLocation.x + xShift, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift};
-                        const location2: Vector3 = {x: targetBlockLocation.x + xShift + 1, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift};
-                        const location3: Vector3 = {x: targetBlockLocation.x + xShift, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift + 1};
-                        const location4: Vector3 = {x: targetBlockLocation.x + xShift + 1, y: targetBlockLocation.y, z: targetBlockLocation.z + zShift + 1};
-
-                        const blockRaycastHit1: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location1, {x: 0, y:-1, z:0}, raycastOptions);
-                        const blockRaycastHit2: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location2, {x: 0, y:-1, z:0}, raycastOptions);
-                        const blockRaycastHit3: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location3, {x: 0, y:-1, z:0}, raycastOptions);
-                        const blockRaycastHit4: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(location4, {x: 0, y:-1, z:0}, raycastOptions);
-
-                        if (
-                            blockRaycastHit1 !== undefined
-                            && blockRaycastHit2 !== undefined
-                            && blockRaycastHit3 !== undefined
-                            && blockRaycastHit4 !== undefined
-                        ){
-                            // All four locations hit
-                            // Check they are all valid blocks
-                            if (
-                                blockRaycastHit1.block.isValid()
-                                && blockRaycastHit2.block.isValid()
-                                && blockRaycastHit3.block.isValid()
-                                && blockRaycastHit4.block.isValid()
-                            ){
-                                // Are they all on the same Y axis?
-                                if (
-                                    blockRaycastHit1.block.location.y === blockRaycastHit2.block.location.y 
-                                    && blockRaycastHit1.block.location.y === blockRaycastHit3.block.location.y 
-                                    && blockRaycastHit1.block.location.y === blockRaycastHit4.block.location.y 
-                                ){
-                                    // On the same axis
-                                    // Are they all dirt or grass blocks?
-                                    if (
-                                        (blockRaycastHit1.block.typeId ==="minecraft:dirt" || blockRaycastHit1.block.typeId === "minecraft:grass")
-                                        && (blockRaycastHit2.block.typeId ==="minecraft:dirt" || blockRaycastHit2.block.typeId === "minecraft:grass")
-                                        && (blockRaycastHit3.block.typeId ==="minecraft:dirt" || blockRaycastHit3.block.typeId === "minecraft:grass")
-                                        && (blockRaycastHit4.block.typeId ==="minecraft:dirt" || blockRaycastHit4.block.typeId === "minecraft:grass")
-                                    ){
-                                        // Everything checks out. Get the blocks above them.
-                                        let blockAbove1: Block | undefined;
-                                        let blockAbove2: Block | undefined;
-                                        let blockAbove3: Block | undefined;
-                                        let blockAbove4: Block | undefined;
-                                        try{
-                                            blockAbove1 = blockRaycastHit1.block.above(1);
-                                            blockAbove2 = blockRaycastHit2.block.above(1);
-                                            blockAbove3 = blockRaycastHit3.block.above(1);
-                                            blockAbove4 = blockRaycastHit4.block.above(1);
-                                        }catch(e){}
-
-                                        if (
-                                            blockAbove1 && blockAbove1.isValid()
-                                            && blockAbove2 && blockAbove2.isValid()
-                                            && blockAbove3 && blockAbove3.isValid()
-                                            && blockAbove4 && blockAbove4.isValid()
-                                        ){
-                                            const darkOakSaplingPermutation: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(BlockPermutation.resolve("minecraft:dark_oak_log"));
-                                            // Plant the 4 dark oak saplings on the blocks above them
-                                            blockAbove1.setPermutation(darkOakSaplingPermutation!);
-                                            blockAbove2.setPermutation(darkOakSaplingPermutation!);
-                                            blockAbove3.setPermutation(darkOakSaplingPermutation!);
-                                            blockAbove4.setPermutation(darkOakSaplingPermutation!);
-                                            needsToBreakOutOfLoops = true;
-                                            break;
-                                        }
-                                    }
+                if (darkOakSaplingPositions.length > 0){
+                    const darkOakSaplingPermutation: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(BlockPermutation.resolve("minecraft:dark_oak_log"));
+                    if (darkOakSaplingPermutation !== null){
+                        const saplingRaycastPlanter = new SaplingRaycastPlanter();
+                        const blocksToReplantTreeAt: Block[] = saplingRaycastPlanter.GetPlantableAirBlocksFromLocations(targetBlockDimension, darkOakSaplingPositions);
+                        // Check to make sure it returned the same number of plantable blocks as sapling locations we need
+                        if (blocksToReplantTreeAt.length === darkOakSaplingPositions.length){
+                            for (const airBlock of blocksToReplantTreeAt){
+                                if (airBlock.isValid()){
+                                    airBlock.setPermutation(darkOakSaplingPermutation);
                                 }
                             }
+                        }else{
+                            Debug.Warn("Can't replant dark oak tree. The SaplingRaycastPlanter did not return 4 plantable air blocks. It only returned: " + String(blocksToReplantTreeAt.length));
                         }
+                    }else{
+                        Debug.Warn("Failed to get the permuation of the permutation minecraft:dark_oak_log. Not replanting.");
                     }
+                }else{
+                    Debug.Warn("Not replanting the dark oak tree. When calculating the sapling locations prior to cutting down the tree, the calculations failed to find a valid set of locations to replant the tree.");
                 }
             }
 
-            Debug.Info("Done chopping down wood and planing the sapling.");
+            Debug.Info("Done chopping down wood and replanting the sapling.");
         }else{
             // Target block is now out of bounds I guess
             // Restart everything
