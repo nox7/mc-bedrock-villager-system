@@ -458,7 +458,7 @@ export default class Woodcutter extends NPC{
             TypeIdsToFind: Woodcutter.LOG_TYPE_IDS_TO_FIND,
             TagsToFind: [],
             TagsToIgnore: ["flowers", "small_flowers", "tall_flowers"],
-            TypeIdsToIgnore: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves"],
+            TypeIdsToIgnore: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"],
             LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
             MaxDistance: this.MaxDistanceToSearchForWood,
             MaxBlocksToFind: 1,
