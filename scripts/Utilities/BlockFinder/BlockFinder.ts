@@ -124,7 +124,7 @@ export class BlockFinder{
                     // Iterate over the blocks found
                     for (const nextBlock of nextSetOfBlocks){
                         if (nextBlock.isValid()){
-                            // nextBlock.setPermutation(BlockPermutation.resolve("minecraft:stone"));
+                            // nextBlock?.above(10)?.setPermutation(BlockPermutation.resolve("minecraft:stone"));
                             if (BlockFinder.IsBlockAllowedFromOptions(nextBlock, findRequest.BlockFinderOptions)){
                                 // Add it to the finder blocks
                                 findRequest.BlocksFound.push(nextBlock);
