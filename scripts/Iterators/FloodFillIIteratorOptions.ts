@@ -6,11 +6,11 @@ export interface FloodFillIteratorOptions{
     LocationsToIgnore: Vector3[];
     MaxDistance: number;
     /**
-     * Unused
+     * Tags that should never be considered by the iterator.
      */
     TagsToIgnore: string[];
     /**
-     * Unused
+     * Type Ids that should never be considered by the iterator.
      */
     TypeIdsToIgnore: string[];
     /**
