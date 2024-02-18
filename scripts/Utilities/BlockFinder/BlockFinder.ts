@@ -5,7 +5,6 @@ import Queue from "../../DataStructures/Queue";
 import FloodFillIterator from "../../Iterators/FloodFillIterator";
 import { VectorUtils } from "../Vector/VectorUtils";
 import { FloodFillIteratorOptions } from "../../Iterators/FloodFillIIteratorOptions";
-import { FinishedWineBarrelBlock } from "../../BlockHandlers/FinishedWineBarrelBlock";
 
 export class BlockFinder{
     /**
@@ -59,12 +58,12 @@ export class BlockFinder{
             Dimension: options.Dimension,
             MaxDistance: options.MaxDistance,
             LocationsToIgnore: options.LocationsToIgnore,
-            TagsToConsiderPassable: options.TagsToIgnore,
-            TypeIdsToConsiderPassable: options.TypeIdsToIgnore,
+            TagsToConsiderPassable: options.TagsToConsiderPassable,
+            TypeIdsToConsiderPassable: options.TypeIdsToConsiderPassable,
             TypeIdsToAlwaysIncludeInResult: options.TypeIdsToFind,
             TagsToAlwaysIncludeInResult: options.TagsToFind,
-            TagsToIgnore: [],
-            TypeIdsToIgnore: []
+            TagsToIgnore: options.TagsToIgnore,
+            TypeIdsToIgnore: options.TypeIdsToIgnore
         };
         const floodFillIterator = new FloodFillIterator(floodFillOptions);
 

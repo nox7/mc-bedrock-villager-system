@@ -9,5 +9,7 @@ export interface BlockFinderOptions{
     MaxBlocksToFind: number,
     LocationsToIgnore: Vector3[],
     TypeIdsToIgnore: string[],
-    TagsToIgnore: string[]
+    TagsToIgnore: string[],
+    TypeIdsToConsiderPassable: string[],
+    TagsToConsiderPassable: string[]
 }
