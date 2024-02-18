@@ -12,6 +12,8 @@ import { BlockFinder } from "../Utilities/BlockFinder/BlockFinder";
 import { VectorUtils } from "../Utilities/Vector/VectorUtils";
 import { DarkOakSaplingLocationFinder } from "../Utilities/DarkOakSaplingLocationFinder";
 import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
+import WallsList from "../Utilities/TypeIdLists/WallsList";
+import FencesList from "../Utilities/TypeIdLists/FencesList";
 
 export default class Woodcutter extends NPC{
 
@@ -459,8 +461,10 @@ export default class Woodcutter extends NPC{
             Dimension: woodcutterManagerBlock.dimension,
             TypeIdsToFind: Woodcutter.LOG_TYPE_IDS_TO_FIND,
             TagsToFind: [],
-            TagsToIgnore: ["flowers", "small_flowers", "tall_flowers"],
-            TypeIdsToIgnore: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"],
+            TagsToConsiderPassable: ["flowers", "small_flowers", "tall_flowers"],
+            TypeIdsToConsiderPassable: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"],
+            TagsToIgnore: [],
+            TypeIdsToIgnore: [...WallsList, ...FencesList],
             LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
             MaxDistance: this.MaxDistanceToSearchForWood,
             MaxBlocksToFind: 1,
