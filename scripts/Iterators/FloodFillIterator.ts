@@ -280,6 +280,13 @@ export default class FloodFillIterator {
             if (block !== undefined){
                 if (block.isValid()){
 
+                    // Do not consider ignored blocks
+                    if (this.IsBlockIgnored(block)){
+                        // Add it to the closed list
+                        this.AddLocationToClosedList(location);
+                        continue;
+                    }
+
                     // Check if this block is always included
                     if (this.IsBlockAlwaysIncluded(block)){
                         includedBlocks.push(block);
