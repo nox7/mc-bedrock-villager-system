@@ -24,6 +24,10 @@
 			"minecraft:digger": {
                 "destroy_speeds": [
                     {
+                        "block":"minecraft:cobbled_deepslate",
+                        "speed": 15
+                    },
+                    {
                         "block":"minecraft:polished_andesite",
                         "speed": 15
                     },
@@ -194,6 +198,14 @@
                     },
 					{
                         "block":"minecraft:grass",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:obsidian",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:furnace",
                         "speed": 15
                     }
                 ]
