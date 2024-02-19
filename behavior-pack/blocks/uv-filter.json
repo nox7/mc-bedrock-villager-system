@@ -45,8 +45,8 @@
                 },
                 "looping": true,
                 "interval_range": [
-                    50,
-                    1000
+                    100,
+                    2000
                 ]
             }
         }
