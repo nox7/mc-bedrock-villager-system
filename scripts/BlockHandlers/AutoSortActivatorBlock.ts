@@ -234,7 +234,12 @@ export class AutoSortActivatorBlock{
                 }
 
                 // Sort all items alphabetically
-                chestInventoryItemStackCache.sort((stack1, stack2) => stack1.typeId > stack2.typeId ? 1 : -1);
+                chestInventoryItemStackCache.sort(
+                    (stack1, stack2) => {
+                        return (stack1.nameTag !== undefined ? stack1.nameTag : stack1.typeId) 
+                            > (stack2.nameTag !== undefined ? stack2.nameTag : stack2.typeId) 
+                            ? 1 : -1
+                    });
 
                 // Put them all back into the chest
                 for (let index = 0; index < chestInventoryItemStackCache.length; index++){
