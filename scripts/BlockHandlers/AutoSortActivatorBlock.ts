@@ -2,6 +2,7 @@ import { Block, BlockInventoryComponent, BlockPermutation, BlockTypes, Container
 import { VectorUtils } from "../Utilities/Vector/VectorUtils";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Debug from "../Debug/Debug";
+import Wait from "../Utilities/Wait";
 
 /**
  * Abstraction to represent the nox:auto-sorter-activator block - which will sort a player's inventory items into
@@ -49,8 +50,12 @@ export class AutoSortActivatorBlock{
                             allChestInventories.push(result.InventoryComponent);
                         }
 
-                        const slotSortCountResult: InventoryFilterResultCounts = this.SortInventoryItemsIntoChests(playerInventory, allChestInventories);
-                        player.sendMessage("Sorted " + String(slotSortCountResult.TotalItemsSorted) + " items from " + String(slotSortCountResult.TotalSlotsSorted) + " inventory slots.");
+                        const slotSortCountResult: InventoryFilterResultCounts | null = await this.SortInventoryItemsIntoChests(playerInventory, allChestInventories);
+                        if (slotSortCountResult !== null){
+                            if (player.isValid()){
+                                player.sendMessage("Sorted " + String(slotSortCountResult.TotalItemsSorted) + " items from " + String(slotSortCountResult.TotalSlotsSorted) + " inventory slots.");
+                            }
+                        }
                     }
                 }
                 
@@ -67,60 +72,66 @@ export class AutoSortActivatorBlock{
      * @param inventoryContainer 
      * @param chestContainers 
      */
-    private SortInventoryItemsIntoChests(inventoryContainer: EntityInventoryComponent, chestContainers: BlockInventoryComponent[]): InventoryFilterResultCounts{
+    private async SortInventoryItemsIntoChests(inventoryContainer: EntityInventoryComponent, chestContainers: BlockInventoryComponent[]): Promise<InventoryFilterResultCounts | null>{
         let itemSlotsSorted = 0;
         let totalItemCountSorted = 0;
         if (inventoryContainer.container !== undefined){
-            for (let inventorySlotIndex = 0; inventorySlotIndex < inventoryContainer.inventorySize; inventorySlotIndex++){
-                const inventoryItem: ItemStack | undefined = inventoryContainer.container.getItem(inventorySlotIndex);
-                if (inventoryItem !== undefined){
+            return new Promise<InventoryFilterResultCounts>(async resolve => {
 
-                    // Whether or not we need to break from sorting the current inventory slot
-                    let breakOutOfCurrentInventorySlot = false;
-
-                    for (const chestInventory of chestContainers){
-
-                        if (breakOutOfCurrentInventorySlot){
-                            break;
-                        }
-
-                        if (chestInventory.isValid()){
-                            // Only check this chest if it has non-empty slots
-                            if (chestInventory.container !== undefined){
-                                if (chestInventory.container.emptySlotsCount < chestInventory.container.size){
-                                    for (let chestInventorySlotIndex = 0; chestInventorySlotIndex < chestInventory.container.size; chestInventorySlotIndex++){
-                                        const chestItemAtSlot: ItemStack | undefined = chestInventory.container.getItem(chestInventorySlotIndex);
-                                        if (chestItemAtSlot !== undefined){
-                                            // Are the chest item and the inventoryItem the same item?
-                                            if (chestItemAtSlot.isStackableWith(inventoryItem)){
-                                                const itemStackLeftAfterAddAttempt: ItemStack | undefined = chestInventory.container.addItem(inventoryItem);
-                                                
-                                                // Set the player inventory slot as the resulting item stack
-                                                // if it's undefined - it all went into the chest
-                                                // If it's not, then we are left with the remainder
-                                                if (itemStackLeftAfterAddAttempt === undefined){
-                                                    ++itemSlotsSorted;
-                                                    totalItemCountSorted += inventoryItem.amount;
-                                                }else{
-                                                    // Calculate the difference
-                                                    let amountInserted = inventoryItem.amount - itemStackLeftAfterAddAttempt.amount;
-                                                    if (amountInserted > 0){
-                                                        ++itemSlotsSorted;
-                                                        totalItemCountSorted += amountInserted;
+                for (let inventorySlotIndex = 0; inventorySlotIndex < inventoryContainer.inventorySize; inventorySlotIndex++){
+                    await Wait(1);
+                    if (inventoryContainer.container !== undefined && inventoryContainer.isValid()){
+                        const inventoryItem: ItemStack | undefined = inventoryContainer.container.getItem(inventorySlotIndex);
+                        if (inventoryItem !== undefined){
+        
+                            // Whether or not we need to break from sorting the current inventory slot
+                            let breakOutOfCurrentInventorySlot = false;
+        
+                            for (const chestInventory of chestContainers){
+        
+                                if (breakOutOfCurrentInventorySlot){
+                                    break;
+                                }
+        
+                                if (chestInventory.isValid()){
+                                    // Only check this chest if it has non-empty slots
+                                    if (chestInventory.container !== undefined){
+                                        if (chestInventory.container.emptySlotsCount < chestInventory.container.size){
+                                            for (let chestInventorySlotIndex = 0; chestInventorySlotIndex < chestInventory.container.size; chestInventorySlotIndex++){
+                                                const chestItemAtSlot: ItemStack | undefined = chestInventory.container.getItem(chestInventorySlotIndex);
+                                                if (chestItemAtSlot !== undefined){
+                                                    // Are the chest item and the inventoryItem the same item?
+                                                    if (chestItemAtSlot.isStackableWith(inventoryItem)){
+                                                        const itemStackLeftAfterAddAttempt: ItemStack | undefined = chestInventory.container.addItem(inventoryItem);
+                                                        
+                                                        // Set the player inventory slot as the resulting item stack
+                                                        // if it's undefined - it all went into the chest
+                                                        // If it's not, then we are left with the remainder
+                                                        if (itemStackLeftAfterAddAttempt === undefined){
+                                                            ++itemSlotsSorted;
+                                                            totalItemCountSorted += inventoryItem.amount;
+                                                        }else{
+                                                            // Calculate the difference
+                                                            let amountInserted = inventoryItem.amount - itemStackLeftAfterAddAttempt.amount;
+                                                            if (amountInserted > 0){
+                                                                ++itemSlotsSorted;
+                                                                totalItemCountSorted += amountInserted;
+                                                            }
+                                                        }
+        
+                                                        inventoryContainer.container.setItem(inventorySlotIndex, itemStackLeftAfterAddAttempt);
+        
+                                                        // If this item did not get sorted _completely_ into this chest, keep trying other chests
+                                                        if (itemStackLeftAfterAddAttempt !== undefined){
+                                                            // Break from this chest, but not from every chest
+                                                            break;
+                                                        }
+        
+                                                        // Go ahead and break out of this item slot sort entirely, move on to the next item
+                                                        breakOutOfCurrentInventorySlot = true;
+                                                        break;
                                                     }
                                                 }
-
-                                                inventoryContainer.container.setItem(inventorySlotIndex, itemStackLeftAfterAddAttempt);
-
-                                                // If this item did not get sorted _completely_ into this chest, keep trying other chests
-                                                if (itemStackLeftAfterAddAttempt !== undefined){
-                                                    // Break from this chest, but not from every chest
-                                                    break;
-                                                }
-
-                                                // Go ahead and break out of this item slot sort entirely, move on to the next item
-                                                breakOutOfCurrentInventorySlot = true;
-                                                break;
                                             }
                                         }
                                     }
@@ -129,13 +140,15 @@ export class AutoSortActivatorBlock{
                         }
                     }
                 }
-            }
+
+                resolve({
+                    TotalItemsSorted: totalItemCountSorted,
+                    TotalSlotsSorted: itemSlotsSorted
+                });
+            });
         }
 
-        return {
-            TotalItemsSorted: totalItemCountSorted,
-            TotalSlotsSorted: itemSlotsSorted
-        };
+        return null;
     }
 
     /**
