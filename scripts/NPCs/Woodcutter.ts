@@ -468,6 +468,7 @@ export default class Woodcutter extends NPC{
             LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
             MaxDistance: this.MaxDistanceToSearchForWood,
             MaxBlocksToFind: 1,
+            AllowYAxisFlood: false
         };
         
         // Try to find an oak log
@@ -522,29 +523,38 @@ export default class Woodcutter extends NPC{
             this.SetState(WoodcutterState.SEARCHING);
             this.IsReadyForStateChange = true;
         }else{
-            Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
-            const walker = new EntityWalker(this.Entity!);
+            if(this.Entity !== null){
+                if (this.Entity.isValid()){
+                    Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
+                    const walker = new EntityWalker(this.Entity!);
+                    this.Entity?.setProperty("nox:is_moving", true);
+                    const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES], []);
 
-            this.Entity?.setProperty("nox:is_moving", true);
-            const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES], []);
+                    if (!didReachDestination){
+                        // Try again
+                        ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
 
-            if (!didReachDestination){
-                // Try again
-                ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
+                        if (this.CurrentNumTimesTriedToWalkToTargetAndFailed > 4){
+                            // Tried too many times, reset to NONE and try again
+                            Debug.Info("Failed to walk to the target too many times. Setting Woodcutter state back to NONE.");
+                            this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
+                            this.SetState(WoodcutterState.NONE);
+                        }else{
+                            Debug.Info("Failed to find a path. Trying again.");
+                            this.SetState(WoodcutterState.SEARCHING);
+                        }
+                    }
 
-                if (this.CurrentNumTimesTriedToWalkToTargetAndFailed > 4){
-                    // Tried too many times, reset to NONE and try again
-                    Debug.Info("Failed to walk to the target too many times. Setting Woodcutter state back to NONE.");
-                    this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
-                    this.SetState(WoodcutterState.NONE);
+                    this.Entity.setProperty("nox:is_moving", false);
+                    this.IsReadyForStateChange = true;
                 }else{
-                    Debug.Info("Failed to find a path. Trying again.");
-                    this.SetState(WoodcutterState.SEARCHING);
+                    // Invalid, wait a bit and try again later
+                    // Revert the state
+                    await Wait(150);
+                    this.SetState(WoodcutterState.WOODCUTTING);
+                    this.IsReadyForStateChange = true;
                 }
             }
-
-            this.Entity?.setProperty("nox:is_moving", false);
-            this.IsReadyForStateChange = true;
         }
     }
 
@@ -554,138 +564,151 @@ export default class Woodcutter extends NPC{
      */
     public async OnStateChangeToWoodcutting(): Promise<void>{
         Debug.Info("Woodcutter state changed to Woodcutting.");
-        this.Entity?.setProperty("nox:is_chopping", true);
-        
-        if (this.TargetWoodBlock !== null && this.TargetWoodBlock.isValid()){
-            const targetBlockTypeId = this.TargetWoodBlock.typeId;
-            const targetBlockPermutation = this.TargetWoodBlock.permutation;
-            const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
-            const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
+        if (this.Entity !== null){
+            if (this.Entity.isValid()){
 
-            // Wait 100 ticks for normal trees
-            // but 300 ticks for dark oak
-            if (targetBlockTypeId !== "minecraft:dark_oak_log"){
-                await Wait(100);
+                this.Entity?.setProperty("nox:is_chopping", true);
+                
+                if (this.TargetWoodBlock !== null && this.TargetWoodBlock.isValid()){
+                    const targetBlockTypeId = this.TargetWoodBlock.typeId;
+                    const targetBlockPermutation = this.TargetWoodBlock.permutation;
+                    const targetBlockLocation: Vector3 = this.TargetWoodBlock.location;
+                    const targetBlockDimension: Dimension = this.TargetWoodBlock.dimension;
+
+                    // Wait 100 ticks for normal trees
+                    // but 300 ticks for dark oak
+                    if (targetBlockTypeId !== "minecraft:dark_oak_log"){
+                        await Wait(100);
+                    }else{
+                        await Wait(300);
+                    }
+
+                    // Did the entity become invalid after waiting? If so, just reset the entire state
+                    if (!this.Entity?.isValid()){
+                        this.SetState(WoodcutterState.NONE)
+                        this.IsReadyForStateChange = true;
+                        return;
+                    }
+                    
+                    this.Entity?.setProperty("nox:is_chopping", false);
+                
+
+                    Debug.Info("Getting all connected log blocks from target block.");
+                    // Chop all the wood
+                    let connectedBlocks: Block[] | undefined = undefined;
+                    try{
+                        connectedBlocks = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_TYPE_IDS_TO_FIND, 75);
+                    }catch(e){}
+
+                    // Was there an error (Probably unloaded chunk error) when fetching all connected blocks?
+                    if (connectedBlocks === undefined){
+                        // Revert the stage
+                        Debug.Info("Couldn't get all connected logs. Reverting state to 'Woodcutting'")
+                        this.SetState(WoodcutterState.WOODCUTTING);
+                        this.IsReadyForStateChange = true;
+                        await Wait(100);
+                        return;
+                    }
+
+                    // Add the logs to this NPC's inventory
+                    this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
+
+                    // If this is a dark oak log, then we must (before chopping it down)
+                    // try and calculate the _original_ root position of the tree
+                    // so that the Woodcutter can replant it where it originally grew from
+                    let darkOakSaplingPositions: Vector3[] = [];
+                    if (targetBlockTypeId === "minecraft:dark_oak_log"){
+                        Debug.Info("This is a dark oak log being chopped down. Calculating where it will be replanted before chopping it down.");
+                        const darkOakSaplingFinder = new DarkOakSaplingLocationFinder(this.TargetWoodBlock!);
+                        try{
+                            darkOakSaplingPositions = darkOakSaplingFinder.GetSaplingLocationsForReplanting();
+                        }catch(e){
+                            Debug.Info("Got error from dark oak sapling finder: " + String(e));
+                        }
+                    }
+
+                    Debug.Info("Chopping down all logs.");
+                    let iteratorCount = 0;
+                    for (const block of connectedBlocks){
+                        if (block.isValid()){
+                            ++iteratorCount;
+                            block.setPermutation(BlockPermutation.resolve("minecraft:air"));
+                        }
+                    }
+
+                    if (targetBlockTypeId !== "minecraft:dark_oak_log"){
+                        Debug.Info("Raycasting down from target block to plant sapling.");
+                        // Get the dirt block that should/was under the tree
+                        const raycastOptions: BlockRaycastOptions = {
+                            includeLiquidBlocks: false,
+                            includePassableBlocks: false,
+                            maxDistance: 5
+                        };
+
+                        const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
+                        if (blockRaycastHit !== undefined){
+                            Debug.Info("Hit a block. Checking if valid and if it is dirt or grass.");
+                            const blockHit = blockRaycastHit.block;
+                            if (blockHit.isValid()){
+                                if (blockHit.typeId ==="minecraft:dirt" || blockHit.typeId === "minecraft:grass"){
+                                    Debug.Info("Planting the sapling on the block hit from the raycast.");
+                                    // Place a sapling
+                                    const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
+                                    if (saplingToPlace !== null){
+                                        let blockAboveLocation: Block | undefined;
+                                        try{
+                                            blockAboveLocation = blockHit.above(1);
+                                        }catch(e){}
+
+                                        if (blockAboveLocation !== undefined){
+                                            blockAboveLocation.setPermutation(saplingToPlace);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        Debug.Info("Handling dark oak sapling");
+                        if (darkOakSaplingPositions.length > 0){
+                            const darkOakSaplingPermutation: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(BlockPermutation.resolve("minecraft:dark_oak_log"));
+                            if (darkOakSaplingPermutation !== null){
+                                const saplingRaycastPlanter = new SaplingRaycastPlanter();
+                                const blocksToReplantTreeAt: Block[] = saplingRaycastPlanter.GetPlantableAirBlocksFromLocations(targetBlockDimension, darkOakSaplingPositions);
+                                // Check to make sure it returned the same number of plantable blocks as sapling locations we need
+                                if (blocksToReplantTreeAt.length === darkOakSaplingPositions.length){
+                                    for (const airBlock of blocksToReplantTreeAt){
+                                        if (airBlock.isValid()){
+                                            airBlock.setPermutation(darkOakSaplingPermutation);
+                                        }
+                                    }
+                                }else{
+                                    Debug.Warn("Can't replant dark oak tree. The SaplingRaycastPlanter did not return 4 plantable air blocks. It only returned: " + String(blocksToReplantTreeAt.length));
+                                }
+                            }else{
+                                Debug.Warn("Failed to get the permuation of the permutation minecraft:dark_oak_log. Not replanting.");
+                            }
+                        }else{
+                            Debug.Warn("Not replanting the dark oak tree. When calculating the sapling locations prior to cutting down the tree, the calculations failed to find a valid set of locations to replant the tree.");
+                        }
+                    }
+
+                    Debug.Info("Done chopping down wood and replanting the sapling.");
+                }else{
+                    // Target block is now out of bounds I guess
+                    // Restart everything
+                    await Wait(150);
+                    this.SetState(WoodcutterState.NONE)
+                    this.IsReadyForStateChange = true;
+                    return;
+                }
             }else{
-                await Wait(300);
-            }
-
-            // Did the entity become invalid after waiting? If so, just reset the entire state
-            if (!this.Entity?.isValid()){
+                // Entity is invalid
+                // Restart everything
+                await Wait(150);
                 this.SetState(WoodcutterState.NONE)
                 this.IsReadyForStateChange = true;
                 return;
             }
-            
-            this.Entity?.setProperty("nox:is_chopping", false);
-        
-
-            Debug.Info("Getting all connected log blocks from target block.");
-            // Chop all the wood
-            let connectedBlocks: Block[] | undefined = undefined;
-            try{
-                connectedBlocks = GetAllConnectedBlocksOfType(this.TargetWoodBlock, Woodcutter.LOG_TYPE_IDS_TO_FIND, 75);
-            }catch(e){}
-
-            // Was there an error (Probably unloaded chunk error) when fetching all connected blocks?
-            if (connectedBlocks === undefined){
-                // Revert the stage
-                Debug.Info("Couldn't get all connected logs. Reverting state to 'Woodcutting'")
-                this.SetState(WoodcutterState.WOODCUTTING);
-                this.IsReadyForStateChange = true;
-                await Wait(100);
-                return;
-            }
-
-            // Add the logs to this NPC's inventory
-            this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
-
-            // If this is a dark oak log, then we must (before chopping it down)
-            // try and calculate the _original_ root position of the tree
-            // so that the Woodcutter can replant it where it originally grew from
-            let darkOakSaplingPositions: Vector3[] = [];
-            if (targetBlockTypeId === "minecraft:dark_oak_log"){
-                Debug.Info("This is a dark oak log being chopped down. Calculating where it will be replanted before chopping it down.");
-                const darkOakSaplingFinder = new DarkOakSaplingLocationFinder(this.TargetWoodBlock!);
-                try{
-                    darkOakSaplingPositions = darkOakSaplingFinder.GetSaplingLocationsForReplanting();
-                }catch(e){
-                    Debug.Info("Got error from dark oak sapling finder: " + String(e));
-                }
-            }
-
-            Debug.Info("Chopping down all logs.");
-            let iteratorCount = 0;
-            for (const block of connectedBlocks){
-                if (block.isValid()){
-                    ++iteratorCount;
-                    block.setPermutation(BlockPermutation.resolve("minecraft:air"));
-                }
-            }
-
-            if (targetBlockTypeId !== "minecraft:dark_oak_log"){
-                Debug.Info("Raycasting down from target block to plant sapling.");
-                // Get the dirt block that should/was under the tree
-                const raycastOptions: BlockRaycastOptions = {
-                    includeLiquidBlocks: false,
-                    includePassableBlocks: false,
-                    maxDistance: 5
-                };
-
-                const blockRaycastHit: BlockRaycastHit | undefined = targetBlockDimension.getBlockFromRay(targetBlockLocation, {x: 0, y:-1, z:0}, raycastOptions);
-                if (blockRaycastHit !== undefined){
-                    Debug.Info("Hit a block. Checking if valid and if it is dirt or grass.");
-                    const blockHit = blockRaycastHit.block;
-                    if (blockHit.isValid()){
-                        if (blockHit.typeId ==="minecraft:dirt" || blockHit.typeId === "minecraft:grass"){
-                            Debug.Info("Planting the sapling on the block hit from the raycast.");
-                            // Place a sapling
-                            const saplingToPlace: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(targetBlockPermutation);
-                            if (saplingToPlace !== null){
-                                let blockAboveLocation: Block | undefined;
-                                try{
-                                    blockAboveLocation = blockHit.above(1);
-                                }catch(e){}
-
-                                if (blockAboveLocation !== undefined){
-                                    blockAboveLocation.setPermutation(saplingToPlace);
-                                }
-                            }
-                        }
-                    }
-                }
-            }else{
-                Debug.Info("Handling dark oak sapling");
-                if (darkOakSaplingPositions.length > 0){
-                    const darkOakSaplingPermutation: BlockPermutation | null = Woodcutter.GetSaplingPermuationFromLogPermutation(BlockPermutation.resolve("minecraft:dark_oak_log"));
-                    if (darkOakSaplingPermutation !== null){
-                        const saplingRaycastPlanter = new SaplingRaycastPlanter();
-                        const blocksToReplantTreeAt: Block[] = saplingRaycastPlanter.GetPlantableAirBlocksFromLocations(targetBlockDimension, darkOakSaplingPositions);
-                        // Check to make sure it returned the same number of plantable blocks as sapling locations we need
-                        if (blocksToReplantTreeAt.length === darkOakSaplingPositions.length){
-                            for (const airBlock of blocksToReplantTreeAt){
-                                if (airBlock.isValid()){
-                                    airBlock.setPermutation(darkOakSaplingPermutation);
-                                }
-                            }
-                        }else{
-                            Debug.Warn("Can't replant dark oak tree. The SaplingRaycastPlanter did not return 4 plantable air blocks. It only returned: " + String(blocksToReplantTreeAt.length));
-                        }
-                    }else{
-                        Debug.Warn("Failed to get the permuation of the permutation minecraft:dark_oak_log. Not replanting.");
-                    }
-                }else{
-                    Debug.Warn("Not replanting the dark oak tree. When calculating the sapling locations prior to cutting down the tree, the calculations failed to find a valid set of locations to replant the tree.");
-                }
-            }
-
-            Debug.Info("Done chopping down wood and replanting the sapling.");
-        }else{
-            // Target block is now out of bounds I guess
-            // Restart everything
-            this.SetState(WoodcutterState.NONE)
-            this.IsReadyForStateChange = true;
-            return;
         }
 
 
@@ -699,37 +722,49 @@ export default class Woodcutter extends NPC{
         Debug.Info("Woodcutter state changed to WalkingToChest.");
         const chestToWalkTo: Block | null = this.WoodcutterManagerBlock!.GetAdjacentChest();
         if (chestToWalkTo !== null){
-            const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
-            const walker = new EntityWalker(this.Entity!);
-            this.Entity?.setProperty("nox:is_moving", true);
-            await walker.MoveTo(chestToWalkTo.location, 2, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
+            if (this.Entity !== null){
+                if (this.Entity.isValid()){
 
-            // Did the entity become invalid after waiting/walking? If so, just reset the entire state
-            if (!this.Entity?.isValid()){
-                this.SetState(WoodcutterState.NONE)
-                this.IsReadyForStateChange = true;
-                return;
-            }
+                    const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
+                    const walker = new EntityWalker(this.Entity!);
+                    this.Entity?.setProperty("nox:is_moving", true);
+                    await walker.MoveTo(chestToWalkTo.location, 2, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
 
-            this.Entity?.setProperty("nox:is_moving", false);
-
-            // Deposit items
-            for (const typeId in this.BlocksCarrying){
-                const amount: number = this.BlocksCarrying[typeId];
-                if (chestInventory !== undefined){
-                    if (amount > 0){
-                        const itemStack: ItemStack = new ItemStack(typeId, amount);
-                        try{
-                            chestInventory.container?.addItem(itemStack);
-                        }catch(e){}
+                    // Did the entity become invalid after waiting/walking? If so, just reset the entire state
+                    if (!this.Entity?.isValid()){
+                        this.SetState(WoodcutterState.NONE)
+                        this.IsReadyForStateChange = true;
+                        return;
                     }
+
+                    this.Entity?.setProperty("nox:is_moving", false);
+
+                    // Deposit items
+                    for (const typeId in this.BlocksCarrying){
+                        const amount: number = this.BlocksCarrying[typeId];
+                        if (chestInventory !== undefined){
+                            if (amount > 0){
+                                const itemStack: ItemStack = new ItemStack(typeId, amount);
+                                try{
+                                    chestInventory.container?.addItem(itemStack);
+                                }catch(e){}
+                            }
+                        }
+                    }
+
+                    // Clear inventory
+                    this.BlocksCarrying = {};
+
+                    this.IsReadyForStateChange = true;
+                }else{
+                    // Invalid entity
+                    // Wait for a bit and try again
+                    await Wait(200);
+                    // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
+                    this.SetState(WoodcutterState.WOODCUTTING);
+                    this.IsReadyForStateChange = true;
                 }
             }
-
-            // Clear inventory
-            this.BlocksCarrying = {};
-
-            this.IsReadyForStateChange = true;
         }else{
             Debug.Info("No chest to walk to.");
             // No chest? Wait some time then try again

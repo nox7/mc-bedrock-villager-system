@@ -29,5 +29,10 @@ export interface FloodFillIteratorOptions{
     /**
      * Same as TypeIdsToAlwaysIncludeInResult, but for tag matches
      */
-    TagsToAlwaysIncludeInResult: string[]
+    TagsToAlwaysIncludeInResult: string[],
+    /**
+     * Allows the Flood-Fill iterator to climb up or down on the Y axis without the algorithm to determine if 
+     * it is a safe fall or a reasonable jump for an entity.
+     */
+    AllowYAxisFlood: boolean
 }

@@ -15,7 +15,7 @@ export class BlockFinder{
     /**
      * How often to run the next iteration of the current find requests. E.g., 2 = iterate the next set of blocks every 2 ticks for each find request.
      */
-    private static TicksDelta = 5;
+    private static TicksDelta = 4;
 
     /**
      * The find requests in the queue waiting to be processed
@@ -63,7 +63,8 @@ export class BlockFinder{
             TypeIdsToAlwaysIncludeInResult: options.TypeIdsToFind,
             TagsToAlwaysIncludeInResult: options.TagsToFind,
             TagsToIgnore: options.TagsToIgnore,
-            TypeIdsToIgnore: options.TypeIdsToIgnore
+            TypeIdsToIgnore: options.TypeIdsToIgnore,
+            AllowYAxisFlood: options.AllowYAxisFlood
         };
         const floodFillIterator = new FloodFillIterator(floodFillOptions);
 

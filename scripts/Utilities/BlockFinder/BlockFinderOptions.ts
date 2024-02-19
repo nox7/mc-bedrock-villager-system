@@ -11,5 +11,6 @@ export interface BlockFinderOptions{
     TypeIdsToIgnore: string[],
     TagsToIgnore: string[],
     TypeIdsToConsiderPassable: string[],
-    TagsToConsiderPassable: string[]
+    TagsToConsiderPassable: string[],
+    AllowYAxisFlood: boolean
 }

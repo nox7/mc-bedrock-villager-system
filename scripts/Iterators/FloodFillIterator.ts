@@ -164,6 +164,23 @@ export default class FloodFillIterator {
     }
 
     /**
+     * Returns the provided block if it is considered passable. This does _not_ check for upper or lower passable blocks as alternative routes.
+     * This function is intended to be used when Options.AllowYAxisFloodFill is true
+     * @param block
+     */
+    private GetBlockIfPassable(block: Block): Block | null{
+        if (block.isValid()){
+            if (this.IsBlockPassable(block)){
+                if (!this.HasBlockLocationBeenClosed(block)){
+                    return block;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the provided block if it is an empty block with ground beneath it.
      * 
      * Returns the block below if the provided block is passable, but so is the one beneath it and there is ground beneath the below block to stand on.
@@ -260,6 +277,20 @@ export default class FloodFillIterator {
             {x: fromBlockLocation.x - 1, y: fromBlockLocation.y, z: fromBlockLocation.z - 1},
         ];
 
+        // Has it been specified that we should move along the Y axis as well?
+        if (this.Options.AllowYAxisFlood){
+            adjacentPositions.push({x: fromBlockLocation.x, y: fromBlockLocation.y + 1, z: fromBlockLocation.z});
+            
+            const newPositionsToAdd: Vector3[] = [];
+            for (const position of adjacentPositions){
+                // Add 2 more positions for + 1 on the Y and - 1 on the Y
+                newPositionsToAdd.push(Vector.add(position, {x: 0, y: 1, z: 0}));
+                newPositionsToAdd.push(Vector.add(position, {x: 0, y: -1, z: 0}));
+            }
+
+            adjacentPositions.push(...newPositionsToAdd);
+        }
+
         for (const location of adjacentPositions){
 
             // If this location is too far, then skip it
@@ -293,7 +324,15 @@ export default class FloodFillIterator {
                     }else{
                         // It's not always included, so
                         // get the nearest air block (vertically). It may be itself
-                        const availableBlock: Block | null = this.GetBlockIfPassableOrNearestVerticalPassableBlock(block);
+                        let availableBlock: Block | null;
+                        if (this.Options.AllowYAxisFlood){
+                            // Simply check the provided block - no adjacent alternatives
+                            availableBlock = this.GetBlockIfPassable(block);
+                        }else{
+                            // Water-like flood fill. Check for safe-fallable blocks or jump-overable blocks 
+                            availableBlock = this.GetBlockIfPassableOrNearestVerticalPassableBlock(block);
+                        }
+                        
                         if (availableBlock !== null){
                             includedBlocks.push(availableBlock);
                         }
