@@ -76,7 +76,15 @@
                         "speed": 15
                     },
                     {
+                        "block":"minecraft:lit_redstone_ore",
+                        "speed": 15
+                    },
+                    {
                         "block":"minecraft:deepslate_redstone_ore",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:lit_deepslate_redstone_ore",
                         "speed": 15
                     },
                     {
@@ -181,17 +189,20 @@
                     },
 					{
                         "block":"minecraft:deepslate",
-                        "speed": 11
+                        "speed": 15
                     },
 					{
                         "block":"minecraft:blackstone",
-                        "speed": 11
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:basalt",
+                        "speed": 15
                     },
 					{
                         "block":"minecraft:netherrack",
                         "speed": 11
                     },
-                    
 					{
                         "block":"minecraft:dirt",
                         "speed": 15
