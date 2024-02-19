@@ -3,6 +3,7 @@ import { VectorUtils } from "../Utilities/Vector/VectorUtils";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Debug from "../Debug/Debug";
 import Wait from "../Utilities/Wait";
+import { ActionFormData } from "@minecraft/server-ui";
 
 /**
  * Abstraction to represent the nox:auto-sorter-activator block - which will sort a player's inventory items into
@@ -27,41 +28,92 @@ export class AutoSortActivatorBlock{
      */
     public async OnPlayerInteract(player: Player): Promise<void>{
         if (player.isValid()){
-            if (!this.IsSorterActiveForPlayer(player)){
-                this.AddPlayerToActiveSortingProcesses(player);
-                // Fetch the player's inventory
-                const playerInventory = this.GetPlayerInventory(player);
-                if (playerInventory !== undefined){
-                    const inventoryContainer = playerInventory.container;
-                    if (inventoryContainer !== undefined){
-                        const chestsFound: Block[] = await this.GetNearbyChests();
-                        
-                        // Take the list of chests, get all the double and single chest blocks and their inventory containers
-                        // This handles duplicate chest blocks that may be the same large chest
-                        const doubleAndSingleChestBlockAndContainer: FilteredChestBlocksResult = this.GetAllDoubleAndSingleChestBlocksAndTheirContainers(chestsFound);
-                        player.sendMessage("Sorting your items into " + String(doubleAndSingleChestBlockAndContainer.Doubles.length) + " double chests and " + String(doubleAndSingleChestBlockAndContainer.Singles.length) + " single chests.");
-                        const allChestInventories: BlockInventoryComponent[] = [];
+            this.ShowUI(player);
+        }
+    }
 
-                        for (const result of doubleAndSingleChestBlockAndContainer.Singles){
-                            allChestInventories.push(result.InventoryComponent);
-                        }
+    public async ShowUI(player: Player): Promise<void>{
+        const form = new ActionFormData()
+            .button("Sort Inventory into Nearby Chests")
+            .button("Alphabetize Nearby Chests");
 
-                        for (const result of doubleAndSingleChestBlockAndContainer.Doubles){
-                            allChestInventories.push(result.InventoryComponent);
-                        }
+        const response = await form.show(player);
+        const buttonSelection = response.selection;
+        if (buttonSelection !== undefined){
+            if (buttonSelection === 0){
+                this.BeginSortingPlayerInventoryIntoNearbyChests(player);
+            }else if (buttonSelection === 1){
+                this.BeginAlphabetizingNearbyChests(player);
+            }
+        }
+    }
 
-                        const slotSortCountResult: InventoryFilterResultCounts | null = await this.SortInventoryItemsIntoChests(playerInventory, allChestInventories);
-                        if (slotSortCountResult !== null){
-                            if (player.isValid()){
-                                player.sendMessage("Sorted " + String(slotSortCountResult.TotalItemsSorted) + " items from " + String(slotSortCountResult.TotalSlotsSorted) + " inventory slots.");
-                            }
+    private async BeginSortingPlayerInventoryIntoNearbyChests(player: Player): Promise<void>{
+        if (!this.IsSorterActiveForPlayer(player)){
+            this.AddPlayerToActiveSortingProcesses(player);
+            // Fetch the player's inventory
+            const playerInventory = this.GetPlayerInventory(player);
+            if (playerInventory !== undefined){
+                const inventoryContainer = playerInventory.container;
+                if (inventoryContainer !== undefined){
+                    const chestsFound: Block[] = await this.GetNearbyChests();
+                    
+                    // Take the list of chests, get all the double and single chest blocks and their inventory containers
+                    // This handles duplicate chest blocks that may be the same large chest
+                    const doubleAndSingleChestBlockAndContainer: FilteredChestBlocksResult = this.GetAllDoubleAndSingleChestBlocksAndTheirContainers(chestsFound);
+                    player.sendMessage("Sorting your items into " + String(doubleAndSingleChestBlockAndContainer.Doubles.length) + " double chests and " + String(doubleAndSingleChestBlockAndContainer.Singles.length) + " single chests.");
+                    const allChestInventories: BlockInventoryComponent[] = [];
+
+                    for (const result of doubleAndSingleChestBlockAndContainer.Singles){
+                        allChestInventories.push(result.InventoryComponent);
+                    }
+
+                    for (const result of doubleAndSingleChestBlockAndContainer.Doubles){
+                        allChestInventories.push(result.InventoryComponent);
+                    }
+
+                    const slotSortCountResult: InventoryFilterResultCounts | null = await this.SortInventoryItemsIntoChests(playerInventory, allChestInventories);
+                    if (slotSortCountResult !== null){
+                        if (player.isValid()){
+                            player.sendMessage("Sorted " + String(slotSortCountResult.TotalItemsSorted) + " items from " + String(slotSortCountResult.TotalSlotsSorted) + " inventory slots.");
                         }
                     }
                 }
-                
-                this.RemovePlayerToActiveSortingProcesses(player);
-            }else{
-                player.sendMessage("You already have a currently active sorting process. Wait until it's finished to start another.");
+            }
+            
+            this.RemovePlayerToActiveSortingProcesses(player);
+        }else{
+            player.sendMessage("You already have a currently active sorting process. Wait until it's finished to start another.");
+        }
+    }
+
+    /**
+     * Sorts all nearby chest contents alphabetically (alphabetically per container, not across all containers).
+     */
+    private async BeginAlphabetizingNearbyChests(player: Player | null): Promise<void>{
+        const chestsFound: Block[] = await this.GetNearbyChests();
+                    
+        // Take the list of chests, get all the double and single chest blocks and their inventory containers
+        // This handles duplicate chest blocks that may be the same large chest
+        const doubleAndSingleChestBlockAndContainer: FilteredChestBlocksResult = this.GetAllDoubleAndSingleChestBlocksAndTheirContainers(chestsFound);
+
+        if (player !== null && player.isValid()){
+            player.sendMessage("Alphabetizing contents of " + String(doubleAndSingleChestBlockAndContainer.Doubles.length) + " double chests and " + String(doubleAndSingleChestBlockAndContainer.Singles.length) + " single chests.");
+        }
+        const allChestInventories: BlockInventoryComponent[] = [];
+
+        for (const result of doubleAndSingleChestBlockAndContainer.Singles){
+            allChestInventories.push(result.InventoryComponent);
+        }
+
+        for (const result of doubleAndSingleChestBlockAndContainer.Doubles){
+            allChestInventories.push(result.InventoryComponent);
+        }
+
+        const slotSortCountResult = await this.AlphabetizeChestInventories(allChestInventories);
+        if (slotSortCountResult !== null){
+            if (player !== null && player.isValid()){
+                player.sendMessage("Alphabetized nearby chests.");
             }
         }
     }
@@ -149,6 +201,47 @@ export class AutoSortActivatorBlock{
         }
 
         return null;
+    }
+
+    /**
+     * Alphabetizes the contents of nearby chests and their containers
+     * @param chestContainers
+     */
+    private async AlphabetizeChestInventories(chestContainers: BlockInventoryComponent[]): Promise<void>{
+        for (const chestInventory of chestContainers){
+            await Wait(1);
+            // We need to cache all the item stacks that are in this chest
+            if (chestInventory.container !== undefined){
+
+                // Empty chest check
+                if (chestInventory.container.emptySlotsCount === chestInventory.container.size){
+                    // There are no items. Skip this chest
+                    continue;
+                }
+
+                // Item stacks in this chest
+                const chestInventoryItemStackCache: ItemStack[] = [];
+
+                // Fetch all item stacks
+                for (let chestInventorySlotIndex = 0; chestInventorySlotIndex < chestInventory.container.size; chestInventorySlotIndex++){
+                    const stack: ItemStack | undefined = chestInventory.container.getItem(chestInventorySlotIndex);
+                    if (stack !== undefined){
+                        chestInventoryItemStackCache.push(stack);
+                    }
+
+                    // Remove it from the chest
+                    chestInventory.container.setItem(chestInventorySlotIndex, undefined);
+                }
+
+                // Sort all items alphabetically
+                chestInventoryItemStackCache.sort((stack1, stack2) => stack1.typeId > stack2.typeId ? 1 : -1);
+
+                // Put them all back into the chest
+                for (let index = 0; index < chestInventoryItemStackCache.length; index++){
+                    chestInventory.container.setItem(index, chestInventoryItemStackCache[index]);
+                }
+            }
+        }
     }
 
     /**
