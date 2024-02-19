@@ -51,6 +51,9 @@
         },
         "barrel_top_open":{
             "textures":"textures/blocks/barrel_top_open"
+        },
+        "nox-auto-sorter-activator":{
+            "textures":"textures/blocks/auto-sorter-activator"
         }
     }
 }

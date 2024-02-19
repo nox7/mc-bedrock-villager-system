@@ -2,7 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot, PlayerBreakBlockAfterEvent } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot, PlayerBreakBlockAfterEvent, ChatSendAfterEvent } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 import Debug from "./Debug/Debug.js";
@@ -13,6 +13,7 @@ import { PlayerDebounceManager } from "./Utilities/PlayerDebounceManager.js";
 import { ClosedWineBarrelBlock } from "./BlockHandlers/ClosedWineBarrelBlock.js";
 import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock.js";
 import { NPCHandler } from "./NPCHandler.js";
+import { AutoSortActivatorBlock } from "./BlockHandlers/AutoSortActivatorBlock.js";
 
 Debug.LogLevel = LogLevel.None;
 
@@ -118,6 +119,16 @@ world.beforeEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInte
     return;
   }
 
+  // Handle nox:auto-sorter-activator block
+  if (targetBlock.typeId === "nox:auto-sorter-activator"){
+    interactEvent.cancel = true;
+    const autoSorter = new AutoSortActivatorBlock(targetBlock);
+    system.run(() => {
+      autoSorter.OnPlayerInteract(player);
+    });
+    return;
+  }
+
   if (slot !== undefined && slot.isValid() && slot.hasItem()){
     if (slot.typeId === "nox:grapes"){
       if (targetBlock.typeId === "nox:wine-barrel"){
@@ -161,6 +172,7 @@ world.afterEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInter
   let equipmentComponent: EntityEquippableComponent | undefined
   let inventoryComponent: EntityInventoryComponent | undefined;
   let slot: ContainerSlot | undefined;
+  const targetBlock: Block = interactEvent.block;
   try{
     equipmentComponent = player.getComponent(EntityEquippableComponent.componentId);
     inventoryComponent = player.getComponent(EntityInventoryComponent.componentId);
@@ -171,7 +183,6 @@ world.afterEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInter
 
   if (slot !== undefined && slot.isValid() && slot.hasItem()){
     if (slot.typeId === "minecraft:shears"){
-      const targetBlock: Block = interactEvent.block;
       if (targetBlock.typeId === "nox:grapevine"){
         const grapevineGrowthStage = targetBlock.permutation.getState("nox:growth_stage");
         if (grapevineGrowthStage === 10){
