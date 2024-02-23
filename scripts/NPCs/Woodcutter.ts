@@ -274,7 +274,9 @@ export default class Woodcutter extends NPC{
         this.State = enumState;
         if (this.Entity !== null){
             if (this.Entity.isValid()){
-                this.Entity?.setProperty("nox:state_enum", WoodcutterState[enumState]);
+                try{
+                    this.Entity?.setProperty("nox:state_enum", WoodcutterState[enumState]);
+                }catch(e){}
             }
         }
     }
