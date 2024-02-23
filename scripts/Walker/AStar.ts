@@ -1,116 +1,41 @@
-import { Block, BlockPermutation, Dimension, Vector3, system } from "@minecraft/server";
-import Vector3Distance from "../Utilities/Vector3Distance";
+import { Block, BlockPermutation, Vector, Vector3, system } from "@minecraft/server";
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
 import Debug from "../Debug/Debug";
+import { IAStarOptions } from "./Interfaces/IAStarOptions";
+import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { BlockSafetyCheckerUtility } from "./BlockSafetyChecker/BlockSafetyCheckerUtility";
+import { BlockSafetyCheckerOptions } from "./BlockSafetyChecker/BlockSafetyCheckerOptions";
+import { BlockSafetyCheckResult } from "./BlockSafetyChecker/BlockSafetyCheckResult";
+import FencesList from "../Utilities/TypeIdLists/FencesList";
+import WallsList from "../Utilities/TypeIdLists/WallsList";
 
-interface AStarNode {
-    block: Block;
-    parent: AStarNode | null;
-    fCost: number;
-    gCost: number;
-    hCost: number;
+interface IAStarNode {
+    Block: Block;
+    ParentNode: IAStarNode | null;
+    FCost: number;
+    GCost: number;
+    HCost: number;
 }
+
+type ClosedAStarLocations = {[key: string]: IAStarNode};
 
 /**
  * Implementation of the A* algorithm for Minecraft
  */
 export default class AStar{
 
-    private Start: Vector3;
+    private Options: IAStarOptions;
     private StartBlock: Block;
-    private End: Vector3;
     private EndBlock: Block;
-    private Dimension: Dimension;
 
-    /**
-     * Additional block typeIds provided by the caller that can be considered "okay" to move through
-     */
-    private BlockTypeIdsToWhitelist: string[] = [];
-
-    /**
-     * Additional Minecraft Block instances provided by the caller that can be considered "okay" to move through
-     */
-    private BlocksToWhitelist: Block[] = [];
-
-    /**
-     * This is the maximum nodes that can be in the A* closed list before it give sup
-     */
-    private MaximumNodesToConsider: number = 100;
-
-    /**
-     * List of blocks that A* can consider moveable
-     */
-    private CanMoveThroughBlocks: string[] = [
-        "minecraft:air",
-        "minecraft:tallgrass",
-        "minecraft:double_plant",
-        "minecraft:sapling",
-        "minecraft:yellow_flower",
-        "minecraft:red_flower",
-        "minecraft:double_plant",
-        "minecraft:torchflower",
-        "minecraft:pitcher_plant",
-        "minecraft:wither_rose",
-        "minecraft:brown_mushroom",
-        "minecraft:red_mushroom",
-        "minecraft:spore_blossom",
-        "minecraft:glass",
-        "minecraft:red_stained_glass",
-    ];
-
-    /**
-     * List of blocks that could be 1-unit high but cannot be jumped over
-     */
-    private CannotJumpOver: string[] = [
-        "minecraft:oak_fence",
-        "minecraft:oak_fence_gate",
-        "minecraft:spruce_fence",
-        "minecraft:spruce_fence_gate",
-        "minecraft:birch_fence",
-        "minecraft:birch_fence_gate",
-        "minecraft:jungle_fence",
-        "minecraft:jungle_fence_gate",
-        "minecraft:acacia_fence",
-        "minecraft:acacia_fence_gate",
-        "minecraft:dark_oak_fence",
-        "minecraft:dark_oak_fence_gate",
-        "minecraft:mangrove_fence",
-        "minecraft:mangrove_fence_gate",
-        "minecraft:cherry_fence",
-        "minecraft:cherry_fence_gate",
-        "minecraft:bamboo_fence",
-        "minecraft:bamboo_fence_gate",
-        "minecraft:crimson_fence",
-        "minecraft:crimson_fence_gate",
-        "minecraft:warped_fence",
-        "minecraft:warped_fence_gate",
-        "minecraft:nether_brick_fence",
-        "minecraft:nether_brick_fence_gate",
-        "minecraft:cobblestone_wall",
-        "minecraft:blackstone_wall",
-        "minecraft:polished_blackstone_wall",
-        "minecraft:polished_blackstone_brick_wall",
-        "minecraft:cobbled_deepslate_wall",
-        "minecraft:polished_deepslate_wall",
-        "minecraft:deepslate_brick_wall",
-        "minecraft:deepslate_tile_wall",
-        "minecraft:mud_brick_wall",
-    ];
-
-    public constructor(dimension: Dimension,startLocation: Vector3, endLocation: Vector3, blockTypesToWhitelist: string[], blocksToWhitelist: Block[]){
-        this.Dimension = dimension;
-        this.Start = startLocation;
-        this.End = endLocation;
-        this.BlockTypeIdsToWhitelist = blockTypesToWhitelist;
-        this.BlocksToWhitelist = blocksToWhitelist;
+    public constructor(options: IAStarOptions){
+        this.Options = options;
 
         let startBlock: Block | undefined;
         let endBlock: Block | undefined;
-
-        
         try{
-            startBlock = dimension.getBlock(startLocation);
-            endBlock = dimension.getBlock(endLocation);
+            startBlock = this.Options.Dimension.getBlock(this.Options.StartLocation);
+            endBlock = this.Options.Dimension.getBlock(this.Options.GoalLocations);
         }catch(e){}
         
         if (startBlock !== undefined && endBlock !== undefined){
@@ -122,77 +47,122 @@ export default class AStar{
     }
 
     /**
-     * Performs A* pathfinding from the start to the end and returns a list of blocks to traverse to get there. Returns null if no path exists
+     * Performs A* pathfinding from the start to the end and returns a list of blocks to traverse to get there. Throws an exception if 
+     * no path can be found or if the maximum number of nodes to consider was reached.
+     * @throws
      */
-    public async GetBlockPathFromStartToEnd(): Promise<Block[] | null>{
-        return new Promise<Block[] | null>(async resolve => {
-            const openList: AStarNode[] = [ 
+    public async GetBlockPathFromStartToEnd(): Promise<Block[]>{
+        return new Promise<Block[]>(async (resolve, reject) => {
+            const openList: IAStarNode[] = [ 
                 {
-                    block: this.StartBlock, 
-                    parent: null,
-                    fCost: this.CalculateFCost(this.StartBlock),
-                    gCost: this.CalculateGCost(this.StartBlock),
-                    hCost: this.CalculateHHeuristic(this.StartBlock),
+                    Block: this.StartBlock, 
+                    ParentNode: null,
+                    FCost: this.CalculateFCost(this.StartBlock),
+                    GCost: this.CalculateGCost(this.StartBlock),
+                    HCost: this.CalculateHHeuristic(this.StartBlock),
                 }
             ];
-            const closedListLocations: {[key: string]: AStarNode} = {};
+            const closedListLocations: ClosedAStarLocations = {};
     
             let runId = system.runInterval(() => {
                 if (openList.length == 0){
                     system.clearRun(runId);
-                    return resolve(null);
+                    return reject("No path could be found to the destination. All adjacent moveable nodes to consider has been exhausted.");
                 }
 
                 // Check if we have considered too many nodes and the path may be too difficult or impossible to get to
-                if (Object.keys(closedListLocations).length >= this.MaximumNodesToConsider){
+                if (Object.keys(closedListLocations).length >= this.Options.MaximumNodesToConsider){
                     system.clearRun(runId);
-                    return resolve(null);
+                    return reject("Maximum number of nodes considered. MaximumNodesToConsider limit option hit.");
                 }
 
-                const nextIndex = this.GetIndexOfNodeWithLowestFCost(openList);
-                const nextNode = openList[nextIndex];
-                const locationHash = this.GetHashOfLocation(nextNode.block.location);
+                const nextIndex: number = this.GetIndexOfNodeWithLowestFCost(openList);
+                const nextNode: IAStarNode = openList[nextIndex];
+                const locationHash: string = VectorUtils.GetAsString(nextNode.Block.location);
     
                 // Check if the nextNode is the EndBlock
-                if (this.DoBlocksHaveSameLocation(nextNode.block, this.EndBlock)){
+                if (VectorUtils.AreEqual(nextNode.Block, this.EndBlock)){
                     // We've hit the end
                     const blockPath: Block[] = [];
-                    let currentNode: AStarNode | null = nextNode;
+                    let currentNode: IAStarNode | null = nextNode;
                     while (currentNode !== null){
-                        blockPath.push(currentNode.block);
-                        currentNode = currentNode.parent;
+                        blockPath.push(currentNode.Block);
+                        currentNode = currentNode.ParentNode;
                     }
     
                     system.clearRun(runId);
                     return resolve(blockPath.reverse());
                 }
     
-                // Remove from openList
+                // Remove the nextIndex from the open node list
                 openList.splice(nextIndex, 1);
-                // nextNode.block.setPermutation(BlockPermutation.resolve("minecraft:red_stained_glass"));
     
                 // Add it to closed list locations
                 closedListLocations[locationHash] = nextNode;
+
+                nextNode.Block.above(7)?.setPermutation(BlockPermutation.resolve("light_blue_wool"));
     
-                // Get all the adjacent locations
-                const surroundingLocations: Vector3[] = CuboidRegion.FromCenterLocation(nextNode.block.location, 1, true).GetAllLocationsInRegion();
+                // Get all the adjacent locations surrounding the nextNode.Block
+                const surroundingLocations: Vector3[] = CuboidRegion.FromCenterLocation(nextNode.Block.location, 1, true).GetAllLocationsInRegion();
 
                 // From the adjacent locations, get a list of Blocks that can be walked to
-                const surroundingBlocks: Block[] = this.MutateSurroundingLocationsToCheckForJumpableLocations(surroundingLocations);
+                // These will be "safe" blocks that can be moved to. E.g., if one of the surroundingLocations is an air block
+                // and the block below it is also air - we will check if the A* should "fall" safely down to that block
+                // or if it's a possible cliff and we shouldn't go that way
+                const surroundingBlocks: Block[] = [];
 
+                const safetyCheckOptions = new BlockSafetyCheckerOptions();
+                safetyCheckOptions.TagsToConsiderPassable = this.Options.TagsToConsiderPassable;
+                safetyCheckOptions.TypeIdsToConsiderPassable = this.Options.TypeIdsToConsiderPassable;
+
+                // By default, let's tell it fences and walls cannot be jumped over
+                safetyCheckOptions.TypeIdsThatCannotBeJumpedOver = [...FencesList, ...WallsList];
+
+                for (const location of surroundingLocations){
+                    let blockAtLocation: Block | undefined;
+                    try{
+                        blockAtLocation = this.Options.Dimension.getBlock(location);
+                    }catch(e){}
+                    if (blockAtLocation !== undefined){
+                        // Is it the block we're looking for?
+                        if (VectorUtils.AreEqual(location, this.Options.GoalLocations)){
+                            // Add it regardless of safety
+                            surroundingBlocks.push(blockAtLocation);
+                        }else{
+                            // Check it is safe to move to, fall down from, or jump ontop of
+                            const safetyCheckResult: BlockSafetyCheckResult = BlockSafetyCheckerUtility.RunBlockSafetyCheck(blockAtLocation, safetyCheckOptions);
+                            if (safetyCheckResult.IsSafe){
+                                // Check if it's safe to fall from
+                                if (safetyCheckResult.CanSafelyFallFrom){
+                                    // Use the block below blockAtLocation
+                                    surroundingBlocks.push(<Block>blockAtLocation.below(1));
+                                }else if (safetyCheckResult.CanSafelyJumpOnto){
+                                    // Use the block above blockAtLocation
+                                    surroundingBlocks.push(<Block>blockAtLocation.above(1));
+                                }else{
+                                    // The 'blockAtLocation' itself is fine
+                                    surroundingBlocks.push(blockAtLocation);
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                // The surroundingBlocks array is now an array of blocks that can be walked to, jumped to, or fallen to - all safely
                 for (const surroundingBlock of surroundingBlocks){
                     // Build the surrounding node from the surroundingBlock and set the parent as the current nextNode
-                    const surroundingNode: AStarNode = {
-                        block: surroundingBlock, 
-                        parent: nextNode,
-                        fCost: this.CalculateFCost(surroundingBlock),
-                        gCost: nextNode.gCost + 1,// this.CalculateGCost(surroundingBlock),
-                        hCost: this.CalculateHHeuristic(surroundingBlock),
+                    const surroundingNode: IAStarNode = {
+                        Block: surroundingBlock, 
+                        ParentNode: nextNode,
+                        FCost: this.CalculateFCost(surroundingBlock),
+                        GCost: nextNode.GCost + 1,// this.CalculateGCost(surroundingBlock),
+                        HCost: this.CalculateHHeuristic(surroundingBlock),
                     };
-                    const surroundingBlockLocationHash: string = this.GetHashOfLocation(surroundingBlock.location);
+                    const surroundingBlockLocationHash: string = VectorUtils.GetAsString(surroundingBlock.location);
 
                     // Check if this block is the end block
-                    if (this.DoBlocksHaveSameLocation(surroundingBlock, this.EndBlock)){
+                    if (VectorUtils.AreEqual(surroundingBlock, this.EndBlock)){
                         // Add the end block to the openList
                         openList.push(surroundingNode);
                         
@@ -210,21 +180,15 @@ export default class AStar{
                     const indexOfExistingNodeInOpenList: number | null = this.GetIndexOfNodeIfInList(surroundingNode, openList);
                     if (indexOfExistingNodeInOpenList === null){
                         // It is not in the openList, add it to the open list
-                        // const blockAbove = surroundingBlock.dimension.getBlock({
-                        //     x: surroundingBlock.location.x,
-                        //     y: surroundingBlock.location.y + 10,
-                        //     z: surroundingBlock.location.z,
-                        // }); 
-                        // blockAbove?.setPermutation(BlockPermutation.resolve("stone"));
                         openList.push(surroundingNode);
                     }else{
                         // It's already in the openList
                         // Compare the existing openList index node value to the surroundingNode g cost value
                         // If the surroundingNode.gCost is less than the existing openList index node value, then
                         // modify the existing openLiset index node value to have the new gCost and fCost and parent to match surroundingNode's properties
-                        if (openList[indexOfExistingNodeInOpenList].gCost > surroundingNode.gCost){
-                            openList[indexOfExistingNodeInOpenList].gCost = surroundingNode.gCost;
-                            openList[indexOfExistingNodeInOpenList].parent = surroundingNode.parent;
+                        if (openList[indexOfExistingNodeInOpenList].GCost > surroundingNode.GCost){
+                            openList[indexOfExistingNodeInOpenList].GCost = surroundingNode.GCost;
+                            openList[indexOfExistingNodeInOpenList].ParentNode = surroundingNode.ParentNode;
                         }
                     }
                 }
@@ -233,165 +197,17 @@ export default class AStar{
     }
 
     /**
-     * Takes a list of locations that are expected to be vertically flat (as in, the CuboidRegion was given a request for surrounding block
-     * and requested them to be vertically flat), then checks if any of them are _not_ walkable. If they are not, will check if the block
-     * above is walkable. If so, the block above is considered walkable.
-     * 
-     * All walkable blocks are then added to a new array and that array is returned.
-     * @param cuboidLocations 
-     */
-    private MutateSurroundingLocationsToCheckForJumpableLocations(cuboidLocations: Vector3[]): Block[]{
-        const newWalkableBlocks: Block[] = [];
-
-        for (const location of cuboidLocations){
-            let blockAtLocation: Block | undefined;
-            try{
-                blockAtLocation = this.Dimension.getBlock(location);
-            }catch(e){}
-
-            if (blockAtLocation !== undefined){
-
-                // Check if it is the end block
-                if (this.DoBlocksHaveSameLocation(this.EndBlock, blockAtLocation)){
-                    // Add and exit the entire loop
-                    newWalkableBlocks.push(blockAtLocation);
-                    break;
-                }
-
-                if (!this.IsBlockInCanMoveList(blockAtLocation)){
-                    // Check block above, only if the current block could be jumped over
-                    if (this.CanBlockBeJumpedOver(blockAtLocation)){
-                        let blockAbove: Block | undefined;
-                        try{
-                            blockAbove = blockAtLocation.above(1);
-                        }catch(e){}
-    
-                        if (blockAbove !== undefined){
-                            if (this.IsBlockInCanMoveList(blockAbove)){
-                                // This block can be added to the walkable blocks if it can be stood on
-                                if (this.CanBlockBeStoodOn(blockAbove)){
-                                    newWalkableBlocks.push(blockAbove);
-                                }else{
-                                }
-                            }
-                        }
-                    }
-                }else{
-                    // This block is already walkable
-                    // Check if there is a walkable block beneath it, if so then use that block if it is safe to drop down to
-                    let blockBelow: Block | undefined;
-                    try{
-                        blockBelow = blockAtLocation.below(1);
-                    }catch(e){}
-
-                    if (blockBelow !== undefined){
-                        // Is it walkable?
-                        if (!this.IsBlockInCanMoveList(blockBelow)){
-                            // No, so that means blockAtLocation is our best move if it can be stood on
-                            if (this.CanBlockBeStoodOn(blockAtLocation)){
-                                newWalkableBlocks.push(blockAtLocation);
-                            }else{
-                            }
-                        }else{
-                            // Yes, that means we need to drop down to it if it's safe
-                            let blockFurtherBelow: Block | undefined;
-                            try{
-                                blockFurtherBelow = blockBelow.below(1);
-                            }catch(e){}
-                            if (blockFurtherBelow !== undefined){
-                                // Can we drop down to this block?
-                                if (!this.IsBlockInCanMoveList(blockFurtherBelow)){
-                                    // We can drop down to blockBelow, because blockFurtherBelow is considered unpassable and solid
-                                    newWalkableBlocks.push(blockBelow);
-                                }else{
-                                    // No, we cannot drop down to it
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return newWalkableBlocks;
-    }
-
-    /**
-     * Checks if a block could be jumped over (not a fence/wall)
-     * @param block 
-     */
-    private CanBlockBeJumpedOver(block: Block): boolean{
-        for (const typeId of this.CannotJumpOver){
-            if (block.typeId === typeId){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns if a given moveable block has a moveable block above it - and thus space to be stood on
-     * @param block 
-     */
-    private CanBlockBeStoodOn(block: Block): boolean{
-        let blockAbove: Block | undefined;
-        try{
-            blockAbove = block.above(1);
-        }catch(e){}
-
-        if (blockAbove !== undefined){
-            if (this.IsBlockInCanMoveList(blockAbove)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if a block is allowed in our can-move list
-     * @param block 
-     */
-    private IsBlockInCanMoveList(block: Block): boolean{
-        for (const typeId of this.CanMoveThroughBlocks){
-            if (
-                block.typeId === typeId
-                || this.BlockTypeIdsToWhitelist.indexOf(block.typeId) > -1
-                || this.BlocksToWhitelist.indexOf(block) > -1
-                ){
-                // Debug.Info(block.typeId + " can be moved to.");
-                return true;
-            }
-        }
-
-        // Debug.Info(block.typeId + " cannot be moved to.");
-        return false;
-    }
-
-    /**
-     * Checks if two blocks have the same location
-     * @param block1 
-     * @param block2 
-     * @returns 
-     */
-    private DoBlocksHaveSameLocation(block1: Block, block2: Block): boolean{
-        return block1.location.x === block2.location.x
-            && block1.location.y === block2.location.y
-            && block1.location.z === block2.location.z
-    }
-
-    /**
-     * Checks if a node is present in the provided array of nodes by checking if the provided node's block matches any block locations in the listOfNodes array.
+     * Checks if a node is present in the provided array of nodes by checking if the provided node's block matches any block locations 
+     * in the listOfNodes array.
      * @param listOfBlocks
      * @param block 
      * @returns 
      */
-    private GetIndexOfNodeIfInList(node: AStarNode, listOfNodes: AStarNode[]): number | null{
+    private GetIndexOfNodeIfInList(node: IAStarNode, listOfNodes: IAStarNode[]): number | null{
         for (const index in listOfNodes){
             const indexNumber: number = parseInt(index);
-            const nodeInList: AStarNode = listOfNodes[indexNumber];
-            if (this.DoBlocksHaveSameLocation(node.block, nodeInList.block)){
+            const nodeInList: IAStarNode = listOfNodes[indexNumber];
+            if (VectorUtils.AreEqual(node.Block, nodeInList.Block)){
                 return indexNumber;
             }
         }
@@ -404,17 +220,17 @@ export default class AStar{
      * @param listOfNodes 
      * @returns 
      */
-    private GetIndexOfNodeWithLowestFCost(listOfNodes: AStarNode[]): number{
+    private GetIndexOfNodeWithLowestFCost(listOfNodes: IAStarNode[]): number{
         let currentLowestIndex = -1;
         let currentLowestFCost = -1;
 
         for (const index in listOfNodes){
             let indexNumber: number = parseInt(index);
             if (currentLowestIndex === -1){
-                currentLowestFCost = this.CalculateFCost(listOfNodes[indexNumber].block);
+                currentLowestFCost = this.CalculateFCost(listOfNodes[indexNumber].Block);
                 currentLowestIndex = indexNumber;
             }else{
-                const thisFCost = this.CalculateFCost(listOfNodes[indexNumber].block);
+                const thisFCost = this.CalculateFCost(listOfNodes[indexNumber].Block);
                 if (thisFCost < currentLowestFCost){
                     currentLowestFCost = thisFCost;
                     currentLowestIndex = indexNumber;
@@ -423,10 +239,6 @@ export default class AStar{
         }
 
         return currentLowestIndex;
-    }
-
-    private GetHashOfLocation(location: Vector3): string{
-        return `${location.x},${location.y},${location.z}`;
     }
 
     /**
@@ -443,7 +255,7 @@ export default class AStar{
      * @returns 
      */
     private CalculateGCost(block: Block): number{
-        return Vector3Distance(block.location, this.Start);
+        return Vector.distance(block.location, this.Options.StartLocation);
     }
 
     /**
@@ -452,6 +264,6 @@ export default class AStar{
      * @returns 
      */
     private CalculateHHeuristic(block: Block): number{
-        return Vector3Distance(block.location, this.End);
+        return Vector.distance(block.location, this.Options.GoalLocations);
     }
 }
