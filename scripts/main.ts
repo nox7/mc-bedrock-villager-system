@@ -2,7 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, DimensionLocation, World, Dimension, Entity, WorldInitializeAfterEvent, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, ItemUseOnAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot, PlayerBreakBlockAfterEvent, ChatSendAfterEvent } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, Entity, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 import Debug from "./Debug/Debug.js";
@@ -15,7 +15,7 @@ import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock
 import { NPCHandler } from "./NPCHandler.js";
 import { AutoSortActivatorBlock } from "./BlockHandlers/AutoSortActivatorBlock.js";
 
-Debug.LogLevel = LogLevel.None;
+Debug.LogLevel = LogLevel.All;
 
 const npcHandler = new NPCHandler();
 system.runInterval(() => {

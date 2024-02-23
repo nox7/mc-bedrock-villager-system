@@ -27,10 +27,6 @@
       "version": "1.1.0"
     },
     {
-      "module_name": "@minecraft/vanilla-data",
-      "version": "1.20.60"
-    },
-    {
       "uuid":"37d5f069-3fc9-463f-aa44-ecc841238bd8",
       "version":[1,0,0]
     }

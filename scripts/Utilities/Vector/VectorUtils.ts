@@ -1,4 +1,4 @@
-import { Vector3 } from "@minecraft/server";
+import { Vector, Vector3 } from "@minecraft/server";
 
 export class VectorUtils{
     /**
@@ -19,5 +19,32 @@ export class VectorUtils{
      */
     public static GetAsString(vector: Vector3): string{
         return `${vector.x}, ${vector.y}, ${vector.z}`;
+    }
+
+    /**
+     * Calculates the length (magnitude) of a Vector3
+     * @param vector
+     * @returns 
+     */
+    public static Magnitude(vector: Vector3): number{
+        return Math.sqrt( 
+            Math.pow(vector.x, 2)
+            + Math.pow(vector.y, 2)
+            + Math.pow(vector.z, 2)
+        );
+    }
+
+    /**
+     * Calculates the unit vector of the provided vector
+     * @param vector 
+     * @returns 
+     */
+    public static Unit(vector: Vector3): Vector3{
+        const magnitude = VectorUtils.Magnitude(vector);
+        return {
+            x: vector.x / magnitude,
+            y: vector.y / magnitude,
+            z: vector.z / magnitude
+        }
     }
 }

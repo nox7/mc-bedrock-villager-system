@@ -14,6 +14,7 @@ import { DarkOakSaplingLocationFinder } from "../Utilities/DarkOakSaplingLocatio
 import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
 import WallsList from "../Utilities/TypeIdLists/WallsList";
 import FencesList from "../Utilities/TypeIdLists/FencesList";
+import { IAStarOptions } from "../Walker/Interfaces/IAStarOptions";
 
 export default class Woodcutter extends NPC{
 
@@ -526,27 +527,59 @@ export default class Woodcutter extends NPC{
             if(this.Entity !== null){
                 if (this.Entity.isValid()){
                     Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
-                    const walker = new EntityWalker(this.Entity!);
+
+                    const pathfindingOptions: IAStarOptions = {
+                        StartLocation: this.Entity.location,
+                        GoalLocations: this.TargetWoodBlock.location,
+                        Dimension: this.Entity.dimension,
+                        LocationsToIgnore: [],
+                        MaximumNodesToConsider: 100,
+                        TagsToIgnore: [],
+                        TypeIdsToIgnore: [],
+                        TypeIdsToConsiderPassable: ["minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES],
+                        TagsToConsiderPassable: [],
+                        AllowYAxisFlood: false,
+                    }
+                    const walker = new EntityWalker(this.Entity!, pathfindingOptions);
+
                     this.Entity?.setProperty("nox:is_moving", true);
-                    const didReachDestination = await walker.MoveTo(this.TargetWoodBlock, 2.0, ["minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES], []);
 
-                    if (!didReachDestination){
-                        // Try again
-                        ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
-
-                        if (this.CurrentNumTimesTriedToWalkToTargetAndFailed > 4){
-                            // Tried too many times, reset to NONE and try again
-                            Debug.Info("Failed to walk to the target too many times. Setting Woodcutter state back to NONE.");
-                            this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
-                            this.SetState(WoodcutterState.NONE);
-                        }else{
-                            Debug.Info("Failed to find a path. Trying again.");
-                            this.SetState(WoodcutterState.SEARCHING);
-                        }
+                    let didReachDestination: boolean | undefined;
+                    try{
+                        didReachDestination = await walker.MoveTo(1/6, 2);
+                    }catch(e){
+                        // Failed to find a path
+                        Debug.Error(String(e))
                     }
 
-                    this.Entity.setProperty("nox:is_moving", false);
-                    this.IsReadyForStateChange = true;
+                    if (this.Entity?.isValid()){
+                        if (didReachDestination === undefined || !didReachDestination){
+                            // Try again
+                            ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
+                            await Wait(150);
+    
+                            if (this.CurrentNumTimesTriedToWalkToTargetAndFailed > 4){
+                                // Tried too many times, reset to NONE and try again
+                                Debug.Info("Failed to walk to the target too many times. Setting Woodcutter state back to NONE.");
+                                this.CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
+                                this.SetState(WoodcutterState.NONE);
+                                this.IsReadyForStateChange = true;
+                            }else{
+                                Debug.Info("Failed to find a path. Trying again.");
+                                this.SetState(WoodcutterState.SEARCHING);
+                                this.IsReadyForStateChange = true;
+                            }
+                        }
+    
+                        this.Entity.setProperty("nox:is_moving", false);
+                        this.IsReadyForStateChange = true;
+                    }else{
+                        // Invalid, wait a bit and try again later
+                        // Revert the state
+                        await Wait(150);
+                        this.SetState(WoodcutterState.WOODCUTTING);
+                        this.IsReadyForStateChange = true;
+                    }
                 }else{
                     // Invalid, wait a bit and try again later
                     // Revert the state
@@ -726,9 +759,33 @@ export default class Woodcutter extends NPC{
                 if (this.Entity.isValid()){
 
                     const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
-                    const walker = new EntityWalker(this.Entity!);
+                    const pathfindingOptions: IAStarOptions = {
+                        StartLocation: this.Entity.location,
+                        GoalLocations: chestToWalkTo.location,
+                        Dimension: this.Entity.dimension,
+                        LocationsToIgnore: [],
+                        MaximumNodesToConsider: 100,
+                        TagsToIgnore: [],
+                        TypeIdsToIgnore: [],
+                        TypeIdsToConsiderPassable: [
+                            "minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", 
+                            ...Woodcutter.LEAVES_NAMES
+                        ],
+                        TagsToConsiderPassable: [],
+                        AllowYAxisFlood: false,
+                    }
+                    const walker = new EntityWalker(this.Entity!, pathfindingOptions);
                     this.Entity?.setProperty("nox:is_moving", true);
-                    await walker.MoveTo(chestToWalkTo.location, 2, ["minecraft:sapling", ...Woodcutter.LEAVES_NAMES], []);
+
+                    try{
+                        await walker.MoveTo(1/6, 2);
+                    }catch(e){
+                        Debug.Error(String(e));
+                        // Failed to find a path. Revert to previous state after waiting
+                        await Wait(200);
+                        this.SetState(WoodcutterState.WOODCUTTING);
+                        this.IsReadyForStateChange = true;
+                    }
 
                     // Did the entity become invalid after waiting/walking? If so, just reset the entire state
                     if (!this.Entity?.isValid()){
