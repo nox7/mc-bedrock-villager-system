@@ -317,8 +317,6 @@ export class AutoSortActivatorBlock{
             const chestAndContainerResult: ChestAndContainerResult = chestContainersResultByLocation[location];
             const cardinalDirection = chestAndContainerResult.Block.permutation.getState("minecraft:cardinal_direction");
 
-            chestAndContainerResult.Block.above(10)?.setPermutation(BlockPermutation.resolve("stone"));
-
             if (cardinalDirection !== undefined){
                 let locationStringsToCheck: string[] = [];
                 if (cardinalDirection === "north" || cardinalDirection === "south"){

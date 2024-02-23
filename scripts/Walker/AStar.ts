@@ -100,7 +100,7 @@ export default class AStar{
                 // Add it to closed list locations
                 closedListLocations[locationHash] = nextNode;
 
-                nextNode.Block.above(7)?.setPermutation(BlockPermutation.resolve("light_blue_wool"));
+                // nextNode.Block.above(7)?.setPermutation(BlockPermutation.resolve("light_blue_wool"));
     
                 // Get all the adjacent locations surrounding the nextNode.Block
                 const surroundingLocations: Vector3[] = CuboidRegion.FromCenterLocation(nextNode.Block.location, 1, true).GetAllLocationsInRegion();
