@@ -285,10 +285,6 @@ export class AutoSortActivatorBlock{
         }
 
         const chests: Block[] = GetAllConnectedBlocksOfType(this.Block, ["minecraft:chest"], maxConnectedChests);
-        
-        for (const chest of chests){
-            chest.above(10)?.setPermutation(BlockPermutation.resolve("stone"));
-        }
 
         return chests;
     }
