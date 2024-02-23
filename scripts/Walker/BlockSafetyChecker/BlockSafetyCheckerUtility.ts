@@ -2,6 +2,7 @@ import { Block } from "@minecraft/server";
 import { BlockSafetyCheckerOptions } from "./BlockSafetyCheckerOptions";
 import { MinecraftBlockTypes } from "@minecraft/vanilla-data";
 import { BlockSafetyCheckResult } from "./BlockSafetyCheckResult";
+import Debug from "../../Debug/Debug";
 
 /**
  * A set of independent utilies that can check if a block is safe for movement
@@ -141,7 +142,7 @@ export class BlockSafetyCheckerUtility{
             for (let i = 0; i < options.EntityHeight; i++){
                 let blockToCheck: Block | undefined;
                 try{
-                    blockToCheck = block.below(i + 1);
+                    blockToCheck = block.above(i + 1);
                 }catch(e){}
 
                 if (blockToCheck !== undefined){
