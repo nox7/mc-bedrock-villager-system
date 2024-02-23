@@ -192,7 +192,7 @@ export default class AStar{
                         }
                     }
                 }
-            }, 15);
+            });
         });
     }
 
