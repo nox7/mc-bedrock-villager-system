@@ -25,7 +25,7 @@
                 "destroy_speeds": [
                     {
                         "block":"minecraft:cobbled_deepslate",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:polished_andesite",
@@ -45,7 +45,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_coal_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:iron_ore",
@@ -53,7 +53,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_iron_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:gold_ore",
@@ -61,7 +61,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_gold_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:copper_ore",
@@ -69,7 +69,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_copper_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:redstone_ore",
@@ -81,11 +81,11 @@
                     },
                     {
                         "block":"minecraft:deepslate_redstone_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:lit_deepslate_redstone_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:lapis_ore",
@@ -93,7 +93,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_lapis_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:nether_gold_ore",
@@ -105,7 +105,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_diamond_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:emerald_ore",
@@ -113,7 +113,7 @@
                     },
                     {
                         "block":"minecraft:deepslate_emerald_ore",
-                        "speed": 15
+                        "speed": 17
                     },
                     {
                         "block":"minecraft:stonebrick",
@@ -189,7 +189,7 @@
                     },
 					{
                         "block":"minecraft:deepslate",
-                        "speed": 15
+                        "speed": 17
                     },
 					{
                         "block":"minecraft:blackstone",
