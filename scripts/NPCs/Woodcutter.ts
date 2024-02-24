@@ -1,4 +1,4 @@
-import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, Vector3, system, world } from "@minecraft/server";
+import { Block, BlockInventoryComponent, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Dimension, Entity, ItemStack, TicksPerSecond, Vector3, system, world } from "@minecraft/server";
 import WoodcutterManagerBlock from "../BlockHandlers/WoodcutterManagerBlock";
 import NPC from "./NPC";
 import EntityWalker from "../Walker/EntityWalker";
@@ -444,9 +444,10 @@ export default class Woodcutter extends NPC{
 
         const woodcutterManagerBlock: Block = woodcutterManager.GetBlock();
 
-        // Block is invalid. Wait 100 ticks and try again
+        // Block is invalid. Wait about 90 seconds (1.5 minutes) and try again
         if (!woodcutterManagerBlock.isValid()){
-            await Wait(100);
+            Debug.Info("Woodcutter's manager block is not valid - probably in unloaded chunk. Wait a large portion of time before trying again.");
+            await Wait(TicksPerSecond * 90);
             this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
             return;
@@ -499,7 +500,7 @@ export default class Woodcutter extends NPC{
                     this.CurrentLocationsToIgnoreWhenSearchingForLogs.push(blockFound.location);
 
                     // Wait a bit, then reset the state
-                    await Wait(100);
+                    await Wait(TicksPerSecond * 15);
                     this.SetState(WoodcutterState.NONE);
                     this.IsReadyForStateChange = true;
                     return;
@@ -508,7 +509,7 @@ export default class Woodcutter extends NPC{
         }else{
             // Wait some time before resetting the state to try again
             Debug.Info("Search did not find a block. Waiting some time then resetting state.");
-            await Wait(200);
+            await Wait(TicksPerSecond * 10);
             this.SetState(WoodcutterState.NONE);
             this.IsReadyForStateChange = true;
             return;
