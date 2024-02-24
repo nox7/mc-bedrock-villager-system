@@ -256,6 +256,46 @@
                         "speed": 17
                     },
 					{
+                        "block":"minecraft:cobbled_deepslate_stairs",
+                        "speed": 17
+                    },
+					{
+                        "block":"minecraft:cobbled_deepslate_double_slab",
+                        "speed": 17
+                    },
+					{
+                        "block":"minecraft:cobbled_deepslate_slab",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_tiles",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_brick_double_slab",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_brick_slab",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_tile_double_slab",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_tile_slab",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_tile_stairs",
+                        "speed": 17
+                    },
+                    {
+                        "block":"minecraft:deepslate_brick_stairs",
+                        "speed": 17
+                    },
+					{
                         "block":"minecraft:blackstone",
                         "speed": 15
                     },
