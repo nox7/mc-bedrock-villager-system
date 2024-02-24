@@ -12,6 +12,10 @@
                     "range": [0,25000],
                     "client_sync": true
                 },
+                "nox:dialog_initiated": {
+                    "type": "bool",
+                    "default": false
+                },
                 "nox:state_enum": {
                     "type": "enum",
                     "default": "NONE",
@@ -56,6 +60,11 @@
             }
         },
         "components": {
+            "minecraft:npc": {
+                "npc_data": {
+                    
+                }
+            },
             "minecraft:physics": {},
             "minecraft:damage_sensor": {
                 "triggers": [

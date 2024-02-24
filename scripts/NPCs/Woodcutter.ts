@@ -118,6 +118,7 @@ export default class Woodcutter extends NPC{
         const managerBlockLocationX = entity.getProperty("nox:woodcutter_manager_block_location_x");
         const managerBlockLocationY = entity.getProperty("nox:woodcutter_manager_block_location_y");
         const managerBlockLocationZ = entity.getProperty("nox:woodcutter_manager_block_location_z");
+        const dialogInitiated = entity.getProperty("nox:dialog_initiated");
 
         if (managerBlockLocationX === undefined || managerBlockLocationY === undefined || managerBlockLocationZ === undefined){
             // Cannot load this entity - no saved manager block. Just delete them
@@ -127,6 +128,19 @@ export default class Woodcutter extends NPC{
             const woodcutter = new Woodcutter(entity.dimension, null, npcHandlerInstance);
             woodcutter.IsLoading = true;
             woodcutter.SetEntity(entity);
+
+            if (dialogInitiated !== undefined){
+                Debug.Info("Checking dialog initiated");
+                let dialogInitiatedBool: boolean = <boolean>dialogInitiated;
+                console.warn(dialogInitiatedBool);
+                if (!dialogInitiatedBool){
+                    Debug.Info("Initiating woodcutter dialog.");
+                    entity.setProperty("nox:dialog_initiated", true);
+                    woodcutter.InitDialog();
+                }
+            }else{
+                Debug.Warn("nox:dialog_initiated is undefined for Woodcutter.");
+            }
             
             // Find the block
             const locationOfManagerBlock: Vector3 = {
@@ -832,6 +846,19 @@ export default class Woodcutter extends NPC{
             // Revert to previous state, but flag that the state is ready to change (to rerun this state change function)
             this.SetState(WoodcutterState.WOODCUTTING);
             this.IsReadyForStateChange = true;
+        }
+    }
+
+    /**
+     * Initiates the dialog for this NPC
+     */
+    private InitDialog(): void{
+        if (this.Entity !== null){
+            if (this.Entity.isValid()){
+                Debug.Info("Running dialogue change command.");
+                const success = this.Entity.runCommand("/dialogue change @s woodcutter_new_intro");
+                Debug.Info("dialogue change command success state: " + String(success));
+            }
         }
     }
 
