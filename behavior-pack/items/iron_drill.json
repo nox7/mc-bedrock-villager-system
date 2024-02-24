@@ -24,6 +24,70 @@
 			"minecraft:digger": {
                 "destroy_speeds": [
                     {
+                        "block":"minecraft:white_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:orange_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:magenta_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:light_blue_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:yellow_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:lime_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:pink_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:gray_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:light_gray_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:cyan_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:purple_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:blue_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:brown_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:green_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:red_concrete",
+                        "speed": 15
+                    },
+                    {
+                        "block":"minecraft:black_concrete",
+                        "speed": 15
+                    },
+                    {
                         "block":"minecraft:cobbled_deepslate",
                         "speed": 17
                     },
