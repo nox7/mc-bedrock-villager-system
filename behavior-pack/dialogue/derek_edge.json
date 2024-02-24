@@ -1,0 +1,92 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:npc_dialogue": {
+        "scenes": [
+            {
+                "scene_tag": "derek_edge_new_intro",
+                "npc_name": "Derek Edge",
+                "text": "Welcome to Edge's Tavern or Inn. It's kind of both. I am Derek Edge - proprietor. Interested in a drink or the latest news?",
+                "buttons": [
+                    {
+                        "name": "News?",
+                        "commands": [
+                            "/dialogue open @e[tag=derek_edge] @initiator derek_edge_news",
+                            "/dialogue change @e[tag=derek_edge] derek_edge_known_intro @initiator"
+                        ]
+                    },
+                    {
+                        "name": "Wine please!",
+                        "commands": [
+                            "/give @initiator nox:wine-tankard 1",
+                            "/dialogue change @e[tag=derek_edge] derek_edge_known_intro @initiator"
+                        ]
+                    }
+                ]
+            },
+            {
+                "scene_tag": "derek_edge_known_intro",
+                "npc_name": "Derek Edge",
+                "text": "Hey there, welcome back. Nice to see you again. What can I do for you?",
+                "buttons": [
+                    {
+                        "name": "News?",
+                        "commands": [
+                            "/dialogue open @e[tag=derek_edge] @initiator derek_edge_news"
+                        ]
+                    },
+                    {
+                        "name": "Wine please!",
+                        "commands": [
+                            "/give @initiator nox:wine-tankard 1"
+                        ]
+                    }
+                ]
+            },
+            {
+                "scene_tag": "derek_edge_return_intro",
+                "npc_name": "Derek Edge",
+                "text": "What else can I do for you?",
+                "buttons": [
+                    {
+                        "name": "News?",
+                        "commands": [
+                            "/dialogue open @e[tag=derek_edge] @initiator derek_edge_news"
+                        ]
+                    },
+                    {
+                        "name": "Wine please!",
+                        "commands": [
+                            "/give @initiator nox:wine-tankard 1"
+                        ]
+                    }
+                ]
+            },
+            {
+                "scene_tag": "derek_edge_news",
+                "npc_name": "Derek Edge",
+                "text": "Local dictator, Nox7, has begun building a shrine-like structure in the nearby cherry woods. Vagrant, WavySage, still hasn't finished his roof.",
+                "buttons": [
+                    {
+                        "name": "Anyone else?",
+                        "commands": [
+                            "/dialogue open @e[tag=derek_edge] @initiator derek_edge_news_2"
+                        ]
+                    }
+                ]
+            },
+            {
+                "scene_tag": "derek_edge_news_2",
+                "npc_name": "Derek Edge",
+                "text": "Some bread girl, I can't remember her name, still can't decide where to live. She pops in from time to time - maybe you'll see her.",
+                "buttons": [
+                    {
+                        "name": "Okay",
+                        "commands": [
+                            "/dialogue open @e[tag=derek_edge] @initiator derek_edge_return_intro"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
