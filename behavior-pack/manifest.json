@@ -4,7 +4,7 @@
     "name": "Village System Behavior Pack",
     "description": "Nox's modern village system that creates villagers in towns with schedules.",
     "uuid": "0abd9d6a-48e9-4026-9dfd-4227e3a82665",
-    "version": [1, 0, 0],
+    "version": [1, 0, 1],
     "min_engine_version": [1, 20, 30]
   },
   "modules": [
@@ -13,7 +13,7 @@
       "language": "javascript",
       "type": "script",
       "uuid": "141da73d-2b44-430c-b83b-84ef002bf5de",
-      "version": [1, 0, 0],
+      "version": [1, 0, 1],
       "entry": "scripts/main.js"
     }
   ],
@@ -28,7 +28,7 @@
     },
     {
       "uuid":"37d5f069-3fc9-463f-aa44-ecc841238bd8",
-      "version":[1,0,0]
+      "version":[1,0,1]
     }
   ]
 }
