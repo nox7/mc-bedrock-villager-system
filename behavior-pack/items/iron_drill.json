@@ -218,6 +218,10 @@
                     {
                         "block":"minecraft:furnace",
                         "speed": 15
+                    },
+                    {
+                        "block":"minecraft:tuff",
+                        "speed": 15
                     }
                 ]
             },
