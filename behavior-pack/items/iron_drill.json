@@ -272,6 +272,10 @@
                         "speed": 17
                     },
                     {
+                        "block":"minecraft:deepslate_bricks",
+                        "speed": 17
+                    },
+                    {
                         "block":"minecraft:deepslate_brick_double_slab",
                         "speed": 17
                     },
