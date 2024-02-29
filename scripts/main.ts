@@ -2,7 +2,7 @@
  * NOTE: This main.ts is currently a mess and is not structurted. Code is WIP and will be more class-OOPed or whatever the hell later.
  */
 
-import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, Entity, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot } from "@minecraft/server";
+import { world, system, ItemUseOnBeforeEvent, Player, PlayerPlaceBlockAfterEvent, Block, Vector3, Entity, EntityLoadAfterEvent, ScriptEventCommandMessageAfterEvent, EntityEquippableComponent, PlayerInteractWithBlockAfterEvent, EquipmentSlot, BlockPermutation, EntityInventoryComponent, ItemStack, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockBeforeEvent, ContainerSlot, ChatSendAfterEvent } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
 import Debug from "./Debug/Debug.js";
@@ -14,6 +14,7 @@ import { ClosedWineBarrelBlock } from "./BlockHandlers/ClosedWineBarrelBlock.js"
 import { FinishedWineBarrelBlock } from "./BlockHandlers/FinishedWineBarrelBlock.js";
 import { NPCHandler } from "./NPCHandler.js";
 import { AutoSortActivatorBlock } from "./BlockHandlers/AutoSortActivatorBlock.js";
+import { BiomeHelper } from "./Utilities/Biomes/BiomeHelper.js";
 
 Debug.LogLevel = LogLevel.All;
 
@@ -235,5 +236,15 @@ world.afterEvents.entityLoad.subscribe( (e: EntityLoadAfterEvent) => {
         entity.kill();
       }
     }, 15);
+  }
+});
+
+world.afterEvents.chatSend.subscribe( (e: ChatSendAfterEvent) => {
+  if (e.message === "biome"){
+    system.run(async () => {
+      const biomeHelper = new BiomeHelper();
+      const biomeType = await biomeHelper.GetBiomeOfLocation(e.sender.location, e.sender.dimension);
+      e.sender.sendMessage(String(biomeType?.id));
+    })
   }
 });
