@@ -2,6 +2,10 @@ import { BiomeType, BiomeTypes, Dimension, Vector, Vector3, system } from "@mine
 
 /**
  * Utility class to help with finding specific biomes at a provided location using GetBiomeOfLocation.
+ * 
+ * Usage:
+ * const helper = new BiomeHelper();
+ * const closestBiome = await helper.GetBiomeOfLocation(location, dimension);
  */
 export class BiomeHelper{
     private IsRunning: boolean = false;
