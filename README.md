@@ -7,12 +7,12 @@ All code uses Microsoft's official Bedrock JavaScript API - no custom modding re
 
 ## Running
 With NodeJS installed into your environment, navigate to this project's root. Install the dependencies
-```
+```bash
 npm install
 ```
 
 Then, to compile the TS, behavior pack, and resource pack then publish to your Bedrock installation - run `gulp` in the CLI
-```gulp
+```bash
 gulp
 ```
 
@@ -45,3 +45,6 @@ The following blocks with recipes (find them in the in-game recipe book in the c
 - White wood cabinets
 - Dark wood cabinets
 - Stack of gold bars (RTX supported)
+- Hanging pot rack
+- Cup holders (filled and empty)
+- Auto chest sorter (can sort adjacent chests and alphabetize their contents)
