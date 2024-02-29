@@ -330,6 +330,10 @@
                     {
                         "block":"minecraft:tuff",
                         "speed": 15
+                    },
+                    {
+                        "block":"minecraft:quartz_ore",
+                        "speed": 15
                     }
                 ]
             },
