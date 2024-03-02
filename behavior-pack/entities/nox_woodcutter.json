@@ -63,6 +63,11 @@
                     "default": false,
                     "client_sync": true
                 },
+                "nox:woodcutter_strips_logs":{
+                    "type": "bool",
+                    "default": false,
+                    "client_sync": false
+                },
                 "nox:is_enabled":{
                     "type": "bool",
                     "default": true,

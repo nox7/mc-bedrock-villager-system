@@ -54,18 +54,22 @@ export default class WoodcutterManagerBlock{
 
                 const currentIsEnabled = this.WoodcutterNPC.GetIsEnabled();
                 const currentMaxSearchDistance = this.WoodcutterNPC.GetSearchDistance();
+                const currentDoesStripLogs = this.WoodcutterNPC.GetDoesStripLogs();
 
                 const modalForm = new ModalFormData();
                 modalForm.title("Woodcutter Settings");
                 modalForm.toggle("Is active", currentIsEnabled);
                 modalForm.slider("Search distance", 5, 20, 1, currentMaxSearchDistance);
+                modalForm.toggle("Strips logs", currentDoesStripLogs);
                 const response = await modalForm.show(player);
 
                 if (response.formValues !== undefined){
                     const newIsEnabled = Boolean(response.formValues[0]);
                     const newMaxSearchDistance = Number(response.formValues[1]);
+                    const newDoesStripLogs = Boolean(response.formValues[2]);
                     this.WoodcutterNPC.SetIsEnabled(newIsEnabled);
                     this.WoodcutterNPC.SetSearchDistance(newMaxSearchDistance);
+                    this.WoodcutterNPC.SetDoesStripLogs(newDoesStripLogs);
                 }
 
             }else{

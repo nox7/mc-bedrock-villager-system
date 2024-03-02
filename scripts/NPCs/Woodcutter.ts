@@ -15,6 +15,7 @@ import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
 import WallsList from "../Utilities/TypeIdLists/WallsList";
 import FencesList from "../Utilities/TypeIdLists/FencesList";
 import { IAStarOptions } from "../Walker/Interfaces/IAStarOptions";
+import { LogToStrippedTypeIdMap } from "../Utilities/TypeIdLists/LogToStrippedVariantList";
 
 export default class Woodcutter extends NPC{
 
@@ -448,6 +449,31 @@ export default class Woodcutter extends NPC{
         }
     }
 
+    public GetDoesStripLogs(): boolean{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                const doesStripLogs = entity.getProperty("nox:woodcutter_strips_logs");
+                if (doesStripLogs === undefined){
+                    return true;
+                }else{
+                    return Boolean(doesStripLogs);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public SetDoesStripLogs(stripsLogs: boolean): void{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                entity.setProperty("nox:woodcutter_strips_logs", stripsLogs);
+            }
+        }
+    }
+
     /**
      * Returns the Entity property
      * @returns
@@ -741,7 +767,15 @@ export default class Woodcutter extends NPC{
                     }
 
                     // Add the logs to this NPC's inventory
-                    this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
+
+                    // Check if this NPC is set to strip logs
+                    if (!this.GetDoesStripLogs()){
+                        this.AddBlockToCarryingStack(targetBlockPermutation.type.id, connectedBlocks.length);
+                    }else{
+                        // Get the stripped variant
+                        const strippedLogTypeId: string = LogToStrippedTypeIdMap[targetBlockPermutation.type.id];
+                        this.AddBlockToCarryingStack(strippedLogTypeId, connectedBlocks.length);
+                    }
 
                     // If this is a dark oak log, then we must (before chopping it down)
                     // try and calculate the _original_ root position of the tree
