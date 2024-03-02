@@ -25,6 +25,11 @@ export default class Woodcutter extends NPC{
      */
     public static Cache: Woodcutter[] = [];
 
+    /**
+     * The default search distance the NPC uses to find logs. Overriden by a dynamic property
+     */
+    public static DefaultSearchDistance: number = 10;
+
     // Do not use "minecraft:log" as it matches all logs
     public static LOG_TYPE_IDS_TO_FIND = [
         "minecraft:oak_log", 
@@ -230,7 +235,6 @@ export default class Woodcutter extends NPC{
     private WoodcutterManagerBlock: WoodcutterManagerBlock | null;
     private TargetWoodBlock: Block | null = null;
     private BlocksCarrying: {[key: string]: number} = {};
-    private MaxDistanceToSearchForWood: number = 11;
     private CurrentNumTimesTriedToWalkToTargetAndFailed = 0;
     private NPCHandlerInstance: NPCHandler;
     /**
@@ -379,6 +383,72 @@ export default class Woodcutter extends NPC{
     }
 
     /**
+     * Gets the search distance this Woodcutter uses to search for logs
+     * @returns 
+     */
+    public GetSearchDistance(): number{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                const searchDistance = entity.getProperty("nox:woodcutter_search_distance");
+                if (searchDistance === undefined){
+                    return Woodcutter.DefaultSearchDistance;
+                }else{
+                    return Number(searchDistance);
+                }
+            }
+        }
+
+        return Woodcutter.DefaultSearchDistance;
+    }
+
+    /**
+     * Sets the Woodcutter's match search distance for trees
+     * @param maxDistance 
+     */
+    public SetSearchDistance(maxDistance: number): void{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                entity.setProperty("nox:woodcutter_search_distance", maxDistance);
+            }
+        }
+    }
+
+    /**
+     * Gets whether this Woodcutter should be enabled. If it is not enabled, then it will do nothing.
+     * Default is true.
+     */
+    public GetIsEnabled(): boolean{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                const isEnabled = entity.getProperty("nox:is_enabled");
+                if (isEnabled === undefined){
+                    return true;
+                }else{
+                    return Boolean(isEnabled);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Sets if this Woodcutter is enabled or not. Disabled woodcutters do nothing.
+     * @param enabled 
+     */
+    public SetIsEnabled(enabled: boolean): void{
+        const entity = this.GetEntity();
+        if (entity !== null){
+            if (entity.isValid()){
+                entity.setProperty("nox:is_enabled", enabled);
+            }
+        }
+    }
+
+    /**
      * Returns the Entity property
      * @returns
      */
@@ -391,6 +461,7 @@ export default class Woodcutter extends NPC{
     }
 
     public SetWoodcutterManagerBlock(managerBlockInstance: WoodcutterManagerBlock): void{
+        managerBlockInstance.SetWoodcutter(this);
         this.WoodcutterManagerBlock = managerBlockInstance;
     }
 
@@ -404,6 +475,15 @@ export default class Woodcutter extends NPC{
 
         // Do nothing if the entity is invalid
         if (!this.Entity?.isValid()){
+            // Hold for 30 seconds before checking again
+            await Wait(20 * 30);
+            return;
+        }
+
+        // Check if it is enabled
+        if (!this.GetIsEnabled()){
+            // Hold for 30 seconds before checking again
+            await Wait(20 * 30);
             return;
         }
 
@@ -484,7 +564,7 @@ export default class Woodcutter extends NPC{
             TagsToIgnore: [],
             TypeIdsToIgnore: [...WallsList, ...FencesList],
             LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
-            MaxDistance: this.MaxDistanceToSearchForWood,
+            MaxDistance: this.GetSearchDistance(),
             MaxBlocksToFind: 1,
             AllowYAxisFlood: false
         };

@@ -128,6 +128,15 @@ world.beforeEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInte
       autoSorter.OnPlayerInteract(player);
     });
     return;
+  }else if (targetBlock.typeId === "nox:woodcutter-manager"){
+    interactEvent.cancel = true;
+    system.run(() => {
+      const woodcutterManagerBlock = WoodcutterManagerBlock.GetFromLocation(targetBlock.location);
+      if (woodcutterManagerBlock !== null){
+        woodcutterManagerBlock.OnPlayerInteract(player);
+      }
+    });
+    return;
   }
 
   if (slot !== undefined && slot.isValid() && slot.hasItem()){

@@ -1,14 +1,33 @@
-import { Block, Vector2, Vector3, world } from "@minecraft/server";
+import { Block, Player, Vector2, Vector3, world } from "@minecraft/server";
 import EmptySpaceFinder from "../Utilities/EmptySpaceFinder";
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
 import Woodcutter from "../NPCs/Woodcutter";
 import TryGetBlock from "../Utilities/TryGetBlock";
 import { NPCHandler } from "../NPCHandler";
+import { ModalFormData } from "@minecraft/server-ui";
+import { VectorUtils } from "../Utilities/Vector/VectorUtils";
 
 export default class WoodcutterManagerBlock{
 
     public static BlockTypeId = "nox:woodcutter-manager";
     public static Cache: WoodcutterManagerBlock[] = [];
+
+    /**
+     * Gets the instance of WoodcutterManagerBlock from a Vector3 location, if one is there
+     * @param location 
+     */
+    public static GetFromLocation(location: Vector3): WoodcutterManagerBlock | null{
+        for (const managerBlock of WoodcutterManagerBlock.Cache){
+            const block = managerBlock.GetBlock();
+            if (block.isValid()){
+                if (VectorUtils.AreEqual(location, block.location)){
+                    return managerBlock;
+                }
+            }
+        }
+
+        return null;
+    }
 
     private Block: Block;
     private BlockLocationX: number;
@@ -22,6 +41,39 @@ export default class WoodcutterManagerBlock{
         this.BlockLocationY = block.location.y;
         this.BlockLocationZ = block.location.z;
         WoodcutterManagerBlock.Cache.push(this);
+    }
+
+    /**
+     * When the player interacts with this block
+     * @param player 
+     */
+    public async OnPlayerInteract(player: Player): Promise<void>{
+        if (this.WoodcutterNPC !== null){
+            if (this.WoodcutterNPC.GetEntity() !== null){
+                const entity = this.WoodcutterNPC.GetEntity()!;
+
+                const currentIsEnabled = this.WoodcutterNPC.GetIsEnabled();
+                const currentMaxSearchDistance = this.WoodcutterNPC.GetSearchDistance();
+
+                const modalForm = new ModalFormData();
+                modalForm.title("Woodcutter Settings");
+                modalForm.toggle("Is active", currentIsEnabled);
+                modalForm.slider("Search distance", 5, 20, 1, currentMaxSearchDistance);
+                const response = await modalForm.show(player);
+
+                if (response.formValues !== undefined){
+                    const newIsEnabled = Boolean(response.formValues[0]);
+                    const newMaxSearchDistance = Number(response.formValues[1]);
+                    this.WoodcutterNPC.SetIsEnabled(newIsEnabled);
+                    this.WoodcutterNPC.SetSearchDistance(newMaxSearchDistance);
+                }
+
+            }else{
+                player.sendMessage("No woodcutter associated with this block.");
+            }
+        }else{
+            player.sendMessage("No woodcutter associated with this block.");
+        }
     }
 
     /**
@@ -50,6 +102,14 @@ export default class WoodcutterManagerBlock{
         }
 
         return null;
+    }
+
+    /**
+     * Sets the woodcutter assigned to this block. Called from the Woodcutter.ts class itself
+     * @param woodcutterNpc 
+     */
+    public SetWoodcutter(woodcutterNpc: Woodcutter): void{
+        this.WoodcutterNPC = woodcutterNpc;
     }
 
     /**
