@@ -26,6 +26,7 @@ All long-running systems or systems with heavy processing are hooked into the ma
 - NPC state machine. Mass manages all NPCs into a unified state machine asynchronously running with the main MC thread 
 - Arbitrary block-finder asynchronously running with the main MC thread
 - A* pathfinding algorithm asynchronously running with the main MC thread
+- Implements one-person-sleeping for multiplayer
 
 ### NPCs 
 - Woodcutter: Craft a Woodcutter Manager block and place it where you would like a woodcutter to spawn. Make sure to have a chest adjacent. This woodcutter will then roam and cut trees and replant them - adding the obtained logs to the chest adjacent to his Woodcutter Manager block.

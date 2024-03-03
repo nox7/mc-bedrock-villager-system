@@ -16,6 +16,7 @@ import { NPCHandler } from "./NPCHandler.js";
 import { AutoSortActivatorBlock } from "./BlockHandlers/AutoSortActivatorBlock.js";
 import { BiomeHelper } from "./Utilities/Biomes/BiomeHelper.js";
 import { RadiusFinder } from "./BlockFinders/RadiusFinder.js";
+import { SingleBedManager } from "./SingleBedManager.js";
 
 Debug.LogLevel = LogLevel.All;
 
@@ -190,6 +191,13 @@ world.afterEvents.playerInteractWithBlock.subscribe((interactEvent : PlayerInter
     slot = equipmentComponent?.getEquipmentSlot(EquipmentSlot.Mainhand);
   }catch(e){
     return;
+  }
+
+  if (targetBlock.isValid()){
+    if (targetBlock.typeId === "minecraft:bed"){
+      SingleBedManager.OnPlayerInteractWithBed(player);
+      return;
+    }
   }
 
   if (slot !== undefined && slot.isValid() && slot.hasItem()){
