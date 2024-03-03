@@ -3,7 +3,7 @@
 	"minecraft:item": {
 		"description": {
 			"identifier": "nox:iron_drill",
-			"category":"Equipment"
+            "menu_category": {"category": "equipment"}
 		},
 		"components": {
 			"minecraft:creative_category": {
@@ -13,7 +13,9 @@
 				"texture": "nox_iron_drill"
 			},
 			"minecraft:max_stack_size": 1,
-			"minecraft:hand_equipped": true,
+			"minecraft:hand_equipped": {
+                "value": true
+            },
 			"minecraft:durability": {
 				"max_durability": 600,
                 "damage_chance": {
@@ -21,6 +23,9 @@
                     "max": 50
                 }
 			},
+            "minecraft:enchantable": {
+                "slot": "pickaxe"
+            },
 			"minecraft:digger": {
                 "destroy_speeds": [
                     {
