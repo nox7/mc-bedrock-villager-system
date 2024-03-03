@@ -6,15 +6,20 @@
 			"animation_length": 1,
 			"bones" : {
 				"rightArm":{
+					"position": [0,0,0],
 					"rotation":[
 						0,
 						0,
 						0
 					]
 				},
-				"rightItem" : {
-					"rotation" : [ 60.0, 0.0, -45.0 ],
-					"scale":"(4.5)"
+				"drill" : {
+					"position":[
+						10,
+						-4,
+						-15
+					],
+					"scale":"(5)"
 				},
 				"drill_head":{
 					"rotation" : {
@@ -37,15 +42,20 @@
 			"animation_length": 10,
 			"bones" : {
 				"rightArm":{
+					"position": [0,0,0],
 					"rotation":[
 						0,
 						0,
 						0
 					]
 				},
-				"rightItem" : {
-					"rotation" : [ 60.0, 0.0, -45.0 ],
-					"scale":"(4.5)"
+				"drill" : {
+					"position":[
+						10,
+						-4,
+						-15
+					],
+					"scale":"(5)"
 				},
 				"drill_head":{
 					"rotation" : {

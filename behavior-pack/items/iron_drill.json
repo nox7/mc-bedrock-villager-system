@@ -1,14 +1,13 @@
 {
-	"format_version": "1.16.100",
+	"format_version": "1.20.40",
 	"minecraft:item": {
 		"description": {
 			"identifier": "nox:iron_drill",
-            "menu_category": {"category": "equipment"}
+            "menu_category": {
+                "group": "itemGroup.name.pickaxes"
+            }
 		},
 		"components": {
-			"minecraft:creative_category": {
-				"parent": "itemGroup.name.pickaxes"
-			},
 			"minecraft:icon": {
 				"texture": "nox_iron_drill"
 			},
@@ -24,7 +23,8 @@
                 }
 			},
             "minecraft:enchantable": {
-                "slot": "pickaxe"
+                "slot": "pickaxe",
+                "value": 4
             },
 			"minecraft:digger": {
                 "destroy_speeds": [
