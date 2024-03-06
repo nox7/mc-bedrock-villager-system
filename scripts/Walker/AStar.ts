@@ -2,10 +2,10 @@ import { Block, BlockPermutation, Vector, Vector3, system } from "@minecraft/ser
 import CuboidRegion from "../Utilities/Region/CuboidRegion";
 import Debug from "../Debug/Debug";
 import { IAStarOptions } from "./Interfaces/IAStarOptions";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
-import { BlockSafetyCheckerUtility } from "./BlockSafetyChecker/BlockSafetyCheckerUtility";
-import { BlockSafetyCheckerOptions } from "./BlockSafetyChecker/BlockSafetyCheckerOptions";
-import { BlockSafetyCheckResult } from "./BlockSafetyChecker/BlockSafetyCheckResult";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
+import { BlockSafetyCheckerUtility } from "../NoxBedrockUtilities/BlockSafetyChecker/BlockSafetyCheckerUtility";
+import { BlockSafetyCheckerOptions } from "../NoxBedrockUtilities/BlockSafetyChecker/BlockSafetyCheckerOptions";
+import { BlockSafetyCheckResult } from "../NoxBedrockUtilities/BlockSafetyChecker/BlockSafetyCheckResult";
 import FencesList from "../Utilities/TypeIdLists/FencesList";
 import WallsList from "../Utilities/TypeIdLists/WallsList";
 

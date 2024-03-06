@@ -1,7 +1,7 @@
 import { Block, Entity, Vector, Vector3, system } from "@minecraft/server";
 import AStar from "./AStar";
 import { IAStarOptions } from "./Interfaces/IAStarOptions";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 
 /**
  * A walker class that will move an entity from one location to another.

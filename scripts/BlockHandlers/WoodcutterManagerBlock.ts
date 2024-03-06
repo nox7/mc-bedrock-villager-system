@@ -5,7 +5,7 @@ import Woodcutter from "../NPCs/Woodcutter";
 import TryGetBlock from "../Utilities/TryGetBlock";
 import { NPCHandler } from "../NPCHandler";
 import { ModalFormData } from "@minecraft/server-ui";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 
 export default class WoodcutterManagerBlock{
 

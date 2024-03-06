@@ -1,6 +1,5 @@
 import { Block } from "@minecraft/server";
 import { BlockSafetyCheckerOptions } from "./BlockSafetyCheckerOptions";
-import { MinecraftBlockTypes } from "@minecraft/vanilla-data";
 import { BlockSafetyCheckResult } from "./BlockSafetyCheckResult";
 import Debug from "../../Debug/Debug";
 
@@ -178,14 +177,16 @@ export class BlockSafetyCheckerUtility{
      * @param block 
      */
     private static IsPassable(block: Block, options: BlockSafetyCheckerOptions): boolean{
-        if (options.TypeIdsToConsiderPassable.indexOf(block.typeId) > -1){
+        if (options.TypeIdsToConsiderPassable !== undefined && options.TypeIdsToConsiderPassable.indexOf(block.typeId) > -1){
             return true;
         }
 
-        const blockTags: string[] = block.getTags();
-        const tagIdFound: boolean = options.TagsToConsiderPassable.some(tagId => blockTags.indexOf(tagId) > -1);
-        if (tagIdFound){
-            return true;
+        if (options.TagsToConsiderPassable !== undefined){
+            const blockTags: string[] = block.getTags();
+            const tagIdFound: boolean = options.TagsToConsiderPassable.some(tagId => blockTags.indexOf(tagId) > -1);
+            if (tagIdFound){
+                return true;
+            }
         }
 
         return false;
@@ -197,14 +198,16 @@ export class BlockSafetyCheckerUtility{
      * @param options 
      */
     private static CanBeJumpedOver(block: Block, options: BlockSafetyCheckerOptions): boolean{
-        if (options.TypeIdsThatCannotBeJumpedOver.indexOf(block.typeId) > -1){
+        if (options.TypeIdsThatCannotBeJumpedOver !== undefined && options.TypeIdsThatCannotBeJumpedOver.indexOf(block.typeId) > -1){
             return false;
         }
 
-        const blockTags: string[] = block.getTags();
-        const tagIdFound: boolean = options.TagIdsThatCannotBeJumpedOver.some(tagId => blockTags.indexOf(tagId) > -1);
-        if (tagIdFound){
-            return false;
+        if (options.TagIdsThatCannotBeJumpedOver !== undefined){
+            const blockTags: string[] = block.getTags();
+            const tagIdFound: boolean = options.TagIdsThatCannotBeJumpedOver.some(tagId => blockTags.indexOf(tagId) > -1);
+            if (tagIdFound){
+                return false;
+            }
         }
 
         return true;

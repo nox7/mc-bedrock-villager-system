@@ -1,7 +1,7 @@
 /**
  * General Queue data structure
  */
-export default class Queue<T> {
+export class Queue<T> {
 
     private Elements: {[key:number]: T} = {};
     private Head: number = 0;

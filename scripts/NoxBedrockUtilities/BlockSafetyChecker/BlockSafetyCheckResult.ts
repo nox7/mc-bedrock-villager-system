@@ -5,11 +5,11 @@ export class BlockSafetyCheckResult{
      */
     public IsSafe: boolean = false;
     /**
-     * If the block provided to the safety checker can be safely fallen one block below from.
+     * If IsSafe is true: If the block provided to the safety checker can be safely fallen one block below from.
      */
     public CanSafelyFallFrom: boolean = false;
     /**
-     * If the block provided to the safety checker can be safely jumped onto
+     * If IsSafe is true: If the block provided to the safety checker can be safely jumped onto
      */
     public CanSafelyJumpOnto: boolean = false;
     /**

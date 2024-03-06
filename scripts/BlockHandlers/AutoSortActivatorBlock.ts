@@ -1,5 +1,5 @@
 import { Block, BlockInventoryComponent, BlockPermutation, BlockTypes, Container, EntityInventoryComponent, InvalidContainerSlotError, ItemStack, Player, Vector } from "@minecraft/server";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Debug from "../Debug/Debug";
 import Wait from "../Utilities/Wait";

@@ -1,5 +1,5 @@
 import { Block } from "@minecraft/server";
-import FloodFillIterator from "../../Iterators/FloodFillIterator.js";
+import FloodFillIterator from "../../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator.js";
 import { BlockFinderOptions } from "./BlockFinderOptions.js";
 
 /**

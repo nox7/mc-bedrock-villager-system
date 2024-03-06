@@ -7,15 +7,15 @@ import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfTyp
 import Wait from "../Utilities/Wait";
 import { NPCHandler } from "../NPCHandler";
 import Debug from "../Debug/Debug";
-import { BlockFinderOptions } from "../Utilities/BlockFinder/BlockFinderOptions";
-import { BlockFinder } from "../Utilities/BlockFinder/BlockFinder";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import { DarkOakSaplingLocationFinder } from "../Utilities/DarkOakSaplingLocationFinder";
 import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
-import WallsList from "../Utilities/TypeIdLists/WallsList";
-import FencesList from "../Utilities/TypeIdLists/FencesList";
 import { IAStarOptions } from "../Walker/Interfaces/IAStarOptions";
 import { LogToStrippedTypeIdMap } from "../Utilities/TypeIdLists/LogToStrippedVariantList";
+import { FloodFillIteratorOptions } from "../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIIteratorOptions";
+import FloodFillIterator from "../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator";
+import WallsList from "../Utilities/TypeIdLists/WallsList";
+import FencesList from "../Utilities/TypeIdLists/FencesList";
 
 export default class Woodcutter extends NPC{
 
@@ -580,30 +580,26 @@ export default class Woodcutter extends NPC{
         // This is done with this.CurrentLocationsToIgnoreWhenSearchingForLogs
 
         // Set up the finder options
-        const blockFinderOptions: BlockFinderOptions = {
-            StartLocation: woodcutterManagerBlock.location,
-            Dimension: woodcutterManagerBlock.dimension,
-            TypeIdsToFind: Woodcutter.LOG_TYPE_IDS_TO_FIND,
-            TagsToFind: [],
-            TagsToConsiderPassable: ["flowers", "small_flowers", "tall_flowers"],
-            TypeIdsToConsiderPassable: ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"],
-            TagsToIgnore: [],
-            TypeIdsToIgnore: [...WallsList, ...FencesList],
-            LocationsToIgnore: this.CurrentLocationsToIgnoreWhenSearchingForLogs,
-            MaxDistance: this.GetSearchDistance(),
-            MaxBlocksToFind: 1,
-            AllowYAxisFlood: false
-        };
+        const floodFillIteratorOptions: FloodFillIteratorOptions = new FloodFillIteratorOptions(
+            woodcutterManagerBlock.location, 
+            woodcutterManagerBlock.dimension, 
+            this.GetSearchDistance()
+            );
+        floodFillIteratorOptions.TypeIdsToAlwaysIncludeInResult = Woodcutter.LOG_TYPE_IDS_TO_FIND;
+        floodFillIteratorOptions.TagsToAlwaysIncludeInResult = ["flowers", "small_flowers", "tall_flowers"];
+        floodFillIteratorOptions.TypeIdsToConsiderPassable = ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"];
+        floodFillIteratorOptions.LocationsToIgnore = this.CurrentLocationsToIgnoreWhenSearchingForLogs;
         
         // Try to find an oak log
         Debug.Info("Searching for log blocks");
-        const blocksFound: Block[] = await BlockFinder.FindBlocks(blockFinderOptions);
+        const blockFound: Block | null = await new Promise<Block | null>(resolve => {
+            system.runJob(this.GetBlockFromFloodFill(resolve, floodFillIteratorOptions));
+        });
         Debug.Info("Search finished");
 
-        if (blocksFound.length > 0){
+        if (blockFound !== null){
             Debug.Info("Search found a block");
             // Found a block we wanted
-            const blockFound: Block = blocksFound[0];
             if (blockFound.isValid()){
                 Debug.Info("Checking if log found is part of a valid tree...");
                 if (this.IsLogPartOfAValidTree(blockFound)){
@@ -986,5 +982,28 @@ export default class Woodcutter extends NPC{
             }
         }
         this.NPCHandlerInstance.UnregisterNPC(this);
+    }
+
+    /**
+     * Iterator to be passed to system.runJob()
+     * @param promiseResolve 
+     * @param floodFillOptions 
+     */
+    private *GetBlockFromFloodFill(promiseResolve: (block: Block | null) => void, floodFillOptions: FloodFillIteratorOptions){
+        floodFillOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
+        const iterator = new FloodFillIterator(floodFillOptions);
+        let blockToReturn: Block | null = null;
+        for (const block of iterator.IterateLocations()){
+            if (block !== null){
+                if (floodFillOptions.TypeIdsToAlwaysIncludeInResult.indexOf(block.typeId) > -1){
+                    // Found the block
+                    blockToReturn = block;
+                    break;
+                }
+                yield;
+            }
+        }
+
+        return promiseResolve(blockToReturn);
     }
 }
