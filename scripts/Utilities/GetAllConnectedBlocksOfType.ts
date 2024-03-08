@@ -1,5 +1,5 @@
 import { Block } from "@minecraft/server";
-import CuboidRegion from "./Region/CuboidRegion";
+import CuboidRegion from "../NoxBedrockUtilities/Region/CuboidRegion";
 
 /**
  * Gets a list of all Blocks that are connected to fromBlock and any blocks of the same type recursively.

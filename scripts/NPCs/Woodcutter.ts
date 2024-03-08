@@ -10,7 +10,7 @@ import Debug from "../Debug/Debug";
 import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import { DarkOakSaplingLocationFinder } from "../Utilities/DarkOakSaplingLocationFinder";
 import { SaplingRaycastPlanter } from "../Utilities/SaplingRaycastPlanter";
-import { IAStarOptions } from "../Walker/Interfaces/IAStarOptions";
+import { AStarOptions } from "../NoxBedrockUtilities/Pathfinder/AStarOptions";
 import { LogToStrippedTypeIdMap } from "../Utilities/TypeIdLists/LogToStrippedVariantList";
 import { FloodFillIteratorOptions } from "../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIIteratorOptions";
 import FloodFillIterator from "../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator";
@@ -647,18 +647,9 @@ export default class Woodcutter extends NPC{
                 if (this.Entity.isValid()){
                     Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
 
-                    const pathfindingOptions: IAStarOptions = {
-                        StartLocation: this.Entity.location,
-                        GoalLocations: this.TargetWoodBlock.location,
-                        Dimension: this.Entity.dimension,
-                        LocationsToIgnore: [],
-                        MaximumNodesToConsider: 100,
-                        TagsToIgnore: [],
-                        TypeIdsToIgnore: [],
-                        TypeIdsToConsiderPassable: ["minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES],
-                        TagsToConsiderPassable: [],
-                        AllowYAxisFlood: false,
-                    }
+                    const pathfindingOptions: AStarOptions = new AStarOptions(this.Entity.location, this.TargetWoodBlock.location, this.Entity.dimension);
+                    pathfindingOptions.TypeIdsToConsiderPassable = ["minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES],
+                    pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
 
                     this.Entity?.setProperty("nox:is_moving", true);
@@ -886,21 +877,12 @@ export default class Woodcutter extends NPC{
                 if (this.Entity.isValid()){
 
                     const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
-                    const pathfindingOptions: IAStarOptions = {
-                        StartLocation: this.Entity.location,
-                        GoalLocations: chestToWalkTo.location,
-                        Dimension: this.Entity.dimension,
-                        LocationsToIgnore: [],
-                        MaximumNodesToConsider: 100,
-                        TagsToIgnore: [],
-                        TypeIdsToIgnore: [],
-                        TypeIdsToConsiderPassable: [
-                            "minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", 
-                            ...Woodcutter.LEAVES_NAMES
-                        ],
-                        TagsToConsiderPassable: [],
-                        AllowYAxisFlood: false,
-                    }
+                    const pathfindingOptions: AStarOptions = new AStarOptions(this.Entity.location, chestToWalkTo.location, this.Entity.dimension);
+                    pathfindingOptions.TypeIdsToConsiderPassable = [
+                        "minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", 
+                        ...Woodcutter.LEAVES_NAMES
+                    ];
+                    pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
                     this.Entity?.setProperty("nox:is_moving", true);
 
