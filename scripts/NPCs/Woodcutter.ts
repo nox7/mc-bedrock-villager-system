@@ -982,8 +982,8 @@ export default class Woodcutter extends NPC{
                     blockToReturn = block;
                     break;
                 }
-                yield;
             }
+            yield;
         }
 
         return promiseResolve(blockToReturn);
