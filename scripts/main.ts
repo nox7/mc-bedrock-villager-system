@@ -18,7 +18,7 @@ import { BiomeHelper } from "./Utilities/Biomes/BiomeHelper.js";
 import { RadiusFinder } from "./BlockFinders/RadiusFinder.js";
 import { SingleBedManager } from "./SingleBedManager.js";
 
-Debug.LogLevel = LogLevel.None;
+Debug.LogLevel = LogLevel.All;
 
 const npcHandler = new NPCHandler();
 system.runInterval(() => {
