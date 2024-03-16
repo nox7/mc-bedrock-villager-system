@@ -274,6 +274,7 @@ export default class FloodFillIterator {
                         }else{
                             // Water-like flood fill. Check for safe-fallable blocks or jump-overable blocks 
                             const blockSafetyCheckResult = BlockSafetyCheckerUtility.RunBlockSafetyCheck(block, this.BlockSafetyCheckOptions);
+                            yield null;
                             if (blockSafetyCheckResult.IsSafe){
                                 if (blockSafetyCheckResult.CanSafelyFallFrom){
                                     const blockBelow = <Block>block.below(1);
