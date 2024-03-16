@@ -1,5 +1,5 @@
 import { Vector3 } from "@minecraft/server"
-import CuboidRegion from "../Utilities/Region/CuboidRegion";
+import CuboidRegion from "../NoxBedrockUtilities/Region/CuboidRegion";
 
 /**
  * Iterator that provides Vector3 locations in a growing cuboid fashion.

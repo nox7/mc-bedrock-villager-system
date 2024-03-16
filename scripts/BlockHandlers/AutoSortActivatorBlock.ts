@@ -1,5 +1,5 @@
 import { Block, BlockInventoryComponent, BlockPermutation, BlockTypes, Container, EntityInventoryComponent, InvalidContainerSlotError, ItemStack, Player, Vector } from "@minecraft/server";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Debug from "../Debug/Debug";
 import Wait from "../Utilities/Wait";
@@ -279,7 +279,7 @@ export class AutoSortActivatorBlock{
     /**
      * Fetches any chests connected to the sorter block, and connected to any of the adjacent chests and their adjacent chests recursively.
      */
-    private async GetNearbyChests(maxConnectedChests: number = 40): Promise<Block[]>{
+    private async GetNearbyChests(maxConnectedChests: number = 120): Promise<Block[]>{
         if (!this.Block.isValid()){
             return [];
         }

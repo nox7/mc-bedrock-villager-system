@@ -33,6 +33,7 @@ export class SingleBedManager{
             // Check if the player is still sleeping in the bed before finalizing the night-time advance
             if (player.isValid() && player.isSleeping){
                 world.setTimeOfDay(24e3 - 1);
+                world.getDimension("overworld").runCommand("weather clear 16000");
                 SingleBedManager.HasQueued = false;
             }
         }, TicksPerSecond * 1);

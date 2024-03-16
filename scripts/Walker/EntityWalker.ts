@@ -1,7 +1,7 @@
 import { Block, Entity, Vector, Vector3, system } from "@minecraft/server";
-import AStar from "./AStar";
-import { IAStarOptions } from "./Interfaces/IAStarOptions";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils";
+import AStar from "../NoxBedrockUtilities/Pathfinder/AStar";
+import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
+import { AStarOptions } from "../NoxBedrockUtilities/Pathfinder/AStarOptions";
 
 /**
  * A walker class that will move an entity from one location to another.
@@ -12,11 +12,11 @@ export default class EntityWalker{
 
     private Entity: Entity;
     private IsWalking: boolean = false;
-    private PathfindingOptions: IAStarOptions;
+    private PathfindingOptions: AStarOptions;
     private CurrentSystemRunId: number | null = null;
     private CurrentMoveToPromiseResolveFunction: ((value: boolean) => void) | null = null;
 
-    public constructor(entity: Entity, options: IAStarOptions){
+    public constructor(entity: Entity, options: AStarOptions){
         this.Entity = entity;
         this.PathfindingOptions = options;
     }
@@ -67,7 +67,7 @@ export default class EntityWalker{
             return false;
         }
 
-        const blockPath: Block[] = await aStar.GetBlockPathFromStartToEnd();
+        const blockPath: Block[] = await aStar.Pathfind();
 
         // Reverse the block path so the start is at the end 
         // The walker will pop the blocks off the end of the array and stop when there are no more

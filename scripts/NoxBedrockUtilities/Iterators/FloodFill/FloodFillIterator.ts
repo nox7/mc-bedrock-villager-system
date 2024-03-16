@@ -1,11 +1,12 @@
-import { Block, BlockPermutation, Dimension, Vector, Vector3 } from "@minecraft/server"
-import Queue from "../DataStructures/Queue.js";
-import { VectorUtils } from "../Utilities/Vector/VectorUtils.js";
+import { Block, Vector, Vector3 } from "@minecraft/server"
+import { Queue } from "../../DataStructures/Queue.js";
+import { VectorUtils } from "../../Vector/VectorUtils.js";
 import { FloodFillIteratorOptions } from "./FloodFillIIteratorOptions.js";
-import Debug from "../Debug/Debug.js";
+import { BlockSafetyCheckerUtility } from "../../BlockSafetyChecker/BlockSafetyCheckerUtility.js";
+import { BlockSafetyCheckerOptions } from "../../BlockSafetyChecker/BlockSafetyCheckerOptions.js";
 
 /**
- * Flood-fill style BFS iterator that will iterate over "empty" blocks starting at a center location. It will also iterate over any blocks
+ * Flood-fill style BFS iterator that will iterate over "passable" blocks starting at a center location. It will also iterate over any blocks
  * included in the list of BlockNamesToInclude. "Empty" blocks (defined by BlockNameToConsiderEmpty) are used to determine if an entity can
  * move to them.
  * 
@@ -16,9 +17,9 @@ import Debug from "../Debug/Debug.js";
 export default class FloodFillIterator {
 
     private Queue: Queue<Block> = new Queue<Block>();
-    private StartingBlock: Block;
     private Options: FloodFillIteratorOptions;
     private YieldedChunkSize: number = 8;
+    private BlockSafetyCheckOptions: BlockSafetyCheckerOptions;
 
     /**
      * List of hashed locations (comma separated) that have already been considered/visited
@@ -36,9 +37,7 @@ export default class FloodFillIterator {
             throw "Could not use starting block. It is invalid.";
         }
 
-        if (startingBlock !== undefined){
-            this.StartingBlock = startingBlock;
-        }else{
+        if (startingBlock === undefined){
             throw "Could not use starting block. It is undefined.";
         }
 
@@ -47,8 +46,22 @@ export default class FloodFillIterator {
             this.AddLocationToClosedList(location);
         }
 
+        // Set up default block safety check options
+        const safetyCheckOptions = new BlockSafetyCheckerOptions();
+        safetyCheckOptions.TagsToConsiderPassable = this.Options.TagsToConsiderPassable;
+        safetyCheckOptions.TypeIdsToConsiderPassable = this.Options.TypeIdsToConsiderPassable;
+        safetyCheckOptions.TypeIdsThatCannotBeJumpedOver = this.Options.TypeIdsThatCannotBeJumpedOver;
+
+        // By default, let's tell it fences and walls cannot be jumped over
+
+        this.BlockSafetyCheckOptions = safetyCheckOptions;
+
         // Enqueue the first blocks
-        this.Queue.EnqueueList(this.GetAdjacentPassableBlocks(startingBlock));
+        for (const block of this.IterateAdjacentPassableBlocks(startingBlock)){
+            if (block !== null){
+                this.Queue.Enqueue(block);
+            }
+        }
     }
 
     /**
@@ -181,77 +194,6 @@ export default class FloodFillIterator {
     }
 
     /**
-     * Returns the provided block if it is an empty block with ground beneath it.
-     * 
-     * Returns the block below if the provided block is passable, but so is the one beneath it and there is ground beneath the below block to stand on.
-     * 
-     * Returns the block above if the provided block is not passable, but there is space above it to go over that block.
-     */
-    private GetBlockIfPassableOrNearestVerticalPassableBlock(block: Block): Block | null{
-        if (block.isValid()){
-
-            if (this.IsBlockPassable(block)){
-
-                // Check if the block below is passable
-                let blockBelow: Block | undefined;
-                try{
-                    blockBelow = block.below(1);
-                }catch(e){}
-
-                if (blockBelow !== undefined){
-                    if (this.IsBlockPassable(blockBelow)){
-                        // Check if the block below this one is safe ground
-                        let blockFurtherBelow: Block | undefined;
-                        try{
-                            blockFurtherBelow = blockBelow.below(1);
-                        }catch(e){}
-                        if (blockFurtherBelow !== undefined){
-                            if (!this.IsBlockPassable(blockFurtherBelow)){
-                                // Safe to move to blockBelow, as it has ground beneath it
-                                if (!this.HasBlockLocationBeenClosed(blockBelow)){
-                                    this.AddLocationToClosedList(blockBelow.location);
-                                    return blockBelow;
-                                }
-                            }
-                        }
-
-                    }else{
-                        // This is ground. "block" is a safe empty block to return
-                        if (!this.HasBlockLocationBeenClosed(block)){
-                            this.AddLocationToClosedList(block.location);
-                            return block;
-                        }
-                    }
-                }
-            }else{
-                // Check if the block passed can be jumped onto
-                // It must have two free spaces of air above it
-                let blockAbove: Block | undefined;
-                let blockFurtherAbove: Block | undefined;
-                try{
-                    blockAbove = block.above(1);
-                    blockFurtherAbove = block.above(2);
-                }catch(e){}
-
-                if (blockAbove !== undefined && blockFurtherAbove !== undefined){
-                    if (this.IsBlockPassable(blockAbove)){
-                        if (this.IsBlockPassable(blockFurtherAbove)){
-                            // Both blocks above are free
-                            // "blockAbove" is safe to move to
-                            if (!this.HasBlockLocationBeenClosed(blockAbove)){
-                                this.AddLocationToClosedList(blockAbove.location);
-                                return blockAbove;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Sets the yielded chunk size, which is the maximum number of blocks to return on one iteration
      * @param size
      */
@@ -260,11 +202,11 @@ export default class FloodFillIterator {
     }
 
     /**
-     * Fetches all adjacent blocks to the provided fromBlock if they can be passed to. It may return a block above or below the adjacent space
-     * if the adjacent space is "fallable" safely to a block below it, or if the adjacent space is a block that can be stood on.
+     * Iterates over all adjacent, passable blocks that are adjacent to fromBlock. Only passable blocks will be returned. When AllowYAxisFlood is false,
+     * the adjacent block could be a "jump" up from the current fromBlock Y axis - or a jump down. Both would only happen if it is safe and the block could be
+     * jumped onto or fallen safely from.
      */
-    public GetAdjacentPassableBlocks(fromBlock: Block): Block[]{
-        const includedBlocks: Block[] = [];
+    public *IterateAdjacentPassableBlocks(fromBlock: Block){
         const fromBlockLocation: Vector3 = fromBlock.location;
         const adjacentPositions: Vector3[] = [
             {x: fromBlockLocation.x + 1, y: fromBlockLocation.y, z: fromBlockLocation.z},
@@ -320,49 +262,77 @@ export default class FloodFillIterator {
 
                     // Check if this block is always included
                     if (this.IsBlockAlwaysIncluded(block)){
-                        includedBlocks.push(block);
+                        this.AddLocationToClosedList(block.location);
+                        yield block;
                     }else{
                         // It's not always included, so
                         // get the nearest air block (vertically). It may be itself
-                        let availableBlock: Block | null;
+                        let availableBlock: Block | null = null;
                         if (this.Options.AllowYAxisFlood){
                             // Simply check the provided block - no adjacent alternatives
                             availableBlock = this.GetBlockIfPassable(block);
                         }else{
                             // Water-like flood fill. Check for safe-fallable blocks or jump-overable blocks 
-                            availableBlock = this.GetBlockIfPassableOrNearestVerticalPassableBlock(block);
+                            const blockSafetyCheckResult = BlockSafetyCheckerUtility.RunBlockSafetyCheck(block, this.BlockSafetyCheckOptions);
+                            if (blockSafetyCheckResult.IsSafe){
+                                if (blockSafetyCheckResult.CanSafelyFallFrom){
+                                    const blockBelow = <Block>block.below(1);
+                                    if (!this.HasBlockLocationBeenClosed(blockBelow)){
+                                        availableBlock = blockBelow;
+                                    }
+                                }else if (blockSafetyCheckResult.CanSafelyJumpOnto){
+                                    const blockAbove = <Block>block.above(1);
+                                    if (!this.HasBlockLocationBeenClosed(blockAbove)){
+                                        availableBlock = <Block>block.above(1);
+                                    }
+                                }else{
+                                    availableBlock = block;
+                                }
+                            }
                         }
                         
                         if (availableBlock !== null){
-                            includedBlocks.push(availableBlock);
+                            this.AddLocationToClosedList(availableBlock.location);
+                            yield availableBlock;
+                        }else{
+                            yield null;
                         }
                     }
-                    
+                }else{
+                    yield null;
                 }
+            }else{
+                yield null;
             }
         }
-
-        return includedBlocks;
     }
   
     /**
-     * Gets the next set of blocks in iteration.
+     * Gets the next location in iteration
      */
-    public GetNext(): Block[] {
-        if (!this.Queue.IsEmpty){
+    public *IterateLocations() {
+        while(!this.Queue.IsEmpty){
             const blocks: Block[] = this.Queue.DequeueChunk(this.YieldedChunkSize);
             
             // Queue up more
             for (const block of blocks){
                 if (block.isValid()){
-                    this.Queue.EnqueueList(this.GetAdjacentPassableBlocks(block));
+                    const adjacentBlocks: Block[] = [];
+                    for (const iteratedBlock of this.IterateAdjacentPassableBlocks(block)){
+                        if (iteratedBlock !== null){
+                            adjacentBlocks.push(iteratedBlock);
+                        }
+                        yield null;
+                    }
+
+                    this.Queue.EnqueueList(adjacentBlocks);
+                    yield block;
+                }else{
+                    yield null;
                 }
             }
 
-            // Return the dequeued chunk of blocks
-            return blocks;
+            yield null;
         }
-
-        return [];
     }
-  }
+}

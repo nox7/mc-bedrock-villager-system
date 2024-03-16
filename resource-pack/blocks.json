@@ -3,7 +3,7 @@
     "nox:woodcutter-manager":{
         "sound": "wood"
     },
-    "nox:uv_filter":{
+    "nox:uv-filter":{
         "sound":"glass"
     }
 }

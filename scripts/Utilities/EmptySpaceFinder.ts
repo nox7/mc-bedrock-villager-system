@@ -1,5 +1,5 @@
 import { Dimension, Vector2, Vector3 } from "@minecraft/server";
-import CuboidRegion from "./Region/CuboidRegion";
+import CuboidRegion from "../NoxBedrockUtilities/Region/CuboidRegion";
 
 export default class EmptySpaceFinder{
 
