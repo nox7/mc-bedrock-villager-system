@@ -13,6 +13,7 @@ const del = require("del");
 const os = require("os");
 const spawn = require("child_process").spawn;
 const sourcemaps = require("gulp-sourcemaps");
+const webpack = require("webpack-stream");
 
 const worldsFolderName = useMinecraftDedicatedServer ? "worlds" : "minecraftWorlds";
 
@@ -46,31 +47,41 @@ function copy_resource_packs() {
 
 const copy_content = gulp.parallel(copy_behavior_packs, copy_resource_packs);
 
-function compile_scripts() {
-  return gulp
-    .src(["scripts/**/*.ts", "scripts/**/*.js"])
-    .pipe(sourcemaps.init())
-    .pipe(
-      ts({
-        module: "es2020",
-        moduleResolution: "node",
-        lib: ["es2020", "dom"],
-        strict: true,
-        target: "es2020",
-        noImplicitAny: true,
-        allowJs: true,
-      })
-    )
-    .pipe(
-      sourcemaps.write("../../_" + bpfoldername + "Debug", {
-        destPath: "/scripts/",
-        sourceRoot: "./../../../scripts/",
-      })
-    )
-    .pipe(gulp.dest("build/behavior-pack/scripts"));
-}
+gulp.task("compile_scripts", (finishedCallback) => {
+  new Promise(resolve => {
+    gulp
+      .src(["scripts/**/*.ts", "scripts/**/*.js"])
+      .pipe(sourcemaps.init())
+      .pipe(
+        ts({
+          module: "es2020",
+          moduleResolution: "node",
+          lib: ["es2020", "dom"],
+          strict: true,
+          target: "es2020",
+          noImplicitAny: true,
+          allowJs: true,
+        })
+      )
+      .pipe(
+        sourcemaps.write("../../_" + bpfoldername + "Debug", {
+          destPath: "/scripts/",
+          sourceRoot: "./../../../scripts/",
+        })
+      )
+      .pipe(gulp.dest("build/behavior-pack/scripts"))
+      .on("end", resolve);
+  }).then(() => {
+    gulp
+      .src(["build/behavior-pack/scripts/**/*.js"])
+      .pipe(webpack(require("./webpack.config.js")))
+      .pipe(gulp.dest("build/behavior-pack/scripts"))
+      .on("end", finishedCallback);
+  });
+  
+});
 
-const build = gulp.series(clean_build, copy_content, compile_scripts);
+const build = gulp.series(clean_build, copy_content, "compile_scripts");
 
 function clean_localmc(callbackFunction) {
   if (!bpfoldername || !bpfoldername.length || bpfoldername.length < 2) {
@@ -93,15 +104,11 @@ function clean_localmc(callbackFunction) {
 
 function deploy_localmc_behavior_packs() {
   console.log("Deploying to '" + mcdir + "development_behavior_packs/" + bpfoldername + "'");
-  return gulp
-    .src(["build/behavior-pack/**/*"])
-    .pipe(gulp.dest(mcdir + "development_behavior_packs/" + bpfoldername));
+  return gulp.src(["build/behavior-pack/**/*"]).pipe(gulp.dest(mcdir + "development_behavior_packs/" + bpfoldername));
 }
 
 function deploy_localmc_resource_packs() {
-  return gulp
-    .src(["build/resource-pack/**/*"])
-    .pipe(gulp.dest(mcdir + "development_resource_packs/" + bpfoldername));
+  return gulp.src(["build/resource-pack/**/*"]).pipe(gulp.dest(mcdir + "development_resource_packs/" + bpfoldername));
 }
 
 function getTargetWorldPath() {
@@ -302,7 +309,7 @@ function startServer(callbackFunction) {
 exports.clean_build = clean_build;
 exports.copy_behavior_packs = copy_behavior_packs;
 exports.copy_resource_packs = copy_resource_packs;
-exports.compile_scripts = compile_scripts;
+// exports.compile_scripts = compile_scripts;
 exports.copy_content = copy_content;
 exports.build = build;
 exports.clean_localmc = clean_localmc;
