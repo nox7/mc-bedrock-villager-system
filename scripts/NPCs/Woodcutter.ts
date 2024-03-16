@@ -612,7 +612,7 @@ export default class Woodcutter extends NPC{
                     return;
                 }else{
                     // Add this location as a location we should not consider in further searches
-                    Debug.Info("Found a log, but it doesn't appear to be part of a tree. So we're ignoring it.");
+                    Debug.Info(`Found a log at (${VectorUtils.GetAsString(blockFound.location)}), but it doesn't appear to be part of a tree. So we're ignoring it.`);
                     this.CurrentLocationsToIgnoreWhenSearchingForLogs.push(blockFound.location);
 
                     // Wait a bit, then reset the state
