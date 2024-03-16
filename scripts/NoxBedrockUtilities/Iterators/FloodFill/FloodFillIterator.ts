@@ -252,7 +252,7 @@ export default class FloodFillIterator {
             
             if (block !== undefined){
                 if (block.isValid()){
-
+                    yield null;
                     // Do not consider ignored blocks
                     if (this.IsBlockIgnored(block)){
                         // Add it to the closed list
