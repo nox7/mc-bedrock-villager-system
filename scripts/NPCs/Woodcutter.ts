@@ -16,6 +16,7 @@ import { FloodFillIteratorOptions } from "../NoxBedrockUtilities/Iterators/Flood
 import FloodFillIterator from "../NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator";
 import WallsList from "../Utilities/TypeIdLists/WallsList";
 import FencesList from "../Utilities/TypeIdLists/FencesList";
+import { MinecraftBlockTypes } from "@minecraft/vanilla-data";
 
 export default class Woodcutter extends NPC{
 
@@ -55,10 +56,18 @@ export default class Woodcutter extends NPC{
         "minecraft:dark_oak_log": "dark_oak",
     };
 
-    public static LEAVES_NAMES = [
-        "minecraft:leaves", "minecraft:leaves2", "minecraft:mangrove_leaves", 
-        "minecraft:cherry_leaves", "minecraft:azalea_leaves", "minecraft:azalea_leaves_flowered"
-    ];
+    public static LEAVES_NAMES: string[] = [
+        MinecraftBlockTypes.OakLeaves,
+        MinecraftBlockTypes.BirchLeaves,
+        MinecraftBlockTypes.AcaciaLeaves,
+        MinecraftBlockTypes.AzaleaLeaves,
+        MinecraftBlockTypes.AzaleaLeavesFlowered,
+        MinecraftBlockTypes.CherryLeaves,
+        MinecraftBlockTypes.JungleLeaves,
+        MinecraftBlockTypes.SpruceLeaves,
+        MinecraftBlockTypes.DarkOakLeaves,
+        MinecraftBlockTypes.MangroveLeaves,
+    ]
 
     /**
      * Gets the permutation of the sapling related to a log provided a BlockPermutation
@@ -587,7 +596,13 @@ export default class Woodcutter extends NPC{
             );
         floodFillIteratorOptions.TypeIdsToAlwaysIncludeInResult = Woodcutter.LOG_TYPE_IDS_TO_FIND;
         floodFillIteratorOptions.TagsToAlwaysIncludeInResult = ["flowers", "small_flowers", "tall_flowers"];
-        floodFillIteratorOptions.TypeIdsToConsiderPassable = ["minecraft:tallgrass", "minecraft:air", "minecraft:vine", "minecraft:leaves", "minecraft:sapling"];
+        floodFillIteratorOptions.TypeIdsToConsiderPassable = [
+            MinecraftBlockTypes.Tallgrass,
+            MinecraftBlockTypes.Air,
+            MinecraftBlockTypes.Vine,
+            ...Woodcutter.LEAVES_NAMES,
+            MinecraftBlockTypes.Sapling
+            ];
         floodFillIteratorOptions.LocationsToIgnore = this.CurrentLocationsToIgnoreWhenSearchingForLogs;
         
         // Try to find an oak log
@@ -648,7 +663,13 @@ export default class Woodcutter extends NPC{
                     Debug.Info(`Walking to ${this.TargetWoodBlock.location.x}, ${this.TargetWoodBlock.location.y}, ${this.TargetWoodBlock.location.z}`);
 
                     const pathfindingOptions: AStarOptions = new AStarOptions(this.Entity.location, this.TargetWoodBlock.location, this.Entity.dimension);
-                    pathfindingOptions.TypeIdsToConsiderPassable = ["minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", ...Woodcutter.LEAVES_NAMES],
+                    pathfindingOptions.TypeIdsToConsiderPassable = [
+                        MinecraftBlockTypes.Tallgrass,
+                        MinecraftBlockTypes.Air,
+                        MinecraftBlockTypes.Vine,
+                        ...Woodcutter.LEAVES_NAMES,
+                        MinecraftBlockTypes.Sapling
+                        ];
                     pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
 
@@ -879,9 +900,12 @@ export default class Woodcutter extends NPC{
                     const chestInventory: BlockInventoryComponent | undefined = chestToWalkTo.getComponent("minecraft:inventory");
                     const pathfindingOptions: AStarOptions = new AStarOptions(this.Entity.location, chestToWalkTo.location, this.Entity.dimension);
                     pathfindingOptions.TypeIdsToConsiderPassable = [
-                        "minecraft:air", "minecraft:sapling", "minecraft:tallgrass", "minecraft:vine", 
-                        ...Woodcutter.LEAVES_NAMES
-                    ];
+                        MinecraftBlockTypes.Tallgrass,
+                        MinecraftBlockTypes.Air,
+                        MinecraftBlockTypes.Vine,
+                        ...Woodcutter.LEAVES_NAMES,
+                        MinecraftBlockTypes.Sapling
+                        ];
                     pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
                     this.Entity?.setProperty("nox:is_moving", true);
