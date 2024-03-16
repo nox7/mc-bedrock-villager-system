@@ -670,6 +670,7 @@ export default class Woodcutter extends NPC{
                         ...Woodcutter.LEAVES_NAMES,
                         MinecraftBlockTypes.Sapling
                         ];
+                    pathfindingOptions.MaximumNodesToConsider = 300;
                     pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
 
@@ -681,6 +682,9 @@ export default class Woodcutter extends NPC{
                     }catch(e){
                         // Failed to find a path
                         Debug.Error(String(e))
+                        // Revert state to searching for wood
+                        this.SetState(WoodcutterState.SEARCHING);
+                        this.IsReadyForStateChange = true;
                     }
 
                     if (this.Entity?.isValid()){
@@ -906,6 +910,7 @@ export default class Woodcutter extends NPC{
                         ...Woodcutter.LEAVES_NAMES,
                         MinecraftBlockTypes.Sapling
                         ];
+                    pathfindingOptions.MaximumNodesToConsider = 300;
                     pathfindingOptions.TypeIdsThatCannotBeJumpedOver = [...WallsList, ...FencesList];
                     const walker = new EntityWalker(this.Entity!, pathfindingOptions);
                     this.Entity?.setProperty("nox:is_moving", true);
