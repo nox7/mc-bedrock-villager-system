@@ -1,5 +1,6 @@
 entity.nox:woodcutter.name=Woodsman
 item.spawn_egg.entity.nox:villager.name=Spawn Nox Woodcutter
+item.spawn_egg.entity.nox:quarry_miner.name=Spawn Nox Quarry Miner
 item.nox:iron_drill.name=Iron Drill
 tile.nox:woodcutter-manager.name=Woodcutter Manager
 tile.nox:uv-filter.name=UV Filter

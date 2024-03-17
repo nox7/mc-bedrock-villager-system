@@ -24,7 +24,9 @@ import {
   ContainerSlot,
   ChatSendAfterEvent,
   Dimension,
-  Vector,
+  EntitySpawnAfterEvent,
+  EntityDieAfterEvent,
+  PlayerInteractWithEntityAfterEvent,
 } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
@@ -43,6 +45,7 @@ import { SingleBedManager } from "./SingleBedManager.js";
 import { FloodFillIteratorOptions } from "./NoxBedrockUtilities/Iterators/FloodFill/FloodFillIIteratorOptions.js";
 import FloodFillIterator from "./NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator.js";
 import { VectorUtils } from "./NoxBedrockUtilities/Vector/VectorUtils.js";
+import { QuarryMiner } from "./NPCs/QuarryMiner.js";
 
 Debug.LogLevel = LogLevel.All;
 
@@ -261,12 +264,26 @@ world.afterEvents.playerInteractWithBlock.subscribe((interactEvent: PlayerIntera
   }
 });
 
+world.afterEvents.playerInteractWithEntity.subscribe((e: PlayerInteractWithEntityAfterEvent) => {
+  if (e.target.typeId === "nox:quarry_miner"){
+    const quaryMiner = QuarryMiner.GetFromCache(e.target);
+    if (quaryMiner !== null){
+      quaryMiner.OnPlayerInteract(e.player);
+    }
+  }
+});
+
 world.afterEvents.worldInitialize.subscribe(() => {
   // Check if there is a world-scoped dynamic property for the Woodcutter NPC
+  const nextNpcId = world.getDynamicProperty("nox:next_npc_id");
   const nextWoodCutterId = world.getDynamicProperty("nox:next_woodcutter_id");
   if (nextWoodCutterId === undefined) {
     // This property needs to be registered to this world
     world.setDynamicProperty("nox:next_woodcutter_id", 1);
+  }
+
+  if (nextNpcId === undefined){
+    world.setDynamicProperty("nox:next_npc_id", 1);
   }
 });
 
@@ -278,12 +295,28 @@ world.afterEvents.entityLoad.subscribe((e: EntityLoadAfterEvent) => {
     if (Woodcutter.GetFromCache(entity) === null) {
       Woodcutter.LoadFromExistingEntity(entity, npcHandler);
     }
-  } else if (entity.typeId === "minecraft:creeper") {
-    system.runTimeout(() => {
-      if (entity.isValid()) {
-        entity.kill();
-      }
-    }, 15);
+  } else if (entity.typeId === "nox:quarry_miner"){
+    if (QuarryMiner.GetFromCache(entity) === null){
+      QuarryMiner.LoadFromExistingEntity(entity, npcHandler);
+    }
+  }
+});
+
+world.afterEvents.entitySpawn.subscribe((e: EntitySpawnAfterEvent) => {
+  const entity: Entity = e.entity;
+  if (entity.typeId === "nox:quarry_miner"){
+    if (QuarryMiner.GetFromCache(entity) === null){
+      system.run(() => {
+        QuarryMiner.AsNew(entity, npcHandler);
+      })
+    }
+  }
+});
+
+world.afterEvents.entityDie.subscribe((e: EntityDieAfterEvent) => {
+  const entity: Entity = e.deadEntity;
+  if (entity.typeId === "nox:quarry_miner"){
+    QuarryMiner.OnMinerDied(entity);
   }
 });
 
@@ -311,7 +344,7 @@ world.afterEvents.chatSend.subscribe(async (e: ChatSendAfterEvent) => {
     console.warn("Finding oak log within 64^3 block cuboid.");
     const startLocation: Vector3 = e.sender.location;
     const dimension: Dimension = world.getDimension("overworld");
-    const maxDistance: number = 64; // Search within 15 blocks
+    const maxDistance: number = 256; // Search within 15 blocks
     const floodFillOptions = new FloodFillIteratorOptions(startLocation, dimension, maxDistance);
     floodFillOptions.TypeIdsToConsiderPassable = ["minecraft:air"];
     floodFillOptions.TypeIdsToAlwaysIncludeInResult = ["minecraft:oak_log"];
