@@ -150,8 +150,8 @@ export class QuarryMiner extends NPC{
             const messageForm = new MessageFormData();
             messageForm.title("Quarry Miner");
             messageForm.body("The miner currently has no paydirt for you to collect. Come back later.");
-            messageForm.button1("Okay");
-            messageForm.button2("Okay (again)");
+            messageForm.button2("Okay");
+            messageForm.button1("Okay (again)");
             messageForm.show(player);
         }else{
             const actionForm = new ActionFormData();
