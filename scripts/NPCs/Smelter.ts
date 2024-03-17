@@ -43,7 +43,7 @@ export class Smelter extends NPC{
             Items: [
                 {
                     TypeId: "minecraft:stone",
-                    Chance: 1/5,
+                    Chance: 1/12,
                     Amount: 1
                 },
                 {
@@ -85,7 +85,7 @@ export class Smelter extends NPC{
         },
         {
             Name: "Ores",
-            Chance: 1/5,
+            Chance: 1/8,
             Items: [
                 {
                     TypeId: MinecraftItemTypes.Coal,
