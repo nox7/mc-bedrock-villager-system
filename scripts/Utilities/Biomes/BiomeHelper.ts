@@ -1,4 +1,5 @@
-import { BiomeType, BiomeTypes, Dimension, Vector, Vector3, system } from "@minecraft/server";
+import { Vector3Utils } from "@minecraft/math";
+import { BiomeType, BiomeTypes, Dimension, Vector3, system } from "@minecraft/server";
 
 /**
  * Utility class to help with finding specific biomes at a provided location using GetBiomeOfLocation.
@@ -51,10 +52,10 @@ export class BiomeHelper{
             let closestBiome: string| undefined;
             for (const biomeTypeId in this.BiomesFoundDuringGeneration){
                 if (shortestDistance === undefined){
-                    shortestDistance = Vector.distance(location, this.BiomesFoundDuringGeneration[biomeTypeId]);
+                    shortestDistance = Vector3Utils.distance(location, this.BiomesFoundDuringGeneration[biomeTypeId]);
                     closestBiome = biomeTypeId;
                 }else{
-                    const biomeDistance = Vector.distance(location, this.BiomesFoundDuringGeneration[biomeTypeId]);
+                    const biomeDistance = Vector3Utils.distance(location, this.BiomesFoundDuringGeneration[biomeTypeId]);
                     if (biomeDistance < shortestDistance){
                         shortestDistance = biomeDistance;
                         closestBiome = biomeTypeId;

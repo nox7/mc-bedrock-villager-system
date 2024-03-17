@@ -1,4 +1,5 @@
-import { Block, Dimension, Vector, Vector3 } from "@minecraft/server";
+import { Vector3Utils } from "@minecraft/math";
+import { Block, Dimension, Vector3 } from "@minecraft/server";
 
 /**
  * A utility class that can be used to try and find the 4 root blocks of a dark oak tree
@@ -35,9 +36,9 @@ export class DarkOakSaplingLocationFinder{
          */
         let topLeftCornerCheck: Vector3[] = [
             this.RootBlock.location,
-            Vector.add(rootBlockLocation, {x: -1, y: 0, z:0}),
-            Vector.add(rootBlockLocation, {x: -1, y: 0, z:1}),
-            Vector.add(rootBlockLocation, {x: 0, y: 0, z:1}),
+            Vector3Utils.add(rootBlockLocation, {x: -1, y: 0, z:0}),
+            Vector3Utils.add(rootBlockLocation, {x: -1, y: 0, z:1}),
+            Vector3Utils.add(rootBlockLocation, {x: 0, y: 0, z:1}),
         ];
 
         if (this.AreAllLocationBlocksADarkOakLog(topLeftCornerCheck)){
@@ -53,9 +54,9 @@ export class DarkOakSaplingLocationFinder{
          */
         let topRightCornerCheck: Vector3[] = [
             this.RootBlock.location,
-            Vector.add(rootBlockLocation, {x: 1, y: 0, z:0}),
-            Vector.add(rootBlockLocation, {x: 0, y: 0, z:1}),
-            Vector.add(rootBlockLocation, {x: 1, y: 0, z:1}),
+            Vector3Utils.add(rootBlockLocation, {x: 1, y: 0, z:0}),
+            Vector3Utils.add(rootBlockLocation, {x: 0, y: 0, z:1}),
+            Vector3Utils.add(rootBlockLocation, {x: 1, y: 0, z:1}),
         ];
 
         if (this.AreAllLocationBlocksADarkOakLog(topRightCornerCheck)){
@@ -71,9 +72,9 @@ export class DarkOakSaplingLocationFinder{
          */
         let bottomRightCornerCheck: Vector3[] = [
             this.RootBlock.location,
-            Vector.add(rootBlockLocation, {x: 1, y: 0, z:0}),
-            Vector.add(rootBlockLocation, {x: 0, y: 0, z:-1}),
-            Vector.add(rootBlockLocation, {x: 1, y: 0, z:-1}),
+            Vector3Utils.add(rootBlockLocation, {x: 1, y: 0, z:0}),
+            Vector3Utils.add(rootBlockLocation, {x: 0, y: 0, z:-1}),
+            Vector3Utils.add(rootBlockLocation, {x: 1, y: 0, z:-1}),
         ];
 
         if (this.AreAllLocationBlocksADarkOakLog(bottomRightCornerCheck)){
@@ -89,9 +90,9 @@ export class DarkOakSaplingLocationFinder{
          */
         let bottomLeftCornerCheck: Vector3[] = [
             this.RootBlock.location,
-            Vector.add(rootBlockLocation, {x: -1, y: 0, z:0}),
-            Vector.add(rootBlockLocation, {x: 0, y: 0, z:-1}),
-            Vector.add(rootBlockLocation, {x: -1, y: 0, z:-1}),
+            Vector3Utils.add(rootBlockLocation, {x: -1, y: 0, z:0}),
+            Vector3Utils.add(rootBlockLocation, {x: 0, y: 0, z:-1}),
+            Vector3Utils.add(rootBlockLocation, {x: -1, y: 0, z:-1}),
         ];
 
         if (this.AreAllLocationBlocksADarkOakLog(bottomLeftCornerCheck)){

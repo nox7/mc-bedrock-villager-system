@@ -1,9 +1,10 @@
-import { Block, BlockInventoryComponent, BlockPermutation, BlockTypes, Container, EntityInventoryComponent, InvalidContainerSlotError, ItemStack, Player, Vector } from "@minecraft/server";
+import { Block, BlockInventoryComponent, Container, EntityInventoryComponent, ItemStack, Player } from "@minecraft/server";
 import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import GetAllConnectedBlocksOfType from "../Utilities/GetAllConnectedBlocksOfType";
 import Debug from "../Debug/Debug";
 import Wait from "../Utilities/Wait";
 import { ActionFormData } from "@minecraft/server-ui";
+import { Vector3Utils } from "@minecraft/math";
 
 /**
  * Abstraction to represent the nox:auto-sorter-activator block - which will sort a player's inventory items into
@@ -320,11 +321,11 @@ export class AutoSortActivatorBlock{
             if (cardinalDirection !== undefined){
                 let locationStringsToCheck: string[] = [];
                 if (cardinalDirection === "north" || cardinalDirection === "south"){
-                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector.add(chestAndContainerResult.Block.location, {x: -1, y: 0, z: 0})));
-                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector.add(chestAndContainerResult.Block.location, {x: 1, y: 0, z: 0})));
+                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector3Utils.add(chestAndContainerResult.Block.location, {x: -1, y: 0, z: 0})));
+                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector3Utils.add(chestAndContainerResult.Block.location, {x: 1, y: 0, z: 0})));
                 }else if (cardinalDirection === "east" || cardinalDirection === "west"){
-                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector.add(chestAndContainerResult.Block.location, {x: 0, y: 0, z: -1})));
-                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector.add(chestAndContainerResult.Block.location, {x: 0, y: 0, z: 1})));
+                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector3Utils.add(chestAndContainerResult.Block.location, {x: 0, y: 0, z: -1})));
+                    locationStringsToCheck.push(VectorUtils.GetAsString(Vector3Utils.add(chestAndContainerResult.Block.location, {x: 0, y: 0, z: 1})));
                 }
 
                 for (const locationStringToCheck of locationStringsToCheck){

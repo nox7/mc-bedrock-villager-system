@@ -1,4 +1,4 @@
-import { Block, BlockRaycastHit, BlockRaycastOptions, Dimension, Vector, Vector3 } from "@minecraft/server";
+import { Block, BlockRaycastHit, BlockRaycastOptions, Dimension, Vector3 } from "@minecraft/server";
 
 /**
  * A utility class that has functions that take Vector3 locations and raycast down from them to try and find plantable blocks (such as dirt or grass). Additionally,
