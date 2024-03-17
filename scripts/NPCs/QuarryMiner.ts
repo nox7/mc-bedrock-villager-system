@@ -119,7 +119,7 @@ export class QuarryMiner extends NPC{
             }
         }else if (state === "MINING"){
             this.FaceTargetNode();
-            await Wait(TicksPerSecond * 1);
+            await Wait(TicksPerSecond * 30);
             if (this.GetPaydirtCarried() >= QuarryMiner.MaxPayDirt){
                 this.SetState("FULL_PAYDIRT")
             }else{
