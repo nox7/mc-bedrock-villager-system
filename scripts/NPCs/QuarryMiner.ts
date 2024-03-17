@@ -7,7 +7,7 @@ import FloodFillIterator from "../NoxBedrockUtilities/Iterators/FloodFill/FloodF
 import { MinecraftBlockTypes } from "@minecraft/vanilla-data";
 import { Vector3Utils } from "@minecraft/math";
 import Wait from "../Utilities/Wait";
-import { ActionFormData } from "@minecraft/server-ui";
+import { ActionFormData, MessageFormData, ModalFormData } from "@minecraft/server-ui";
 
 export class QuarryMiner extends NPC{
 
@@ -146,36 +146,47 @@ export class QuarryMiner extends NPC{
 
     public async OpenPaydirtUI(player: Player): Promise<void>{
         const paydirtCarried: number = this.GetPaydirtCarried();
-        const actionForm = new ActionFormData();
-        actionForm.title("Quarry Miner");
-        actionForm.body(`This miner is carrying ${paydirtCarried} paydirt.`);
-        actionForm.button("Collect Paydirt");
-        const response = await actionForm.show(player);
-
-        if (response.selection !== undefined){
-            const currentPaydirtAfterSelection = this.GetPaydirtCarried();
-
-            // Try to give to them
-            const inventoryComponent = player.getComponent(EntityComponentTypes.Inventory);
-            if (inventoryComponent !== undefined){
-                const container = inventoryComponent.container;
-                if (container !== undefined){
-                    const stackLeft = container.addItem(new ItemStack("nox:paydirt_land", currentPaydirtAfterSelection));
-                    if (stackLeft === undefined){
-                        player.sendMessage(`Received ${currentPaydirtAfterSelection} paydirt.`);
-                        this.SetPaydirtCarried(0);
-                    }else{
-                        if (stackLeft.amount < currentPaydirtAfterSelection){
-                            player.sendMessage(`Received ${currentPaydirtAfterSelection - stackLeft.amount} paydirt.`);
-                            this.SetPaydirtCarried(stackLeft.amount);
+        if (paydirtCarried === 0){
+            const messageForm = new MessageFormData();
+            messageForm.title("Quarry Miner");
+            messageForm.body("The miner currently has no paydirt for you to collect. Come back later.");
+            messageForm.button1("Okay");
+            messageForm.button2("Okay (again)");
+            messageForm.show(player);
+        }else{
+            const actionForm = new ActionFormData();
+            actionForm.title("Quarry Miner");
+            actionForm.body(`This miner is carrying ${paydirtCarried} paydirt.`);
+            actionForm.button("Collect Paydirt");
+            const response = await actionForm.show(player);
+    
+            if (response.selection !== undefined){
+                const currentPaydirtAfterSelection = this.GetPaydirtCarried();
+    
+                // Try to give to them
+                const inventoryComponent = player.getComponent(EntityComponentTypes.Inventory);
+                if (inventoryComponent !== undefined){
+                    const container = inventoryComponent.container;
+                    if (container !== undefined){
+                        const stackLeft = container.addItem(new ItemStack("nox:paydirt_land", currentPaydirtAfterSelection));
+                        if (stackLeft === undefined){
+                            player.sendMessage(`Received ${currentPaydirtAfterSelection} paydirt.`);
+                            this.SetPaydirtCarried(0);
+                            player.playSound("drop.slot");
                         }else{
-                            player.sendMessage("Your inventory is full.");
+                            if (stackLeft.amount < currentPaydirtAfterSelection){
+                                player.sendMessage(`Received ${currentPaydirtAfterSelection - stackLeft.amount} paydirt.`);
+                                player.playSound("drop.slot");
+                                this.SetPaydirtCarried(stackLeft.amount);
+                            }else{
+                                player.sendMessage("Your inventory is full.");
+                            }
                         }
+    
                     }
-
                 }
+    
             }
-
         }
     }
 

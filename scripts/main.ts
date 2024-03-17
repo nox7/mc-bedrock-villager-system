@@ -46,6 +46,7 @@ import { FloodFillIteratorOptions } from "./NoxBedrockUtilities/Iterators/FloodF
 import FloodFillIterator from "./NoxBedrockUtilities/Iterators/FloodFill/FloodFillIterator.js";
 import { VectorUtils } from "./NoxBedrockUtilities/Vector/VectorUtils.js";
 import { QuarryMiner } from "./NPCs/QuarryMiner.js";
+import { Smelter } from "./NPCs/Smelter.js";
 
 Debug.LogLevel = LogLevel.All;
 
@@ -270,6 +271,11 @@ world.afterEvents.playerInteractWithEntity.subscribe((e: PlayerInteractWithEntit
     if (quaryMiner !== null){
       quaryMiner.OnPlayerInteract(e.player);
     }
+  }else if (e.target.typeId === "nox:smelter"){
+    const smelter = Smelter.GetFromCache(e.target);
+    if (smelter !== null){
+      smelter.OnPlayerInteract(e.player);
+    }
   }
 });
 
@@ -299,6 +305,10 @@ world.afterEvents.entityLoad.subscribe((e: EntityLoadAfterEvent) => {
     if (QuarryMiner.GetFromCache(entity) === null){
       QuarryMiner.LoadFromExistingEntity(entity, npcHandler);
     }
+  }else if (entity.typeId === "nox:smelter"){
+    if (Smelter.GetFromCache(entity) === null){
+      Smelter.LoadFromExistingEntity(entity, npcHandler);
+    }
   }
 });
 
@@ -310,6 +320,12 @@ world.afterEvents.entitySpawn.subscribe((e: EntitySpawnAfterEvent) => {
         QuarryMiner.AsNew(entity, npcHandler);
       })
     }
+  }else if (entity.typeId === "nox:smelter"){
+    if (Smelter.GetFromCache(entity) === null){
+      system.run(() => {
+        Smelter.AsNew(entity, npcHandler);
+      })
+    }
   }
 });
 
@@ -317,6 +333,8 @@ world.afterEvents.entityDie.subscribe((e: EntityDieAfterEvent) => {
   const entity: Entity = e.deadEntity;
   if (entity.typeId === "nox:quarry_miner"){
     QuarryMiner.OnMinerDied(entity);
+  }else if (entity.typeId === "nox:smelter"){
+    Smelter.OnDied(entity);
   }
 });
 

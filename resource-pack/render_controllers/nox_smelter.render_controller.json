@@ -1,7 +1,7 @@
 {
   "format_version": "1.8.0",
   "render_controllers": {
-    "controller.render.nox_quarry_miner": {
+    "controller.render.nox_smelter": {
       "arrays":{
         "textures":{
           "Array.skins":[
@@ -14,8 +14,7 @@
       "textures": ["Array.skins[query.variant]"],
       "part_visibility": [
         {
-          "*":true,
-          "hats": false
+          "*":true
         }
       ]
     }
