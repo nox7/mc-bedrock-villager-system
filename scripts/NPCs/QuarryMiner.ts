@@ -1,4 +1,4 @@
-import { Block, Entity, Player, TicksPerSecond, Vector3, system, world } from "@minecraft/server";
+import { Block, Entity, EntityComponentTypes, ItemStack, Player, TicksPerSecond, Vector3, system, world } from "@minecraft/server";
 import NPC from "./NPC";
 import { NPCHandler } from "../NPCHandler";
 import Debug from "../Debug/Debug";
@@ -154,8 +154,28 @@ export class QuarryMiner extends NPC{
 
         if (response.selection !== undefined){
             const currentPaydirtAfterSelection = this.GetPaydirtCarried();
-            player.sendMessage(`Received ${currentPaydirtAfterSelection} paydirt.`);
-            this.SetPaydirtCarried(0);
+
+            // Try to give to them
+            const inventoryComponent = player.getComponent(EntityComponentTypes.Inventory);
+            if (inventoryComponent !== undefined){
+                const container = inventoryComponent.container;
+                if (container !== undefined){
+                    const stackLeft = container.addItem(new ItemStack("nox:paydirt_land", currentPaydirtAfterSelection));
+                    if (stackLeft === undefined){
+                        player.sendMessage(`Received ${currentPaydirtAfterSelection} paydirt.`);
+                        this.SetPaydirtCarried(0);
+                    }else{
+                        if (stackLeft.amount < currentPaydirtAfterSelection){
+                            player.sendMessage(`Received ${currentPaydirtAfterSelection - stackLeft.amount} paydirt.`);
+                            this.SetPaydirtCarried(stackLeft.amount);
+                        }else{
+                            player.sendMessage("Your inventory is full.");
+                        }
+                    }
+
+                }
+            }
+
         }
     }
 

@@ -8,6 +8,9 @@
 		"nox_grapes": {
 			"textures": "textures/items/grapes"
 		},
+		"nox_paydirt_land": {
+			"textures": "textures/items/paydirt_land"
+		},
 		"nox_empty_tankard_cup": {
 			"textures": "textures/items/empty-tankard-cup"
 		},
