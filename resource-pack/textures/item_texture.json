@@ -19,6 +19,9 @@
 		},
 		"nox_quarry_miner_contract": {
 			"textures": "textures/items/quarry_miner_contract"
+		},
+		"nox_smelter_contract": {
+			"textures": "textures/items/smelter_contract"
 		}
 	}
 }

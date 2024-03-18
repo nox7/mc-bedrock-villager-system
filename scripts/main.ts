@@ -215,6 +215,13 @@ world.beforeEvents.playerInteractWithBlock.subscribe((interactEvent: PlayerInter
                   slot?.setItem(undefined);
                 }
             });
+        } else if (slot.typeId === "nox:smelter_contract") {
+            system.run(() => {
+                if (slot !== undefined && slot?.isValid()) {
+                  player.dimension.spawnEntity("nox:smelter", Vector3Utils.add(targetBlock.location, { x: 0, y: 1, z: 0 }));
+                  slot?.setItem(undefined);
+                }
+            });
         }
     }
 });
