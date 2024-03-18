@@ -1,0 +1,27 @@
+{
+	"format_version": "1.20.40",
+	"minecraft:item": {
+		"description": {
+			"identifier": "nox:quarry_miner_contract",
+            "menu_category": {
+                "category": "items",
+				"group": "itemGroup.name.noxNpcs",
+				"is_hidden_in_commands": false
+            }
+		},
+		"components": {
+			"minecraft:icon": {
+				"texture": "nox_quarry_miner_contract"
+			},
+			"minecraft:max_stack_size": {
+				"value": 1
+			},
+			"minecraft:hand_equipped": {
+				"value": true
+			},
+			"minecraft:display_name": {
+				"value": "Quarry Miner Contract"
+			}
+		}
+	}
+}

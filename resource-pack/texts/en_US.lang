@@ -20,3 +20,5 @@ tile.nox:wine-barrel-finished.name=Full Wine Keg
 tile.nox:wine-barrel-empty.name=Empty Wine Keg
 tile.nox:wine-barrel-closed.name=Closed Wine Barrel
 tile.nox:auto-sorter-activator.name=§3Auto Sort Activator
+tile.nox:npc_management_table.name=NPC Management Table
+tile.nox:quarry_node_center.name=Quarry Node Center

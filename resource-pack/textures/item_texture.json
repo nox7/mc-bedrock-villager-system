@@ -16,6 +16,9 @@
 		},
 		"nox_wine_tankard_cup": {
 			"textures": "textures/items/wine-tankard-cup"
+		},
+		"nox_quarry_miner_contract": {
+			"textures": "textures/items/quarry_miner_contract"
 		}
 	}
 }
