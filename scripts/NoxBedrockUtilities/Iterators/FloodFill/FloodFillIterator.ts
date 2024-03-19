@@ -278,15 +278,19 @@ export default class FloodFillIterator {
                             yield null;
                             if (blockSafetyCheckResult.IsSafe){
                                 if (blockSafetyCheckResult.CanSafelyFallFrom){
-                                    const blockBelow = <Block>block.below(1);
-                                    if (!this.HasBlockLocationBeenClosed(blockBelow)){
-                                        availableBlock = blockBelow;
-                                    }
+                                    try{
+                                        const blockBelow = <Block>block.below(1);
+                                        if (!this.HasBlockLocationBeenClosed(blockBelow)){
+                                            availableBlock = blockBelow;
+                                        }
+                                    }catch(e){}
                                 }else if (blockSafetyCheckResult.CanSafelyJumpOnto){
-                                    const blockAbove = <Block>block.above(1);
-                                    if (!this.HasBlockLocationBeenClosed(blockAbove)){
-                                        availableBlock = <Block>block.above(1);
-                                    }
+                                    try{
+                                        const blockAbove = <Block>block.above(1);
+                                        if (!this.HasBlockLocationBeenClosed(blockAbove)){
+                                            availableBlock = <Block>block.above(1);
+                                        }
+                                    }catch(e){}
                                 }else{
                                     availableBlock = block;
                                 }

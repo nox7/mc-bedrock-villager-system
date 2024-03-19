@@ -91,6 +91,11 @@ export class QuarryMiner extends NPC{
             return;
         }
 
+        if (this.Entity === null || !this.Entity.isValid()){
+            await Wait(TicksPerSecond * 15);
+            return;
+        }
+
         this.IsReadyForStateChange = false;
 
         let state: string | undefined;
@@ -102,6 +107,8 @@ export class QuarryMiner extends NPC{
             this.IsReadyForStateChange = true;
             return;
         }
+
+        Debug.Info("Current state is: " + state);
 
         if (state === "NONE"){
             this.SetState("FINDING_NODE");
@@ -119,20 +126,25 @@ export class QuarryMiner extends NPC{
             }
         }else if (state === "MINING"){
             this.FaceTargetNode();
-            await Wait(TicksPerSecond * 30);
-            if (this.GetPaydirtCarried() >= QuarryMiner.MaxPayDirt){
-                this.SetState("FULL_PAYDIRT")
-            }else{
-                this.SetPaydirtCarried(this.GetPaydirtCarried() + 1);
+            Debug.Info("Mining. Waiting 20 seconds.");
+            await Wait(TicksPerSecond * 20);
+            if (this.Entity.isValid()){
+                if (this.GetPaydirtCarried() >= QuarryMiner.MaxPayDirt){
+                    this.SetState("FULL_PAYDIRT")
+                }else{
+                    this.SetPaydirtCarried(this.GetPaydirtCarried() + 1);
+                }
             }
         }else if (state === "FULL_PAYDIRT"){
             Debug.Info("Full of paydirt. Waiting 15 seconds.");
             await Wait(TicksPerSecond * 15);
-            const currentPaydirt = this.GetPaydirtCarried();
-            if (currentPaydirt < QuarryMiner.MaxPayDirt){
-                // It can mine again
-                this.SetState("NONE");
-                Debug.Info("Can mine again. Paydirt removed.");
+            if (this.Entity.isValid()){
+                const currentPaydirt = this.GetPaydirtCarried();
+                if (currentPaydirt < QuarryMiner.MaxPayDirt){
+                    // It can mine again
+                    this.SetState("NONE");
+                    Debug.Info("Can mine again. Paydirt removed.");
+                }
             }
         }
 
