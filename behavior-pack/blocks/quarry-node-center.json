@@ -1,0 +1,23 @@
+{
+    "format_version": "1.20.41",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:quarry_node_center",
+            "menu_category": {
+                "category": "construction"
+            }
+
+        },
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.quarry_node_center"
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "stone",
+                    "render_method": "opaque"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:quarry_node_center"
+        },
+        "tags": [
+            "nox:npc_management_table"
+        ],
+        "pattern":[
+            "SIS",
+            "III",
+            "SIS"
+        ],
+        "key": {
+            "S":{
+                "item": "minecraft:stone"
+            },
+            "I":{
+                "item": "minecraft:iron_ingot"
+            }
+        },
+        "result":{
+            "item":"nox:quarry_node_center"
+        }
+    }
+}

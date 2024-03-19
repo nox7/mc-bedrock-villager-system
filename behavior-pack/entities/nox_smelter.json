@@ -1,0 +1,63 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "nox:smelter",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "properties": {
+                "nox:id":{
+                    "type": "int",
+                    "default": 0,
+                    "range": [0,25000],
+                    "client_sync": true
+                },
+                "nox:state": {
+                    "type": "enum",
+                    "default": "NONE",
+                    "values": [
+                        "NONE",
+                        "SMELTING"
+                    ],
+                    "client_sync": true
+                }
+            }
+        },
+        "components": {
+            "minecraft:physics": {},
+            "minecraft:variant":{
+                "value": 0
+            },
+            "minecraft:navigation.walk": {
+                "avoid_damage_blocks": true,
+                "can_pass_doors": true,
+                "can_jump": true
+            },
+            "minecraft:annotation.open_door": {},
+            "minecraft:home": {
+                "restriction_radius": 6,
+                "home_block_list": []
+            },
+            "minecraft:behavior.go_home": {
+                "goal_radius": 0.5,
+                "interval": 120
+            },
+            "minecraft:behavior.move_to_random_block": {
+                "block_distance": 4,
+                "within_radius": 0.5
+            },
+            "minecraft:movement.basic": {
+                "max_turn": 30
+            },
+            "minecraft:movement":{
+                "value": 0.25
+            },
+            "minecraft:behavior.look_at_player": {
+                "priority": 7,
+                "look_distance": 6.0,
+                "probability": 1.0
+              }
+            }
+        }
+    }
+}

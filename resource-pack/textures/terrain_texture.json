@@ -54,6 +54,9 @@
         },
         "nox-auto-sorter-activator":{
             "textures":"textures/blocks/auto-sorter-activator"
+        },
+        "nox-npc-management-table": {
+            "textures": "textures/blocks/npc-management-table"
         }
     }
 }

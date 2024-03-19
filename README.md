@@ -30,6 +30,7 @@ All long-running systems or systems with heavy processing are hooked into the ma
 
 ### NPCs 
 - Woodcutter: Craft a Woodcutter Manager block and place it where you would like a woodcutter to spawn. Make sure to have a chest adjacent. This woodcutter will then roam and cut trees and replant them - adding the obtained logs to the chest adjacent to his Woodcutter Manager block.
+- Quarry Miner: Searches for a nearby Quarry Node Center block (about 4 block distance) and will mine that block repeatedly to get 64 paydirt. Once it has 64, it will stop mining until a player right-clicks and collects the paydirt. Paydirt is then taken to the Smeltery NPC for cleaning and/or smelting.
 
 ### Recipes
 - Leather can be obtained by smelting Rotten Flesh in a furnace
@@ -37,6 +38,10 @@ All long-running systems or systems with heavy processing are hooked into the ma
 
 ### Items
 - Iron Drill has been added. It specializes in mining basic stones (not ores, dirt, trees, or anything else) in high speeds compared to pickaxes.
+- Grapes
+- Tankards
+- Paydirt
+- Quarry Miner Spawn
 
 ### Blocks
 The following blocks with recipes (find them in the in-game recipe book in the crafting menu) have been added.
@@ -49,3 +54,7 @@ The following blocks with recipes (find them in the in-game recipe book in the c
 - Hanging pot rack
 - Cup holders (filled and empty)
 - Auto chest sorter (can sort adjacent chests and alphabetize their contents)
+- Quarry Node Center
+- Grapevines
+- Wine Barrel
+- Empty Wine Barrel

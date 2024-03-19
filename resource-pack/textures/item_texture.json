@@ -8,11 +8,20 @@
 		"nox_grapes": {
 			"textures": "textures/items/grapes"
 		},
+		"nox_paydirt_land": {
+			"textures": "textures/items/paydirt_land"
+		},
 		"nox_empty_tankard_cup": {
 			"textures": "textures/items/empty-tankard-cup"
 		},
 		"nox_wine_tankard_cup": {
 			"textures": "textures/items/wine-tankard-cup"
+		},
+		"nox_quarry_miner_contract": {
+			"textures": "textures/items/quarry_miner_contract"
+		},
+		"nox_smelter_contract": {
+			"textures": "textures/items/smelter_contract"
 		}
 	}
 }

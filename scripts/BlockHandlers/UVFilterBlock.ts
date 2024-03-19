@@ -1,4 +1,5 @@
-import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Vector, Vector3 } from "@minecraft/server";
+import { Vector3Utils } from "@minecraft/math";
+import { Block, BlockPermutation, BlockRaycastHit, BlockRaycastOptions, Vector3 } from "@minecraft/server";
 
 type BlockGrowthStateData = {
     GrowthStateName: string;
@@ -91,7 +92,7 @@ export class UVFilterBlock{
         
         const blockCenter: Vector3 = block.center();
         const blockRaycastHit: BlockRaycastHit | undefined = block.dimension.getBlockFromRay(
-            Vector.subtract(blockCenter, {x: 0, y: 1, z: 0}),
+            Vector3Utils.subtract(blockCenter, {x: 0, y: 1, z: 0}),
             {x: 0, y:-1, z:0}, 
             raycastOptions
             );

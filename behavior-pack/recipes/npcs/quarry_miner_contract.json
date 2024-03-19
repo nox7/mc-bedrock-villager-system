@@ -1,0 +1,27 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier":"nox:quarry_miner_contract"
+        },
+        "tags": [
+            "nox:npc_management_table"
+        ],
+        "pattern":[
+            "PIP",
+            "PIP",
+            "PIP"
+        ],
+        "key": {
+            "P":{
+                "item": "minecraft:paper"
+            },
+            "I":{
+                "item": "minecraft:iron_ingot"
+            }
+        },
+        "result":{
+            "item":"nox:quarry_miner_contract"
+        }
+    }
+}

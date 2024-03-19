@@ -1,7 +1,8 @@
-import { Block, Entity, Vector, Vector3, system } from "@minecraft/server";
+import { Block, Entity, Vector3, system } from "@minecraft/server";
 import AStar from "../NoxBedrockUtilities/Pathfinder/AStar";
 import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import { AStarOptions } from "../NoxBedrockUtilities/Pathfinder/AStarOptions";
+import { Vector3Utils } from "@minecraft/math";
 
 /**
  * A walker class that will move an entity from one location to another.
@@ -130,8 +131,8 @@ export default class EntityWalker{
 
                             // End this inner walk when the entity is close enough to the targetLocation
                             // If this is the last block, then use stopAtThreshold instead
-                            if ((isCurrentBlockTheLastBlock === true && Vector.distance(targetLocation, this.Entity.location) < stopAtThreshold)
-                                || (isCurrentBlockTheLastBlock === false && Vector.distance(targetLocation, this.Entity.location) < 0.15)
+                            if ((isCurrentBlockTheLastBlock === true && Vector3Utils.distance(targetLocation, this.Entity.location) < stopAtThreshold)
+                                || (isCurrentBlockTheLastBlock === false && Vector3Utils.distance(targetLocation, this.Entity.location) < 0.15)
                             ){
                                 this.IsWalking = false;
                                 system.clearRun(innerRunId);

@@ -1,9 +1,10 @@
-import { Block, Vector, Vector3 } from "@minecraft/server"
+import { Block, Vector3 } from "@minecraft/server"
 import { Queue } from "../../DataStructures/Queue.js";
 import { VectorUtils } from "../../Vector/VectorUtils.js";
 import { FloodFillIteratorOptions } from "./FloodFillIIteratorOptions.js";
 import { BlockSafetyCheckerUtility } from "../../BlockSafetyChecker/BlockSafetyCheckerUtility.js";
 import { BlockSafetyCheckerOptions } from "../../BlockSafetyChecker/BlockSafetyCheckerOptions.js";
+import { Vector3Utils } from "@minecraft/math";
 
 /**
  * Flood-fill style BFS iterator that will iterate over "passable" blocks starting at a center location. It will also iterate over any blocks
@@ -173,7 +174,7 @@ export default class FloodFillIterator {
      * @param location
      */
     private IsLocationOutOfBounds(location: Vector3): boolean{
-        return Vector.distance(location, this.Options.StartLocation) > this.Options.MaxDistance;
+        return Vector3Utils.distance(location, this.Options.StartLocation) > this.Options.MaxDistance;
     }
 
     /**
@@ -226,8 +227,8 @@ export default class FloodFillIterator {
             const newPositionsToAdd: Vector3[] = [];
             for (const position of adjacentPositions){
                 // Add 2 more positions for + 1 on the Y and - 1 on the Y
-                newPositionsToAdd.push(Vector.add(position, {x: 0, y: 1, z: 0}));
-                newPositionsToAdd.push(Vector.add(position, {x: 0, y: -1, z: 0}));
+                newPositionsToAdd.push(Vector3Utils.add(position, {x: 0, y: 1, z: 0}));
+                newPositionsToAdd.push(Vector3Utils.add(position, {x: 0, y: -1, z: 0}));
             }
 
             adjacentPositions.push(...newPositionsToAdd);
@@ -277,15 +278,19 @@ export default class FloodFillIterator {
                             yield null;
                             if (blockSafetyCheckResult.IsSafe){
                                 if (blockSafetyCheckResult.CanSafelyFallFrom){
-                                    const blockBelow = <Block>block.below(1);
-                                    if (!this.HasBlockLocationBeenClosed(blockBelow)){
-                                        availableBlock = blockBelow;
-                                    }
+                                    try{
+                                        const blockBelow = <Block>block.below(1);
+                                        if (!this.HasBlockLocationBeenClosed(blockBelow)){
+                                            availableBlock = blockBelow;
+                                        }
+                                    }catch(e){}
                                 }else if (blockSafetyCheckResult.CanSafelyJumpOnto){
-                                    const blockAbove = <Block>block.above(1);
-                                    if (!this.HasBlockLocationBeenClosed(blockAbove)){
-                                        availableBlock = <Block>block.above(1);
-                                    }
+                                    try{
+                                        const blockAbove = <Block>block.above(1);
+                                        if (!this.HasBlockLocationBeenClosed(blockAbove)){
+                                            availableBlock = <Block>block.above(1);
+                                        }
+                                    }catch(e){}
                                 }else{
                                     availableBlock = block;
                                 }
@@ -320,6 +325,7 @@ export default class FloodFillIterator {
                 if (block.isValid()){
                     const adjacentBlocks: Block[] = [];
                     for (const iteratedBlock of this.IterateAdjacentPassableBlocks(block)){
+                        // iteratedBlock?.dimension.spawnParticle("minecraft:basic_flame_particle", iteratedBlock.center());
                         if (iteratedBlock !== null){
                             adjacentBlocks.push(iteratedBlock);
                         }

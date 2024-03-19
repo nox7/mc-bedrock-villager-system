@@ -1,0 +1,38 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "nox:quarry_miner",
+            "spawn_egg": {
+                "base_color": "#505152",
+                "overlay_color": "#3b9dff"
+            },
+            "render_controllers": [
+                "controller.render.nox_quarry_miner"
+            ],
+            "geometry": {
+                "default": "geometry.nox_quarry_miner"
+            },
+            "textures": {
+                "variant_1": "textures/entity/quarry_miner_1"
+            },
+            "materials": {
+                "default": "entity_alphatest"
+            },
+            "animations":{
+                "look_at_target": "animation.humanoid.look_at_target.default",
+                "move":"animation.humanoid.move",
+                "mining":"animation.quarry_miner.mine"
+            },
+            "scripts":{
+                "pre_animation": [
+                    "variable.tcos0 = (Math.cos(query.modified_distance_moved * 38.17) * query.modified_move_speed / variable.gliding_speed_value) * 57.3;"
+                ],
+                "animate": [
+                    {"mining": "query.property('nox:state') == 'MINING'"},
+                    {"move":"query.is_on_ground"}
+                ]
+            }
+        }
+    }
+}

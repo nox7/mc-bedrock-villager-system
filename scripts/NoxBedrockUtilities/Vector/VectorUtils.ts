@@ -1,4 +1,4 @@
-import { Vector, Vector3 } from "@minecraft/server";
+import { Vector3 } from "@minecraft/server";
 
 export class VectorUtils{
     /**

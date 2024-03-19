@@ -1,4 +1,5 @@
-import { Block, Dimension, Vector, Vector3 } from "@minecraft/server";
+import { Vector3Utils } from "@minecraft/math";
+import { Block, Dimension, Vector3 } from "@minecraft/server";
 
 export class RadiusFinder{
     /**
@@ -14,7 +15,7 @@ export class RadiusFinder{
             for (let x = bottomLeft.x; x <= topRight.x; x++){
                 for (let z = bottomLeft.z; z <= topRight.z; z++){
                     const location: Vector3 = {x: x, y: y, z:z};
-                    const isLocationInRadius: boolean = Vector.distance(location, center) <= radius;
+                    const isLocationInRadius: boolean = Vector3Utils.distance(location, center) <= radius;
                     if (isLocationInRadius){
                         let blockAtLocation: Block | undefined;
                         try{

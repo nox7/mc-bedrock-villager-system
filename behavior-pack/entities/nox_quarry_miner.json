@@ -1,0 +1,50 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "nox:quarry_miner",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "properties": {
+                "nox:id":{
+                    "type": "int",
+                    "default": 0,
+                    "range": [0,25000],
+                    "client_sync": true
+                },
+                "nox:paydirt_carried":{
+                    "type": "int",
+                    "default": 0,
+                    "range": [0,64],
+                    "client_sync": false
+                },
+                "nox:state": {
+                    "type": "enum",
+                    "default": "NONE",
+                    "values": [
+                        "NONE",
+                        "FINDING_NODE",
+                        "PLACING_NODE",
+                        "MINING",
+                        "FULL_PAYDIRT"
+                    ],
+                    "client_sync": true
+                },
+                "nox:is_enabled":{
+                    "type": "bool",
+                    "default": true,
+                    "client_sync": false
+                }
+            }
+        },
+        "components": {
+            "minecraft:physics": {},
+            "minecraft:equipment": {
+                "table":"loot_tables/entities/quarry_miner.json"
+            },
+            "minecraft:variant":{
+                "value": 0
+            }
+        }
+    }
+}

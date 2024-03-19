@@ -1,4 +1,4 @@
-import { Block, Vector, Vector3, system } from "@minecraft/server";
+import { Block, Vector3, system } from "@minecraft/server";
 import CuboidRegion from "../Region/CuboidRegion";
 import { AStarOptions } from "./AStarOptions";
 import { VectorUtils } from "../Vector/VectorUtils";
@@ -7,6 +7,7 @@ import { BlockSafetyCheckerOptions } from "../BlockSafetyChecker/BlockSafetyChec
 import { BlockSafetyCheckResult } from "../BlockSafetyChecker/BlockSafetyCheckResult";
 import { IAStarNode } from "./Interfaces/IAStarNode";
 import { ClosedAStarLocations } from "./Types/ClosedAStarLocations";
+import { Vector3Utils } from "@minecraft/math";
 
 /**
  * Implementation of the A* algorithm for Minecraft
@@ -248,7 +249,7 @@ export default class AStar{
      * @returns 
      */
     private CalculateGCost(block: Block): number{
-        return Vector.distance(block.location, this.Options.StartLocation);
+        return Vector3Utils.distance(block.location, this.Options.StartLocation);
     }
 
     /**
@@ -257,6 +258,6 @@ export default class AStar{
      * @returns 
      */
     private CalculateHHeuristic(block: Block): number{
-        return Vector.distance(block.location, this.Options.GoalLocation);
+        return Vector3Utils.distance(block.location, this.Options.GoalLocation);
     }
 }
