@@ -176,6 +176,11 @@ export class BlockSafetyCheckerUtility{
      * @param block 
      */
     private static IsPassable(block: Block, options: BlockSafetyCheckerOptions): boolean{
+
+        if (!block.isValid()){
+            return false;
+        }
+
         if (options.TypeIdsToConsiderPassable !== undefined && options.TypeIdsToConsiderPassable.indexOf(block.typeId) > -1){
             return true;
         }
