@@ -25,6 +25,9 @@
         },
         "components": {
             "minecraft:physics": {},
+            "minecraft:jump.static": {
+                "jump_power": 0.42
+            },
             "minecraft:variant":{
                 "value": 0
             },
