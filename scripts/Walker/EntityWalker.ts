@@ -124,8 +124,18 @@ export default class EntityWalker{
                     const targetLocation = {x: targetBlockCenterLocation.x, y: targetBlockCenterLocation.y - 0.5, z: targetBlockCenterLocation.z};
 
                     // Repeatedly walk to nextBlock.location until we're about there
+                    const maxLoops = 2500; // Max 2500 ticks before it gives up
+                    let currentLoops = 0;
                     await new Promise<void>(innerResolve => {
                         let innerRunId = system.runInterval(() => {
+
+                            ++currentLoops;
+                            if (currentLoops >= maxLoops){
+                                Debug.Warn("Stopped walker due to max loops hit");
+                                this.Stop(false);
+                                system.clearRun(innerRunId);
+                                return innerResolve();
+                            }
 
                             // Cancel everything if this entity suddenly becomes invalid
                             if (!this.Entity.isValid()){
