@@ -678,7 +678,9 @@ export default class Woodcutter extends NPC{
 
                     let didReachDestination: boolean | undefined;
                     try{
+                        Debug.Info("Starting EntityWalker.MoveTo");
                         didReachDestination = await walker.MoveTo(1/6, 2);
+                        Debug.Info("MoveTo finished.");
                     }catch(e){
                         // Failed to find a path
                         Debug.Error(String(e))
@@ -689,6 +691,7 @@ export default class Woodcutter extends NPC{
 
                     if (this.Entity?.isValid()){
                         if (didReachDestination === undefined || !didReachDestination){
+                            Debug.Info("Did not reach destination. Trying again in 150 ticks.");
                             // Try again
                             ++this.CurrentNumTimesTriedToWalkToTargetAndFailed;
                             await Wait(150);
@@ -706,6 +709,7 @@ export default class Woodcutter extends NPC{
                             }
                         }
     
+                        Debug.Info("Finished walking to wood.");
                         this.Entity.setProperty("nox:is_moving", false);
                         this.IsReadyForStateChange = true;
                     }else{
@@ -1006,10 +1010,12 @@ export default class Woodcutter extends NPC{
         let blockToReturn: Block | null = null;
         for (const block of iterator.IterateLocations()){
             if (block !== null){
-                if (floodFillOptions.TypeIdsToAlwaysIncludeInResult.indexOf(block.typeId) > -1){
-                    // Found the block
-                    blockToReturn = block;
-                    break;
+                if (block.isValid()){
+                    if (floodFillOptions.TypeIdsToAlwaysIncludeInResult.indexOf(block.typeId) > -1){
+                        // Found the block
+                        blockToReturn = block;
+                        break;
+                    }
                 }
             }
             yield;
