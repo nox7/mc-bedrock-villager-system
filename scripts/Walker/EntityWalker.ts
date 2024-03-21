@@ -3,6 +3,7 @@ import AStar from "../NoxBedrockUtilities/Pathfinder/AStar";
 import { VectorUtils } from "../NoxBedrockUtilities/Vector/VectorUtils";
 import { AStarOptions } from "../NoxBedrockUtilities/Pathfinder/AStarOptions";
 import { Vector3Utils } from "@minecraft/math";
+import Debug from "../Debug/Debug";
 
 /**
  * A walker class that will move an entity from one location to another.
@@ -68,7 +69,9 @@ export default class EntityWalker{
             return false;
         }
 
+        Debug.Info("Finding path...");
         const blockPath: Block[] = await aStar.Pathfind();
+        Debug.Info("Path found.");
 
         // Reverse the block path so the start is at the end 
         // The walker will pop the blocks off the end of the array and stop when there are no more
@@ -82,6 +85,8 @@ export default class EntityWalker{
                     return;
                 }
 
+                this.IsWalking = true;
+
                 // blockPath is empty, no more blocks to walk
                 if (blockPath.length === 0){
                     this.Stop(true);
@@ -93,6 +98,7 @@ export default class EntityWalker{
 
                 // Cancel everything if this entity suddenly becomes invalid
                 if (!this.Entity.isValid()){
+                    Debug.Info("Entity is invalid. Stopping EntityWalker movement.");
                     this.Stop(false);
                     return resolve(false);
                 }
@@ -116,7 +122,6 @@ export default class EntityWalker{
                     const isCurrentBlockTheLastBlock = blockPath.length === 0;
                     const targetBlockCenterLocation: Vector3 = nextBlock.center();
                     const targetLocation = {x: targetBlockCenterLocation.x, y: targetBlockCenterLocation.y - 0.5, z: targetBlockCenterLocation.z};
-                    this.IsWalking = true;
 
                     // Repeatedly walk to nextBlock.location until we're about there
                     await new Promise<void>(innerResolve => {
@@ -124,6 +129,7 @@ export default class EntityWalker{
 
                             // Cancel everything if this entity suddenly becomes invalid
                             if (!this.Entity.isValid()){
+                                Debug.Warn("Entity is invalid during movement. Stopping inner resolve. Maybe should be stopping outer resolve?");
                                 this.Stop(false);
                                 system.clearRun(innerRunId);
                                 return innerResolve();
@@ -154,6 +160,8 @@ export default class EntityWalker{
                                     facingLocation: targetLocation
                                 }
                             );
+
+                            Debug.Info(`Moving in direction ${Vector3Utils.toString(direction)}`);
                         });
                     });
 
