@@ -28,6 +28,9 @@ import {
     EntityDieAfterEvent,
     PlayerInteractWithEntityAfterEvent,
     ItemUseOnAfterEvent,
+    TicksPerSecond,
+    BlockVolume,
+    BlockVolumeBase,
 } from "@minecraft/server";
 import WoodcutterManagerBlock from "./BlockHandlers/WoodcutterManagerBlock.js";
 import Woodcutter from "./NPCs/Woodcutter.js";
@@ -50,7 +53,7 @@ import { QuarryMiner } from "./NPCs/QuarryMiner.js";
 import { Smelter } from "./NPCs/Smelter.js";
 import { Vector3Utils } from "@minecraft/math";
 
-Debug.LogLevel = LogLevel.All;
+Debug.LogLevel = LogLevel.None;
 
 const npcHandler = new NPCHandler();
 system.runInterval(() => {
@@ -375,43 +378,5 @@ world.afterEvents.chatSend.subscribe(async (e: ChatSendAfterEvent) => {
         } else {
             e.sender.sendMessage("Found: " + blockFound.typeId);
         }
-    } else if (e.message === "find-wood") {
-        console.warn("Finding oak log within 64^3 block cuboid.");
-        const startLocation: Vector3 = e.sender.location;
-        const dimension: Dimension = world.getDimension("overworld");
-        const maxDistance: number = 256; // Search within 15 blocks
-        const floodFillOptions = new FloodFillIteratorOptions(startLocation, dimension, maxDistance);
-        floodFillOptions.TypeIdsToConsiderPassable = ["minecraft:air"];
-        floodFillOptions.TypeIdsToAlwaysIncludeInResult = ["minecraft:oak_log"];
-        const blockFound = await new Promise<Block | null>((resolve) => {
-            system.runJob(FindFirstBlock(resolve, floodFillOptions));
-        });
-        if (blockFound !== null) {
-            console.warn(`Found oak log at: ${VectorUtils.GetAsString(blockFound.location)}`);
-        } else {
-            console.warn("Did not find oak log");
-        }
     }
 });
-
-function* FindFirstBlock(blockFoundResolve: (block: Block | null) => void, floodFillOptions: FloodFillIteratorOptions) {
-    let blockThatWasFound: Block | null = null;
-    const floodFillIterator = new FloodFillIterator(floodFillOptions);
-    const startTimeMs = new Date().getTime();
-    console.warn("Start unix time: " + startTimeMs);
-    for (const block of floodFillIterator.IterateLocations()) {
-        if (block !== null && block.isValid()) {
-            if (block.typeId === "minecraft:oak_log") {
-                blockThatWasFound = block;
-                break;
-            }
-        }
-
-        // Important to yield to allow the MC engine to control how often this iterator runs!
-        yield;
-    }
-
-    const timeTook = new Date().getTime() - startTimeMs;
-    console.warn(`End. Time taken to search 64^3 blocks: ${timeTook}ms`);
-    return blockFoundResolve(blockThatWasFound);
-}
