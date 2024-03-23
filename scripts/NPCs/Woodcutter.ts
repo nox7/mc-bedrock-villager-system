@@ -679,7 +679,7 @@ export default class Woodcutter extends NPC{
                     let didReachDestination: boolean | undefined;
                     try{
                         Debug.Info("Starting EntityWalker.MoveTo");
-                        didReachDestination = await walker.MoveTo(1/6, 2);
+                        didReachDestination = await walker.MoveTo(1/6);
                         Debug.Info("MoveTo finished.");
                     }catch(e){
                         // Failed to find a path
@@ -920,7 +920,7 @@ export default class Woodcutter extends NPC{
                     this.Entity?.setProperty("nox:is_moving", true);
 
                     try{
-                        await walker.MoveTo(1/6, 2);
+                        await walker.MoveTo(1/6);
                     }catch(e){
                         Debug.Error(String(e));
                         // Failed to find a path. Revert to previous state after waiting
