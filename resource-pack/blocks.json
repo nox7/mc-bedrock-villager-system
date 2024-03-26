@@ -5,5 +5,8 @@
     },
     "nox:uv-filter":{
         "sound":"glass"
+    },
+    "nox:lattice-glass":{
+        "sound": "glass"
     }
 }

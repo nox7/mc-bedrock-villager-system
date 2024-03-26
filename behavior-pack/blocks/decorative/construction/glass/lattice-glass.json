@@ -1,0 +1,25 @@
+{
+    "format_version": "1.20.50",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:lattice-glass",
+            "menu_category": {
+                "group": "itemGroup.name.glass",
+                "category": "construction",
+                "is_hidden_in_commands": false
+            }
+
+        },
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.lattice-glass"
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "nox-lattice-glass",
+                    "render_method": "alpha_test"
+                }
+            }
+        }
+    }
+}

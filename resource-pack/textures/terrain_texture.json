@@ -54,6 +54,9 @@
         },
         "nox-npc-management-table": {
             "textures": "textures/blocks/functional/npc-management-table"
+        },
+        "nox-lattice-glass":{
+            "textures": "textures/blocks/decorative/construction/glass/lattice-glass"
         }
     }
 }
