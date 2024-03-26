@@ -3,13 +3,13 @@
 	"texture_name": "atlas.items",
 	"texture_data": {
 		"nox_iron_drill": {
-			"textures": "textures/items/nox_iron_drill_icon"
+			"textures": "textures/items/tools/nox_iron_drill_icon"
 		},
 		"nox_grapes": {
-			"textures": "textures/items/grapes"
+			"textures": "textures/items/farming/grapes"
 		},
 		"nox_paydirt_land": {
-			"textures": "textures/items/paydirt_land"
+			"textures": "textures/items/mining/paydirt_land"
 		},
 		"nox_empty_tankard_cup": {
 			"textures": "textures/items/empty-tankard-cup"
@@ -18,10 +18,10 @@
 			"textures": "textures/items/wine-tankard-cup"
 		},
 		"nox_quarry_miner_contract": {
-			"textures": "textures/items/quarry_miner_contract"
+			"textures": "textures/items/mining/quarry_miner_contract"
 		},
 		"nox_smelter_contract": {
-			"textures": "textures/items/smelter_contract"
+			"textures": "textures/items/mining/smelter_contract"
 		}
 	}
 }

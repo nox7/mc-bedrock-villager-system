@@ -366,17 +366,7 @@ world.afterEvents.chatSend.subscribe(async (e: ChatSendAfterEvent) => {
             e.sender.sendMessage(String(biomeType?.id));
         });
     } else if (e.message === "test") {
-        const blockFinder = new RadiusFinder();
-        const blockFound = await blockFinder.GetBlockInRadius(
-            e.sender.location,
-            "minecraft:oak_log",
-            5,
-            e.sender.dimension
-        );
-        if (blockFound === undefined) {
-            e.sender.sendMessage("Not found");
-        } else {
-            e.sender.sendMessage("Found: " + blockFound.typeId);
-        }
+        console.warn(Vector3Utils.toString(e.sender.getViewDirection()));
+        console.warn(Vector3Utils.magnitude(e.sender.getViewDirection()));
     }
 });

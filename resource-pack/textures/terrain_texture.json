@@ -5,58 +5,55 @@
     "num_mip_levels": 4, 
     "texture_data": {
         "nox-woodcutter-manager":{
-            "textures":"textures/blocks/woodcutter-manager"
+            "textures":"textures/blocks/functional/woodcutter-manager"
         },
         "nox-uv-filter":{
-            "textures":"textures/blocks/uv-filter"
+            "textures":"textures/blocks/farming/uv-filter"
         },
         "nox-stove-oven":{
-            "textures":"textures/blocks/stove-oven"
+            "textures":"textures/blocks/decorative/kitchen/stove-oven"
         },
         "nox-light-stone-countertop":{
-            "textures":"textures/blocks/light-stone-countertop"
+            "textures":"textures/blocks/decorative/kitchen/light-stone-countertop"
         },
         "nox-dark-stone-countertop":{
-            "textures":"textures/blocks/dark-stone-countertop"
+            "textures":"textures/blocks/decorative/kitchen/dark-stone-countertop"
         },
         "nox-dark-wood-cabinet":{
-            "textures":"textures/blocks/dark-wood-cabinet"
+            "textures":"textures/blocks/decorative/kitchen/dark-wood-cabinet"
         },
         "nox-white-wood-cabinet":{
-            "textures":"textures/blocks/white-wood-cabinet"
+            "textures":"textures/blocks/decorative/kitchen/white-wood-cabinet"
         },
         "nox-stack-of-gold-bars":{
-            "textures":"textures/blocks/stack-of-gold-bars"
+            "textures":"textures/blocks/misc/stack-of-gold-bars"
         },
         "nox-dark-wood-floating-pot-rack":{
-            "textures":"textures/blocks/dark-wood-floating-pot-rack"
+            "textures":"textures/blocks/decorative/kitchen/dark-wood-floating-pot-rack"
         },
         "nox-dark-wood-cup-holder-filled":{
-            "textures":"textures/blocks/dark-wood-cup-holder-filled"
+            "textures":"textures/blocks/decorative/kitchen/dark-wood-cup-holder-filled"
         },
         "nox-dark-wood-cup-holder-empty":{
-            "textures":"textures/blocks/dark-wood-cup-holder-empty"
-        },
-        "nox-horizontal-hanging-lantern":{
-            "textures":"textures/blocks/horizontal-hanging-lantern"
+            "textures":"textures/blocks/decorative/kitchen/dark-wood-cup-holder-empty"
         },
         "nox-grapevine":{
-            "textures":"textures/blocks/grapevine"
+            "textures":"textures/blocks/farming/wine/grapevine"
         },
         "nox-wine-barrel-grapes":{
-            "textures":"textures/blocks/wine-barrel-grapes"
+            "textures":"textures/blocks/farming/wine/wine-barrel-grapes"
         },
         "nox-wine-barrel-top-closed":{
-            "textures":"textures/blocks/wine-barrel-top-closed"
+            "textures":"textures/blocks/farming/wine/wine-barrel-top-closed"
         },
         "barrel_top_open":{
             "textures":"textures/blocks/barrel_top_open"
         },
         "nox-auto-sorter-activator":{
-            "textures":"textures/blocks/auto-sorter-activator"
+            "textures":"textures/blocks/functional/auto-sorter-activator"
         },
         "nox-npc-management-table": {
-            "textures": "textures/blocks/npc-management-table"
+            "textures": "textures/blocks/functional/npc-management-table"
         }
     }
 }
