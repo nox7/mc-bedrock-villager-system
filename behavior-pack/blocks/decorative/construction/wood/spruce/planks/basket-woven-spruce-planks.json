@@ -2,9 +2,11 @@
     "format_version": "1.20.50",
     "minecraft:block": {
         "description": {
-            "identifier": "nox:npc_management_table",
+            "identifier": "nox:basket-woven-spruce-planks",
             "menu_category": {
-                "category": "construction"
+                "group": "itemGroup.name.wood",
+                "category": "construction",
+                "is_hidden_in_commands": false
             },
             "traits":{
                 "minecraft:placement_direction":{
@@ -22,10 +24,10 @@
                 }
             },
             {
-                "condition": "query.block_state('minecraft:cardinal_direction') == 'south'",
+                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
                 "components":{
                     "minecraft:transformation": {
-                        "rotation": [0,0,0]
+                        "rotation": [0,-90,0]
                     }
                 }
             },
@@ -36,34 +38,18 @@
                         "rotation": [0,90,0]
                     }
                 }
-            },
-            {
-                "condition": "query.block_state('minecraft:cardinal_direction') == 'west'",
-                "components":{
-                    "minecraft:transformation": {
-                        "rotation": [0,-90,0]
-                    }
-                }
             }
         ],
         "components": {
-            "minecraft:destructible_by_mining":{
-                "seconds_to_destroy": 2
-            },
             "minecraft:geometry":{
-                "identifier": "geometry.nox.npc_management_table"
-            },
-            "minecraft:crafting_table": {
-                "crafting_tags": ["nox:npc_management_table"],
-                "table_name": "NPC Management Table"
+                "identifier": "geometry.nox.block"
             },
             "minecraft:material_instances": {
                 "*": {
-                    "texture": "nox-npc-management-table",
+                    "texture": "nox-basket-woven-spruce-planks",
                     "render_method": "opaque"
                 }
-            },
-            "tag:wood":{}
+            }
         }
     }
 }

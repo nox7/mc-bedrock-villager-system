@@ -55,20 +55,22 @@
         "nox-npc-management-table": {
             "textures": "textures/blocks/functional/npc-management-table"
         },
+
+
         "nox-lattice-glass":{
             "textures": "textures/blocks/decorative/construction/glass/lattice-glass"
         },
         "nox-cornered-spruce-planks":{
-            "textures": "textures/blocks/decorative/construction/wood/spruce/cornered-spruce-planks"
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/cornered-spruce-planks"
         },
         "nox-boxed-spruce-planks":{
-            "textures": "textures/blocks/decorative/construction/wood/spruce/boxed-spruce-planks"
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/boxed-spruce-planks"
         },
         "nox-edged-stripped-spruce-log":{
-            "textures": "textures/blocks/decorative/construction/wood/spruce/edged-stripped-spruce-log"
+            "textures": "textures/blocks/decorative/construction/wood/spruce/stripped-logs/edged-stripped-spruce-log"
         },
         "nox-edged-stripped-spruce-log-top":{
-            "textures": "textures/blocks/decorative/construction/wood/spruce/edged-stripped-spruce-log-top"
+            "textures": "textures/blocks/decorative/construction/wood/spruce/stripped-logs/edged-stripped-spruce-log-top"
         },
         "nox-natural-spruce-planks":{
             "textures": "textures/blocks/decorative/construction/wood/spruce/planks/natural-spruce-planks"
@@ -87,6 +89,18 @@
         },
         "nox-hewn-spruce-planks":{
             "textures": "textures/blocks/decorative/construction/wood/spruce/planks/hewn-spruce-planks"
+        },
+        "nox-basket-woven-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/basket-woven-spruce-planks"
+        },
+        "nox-brick-bond-spruce-planks": {
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/brick-bond-spruce-planks"
+        },
+        "nox-bricky-spruce-planks": {
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/bricky-spruce-planks"
+        },
+        "nox-crated-spruce-planks": {
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/crated-spruce-planks"
         }
     }
 }

@@ -22,6 +22,8 @@ tile.nox:wine-barrel-closed.name=Closed Wine Barrel
 tile.nox:auto-sorter-activator.name=§3Auto Sort Activator
 tile.nox:npc_management_table.name=NPC Management Table
 tile.nox:quarry_node_center.name=Quarry Node Center
+
+
 tile.nox:lattice-glass.name=Lattice Glass
 tile.nox:cornered-spruce-planks.name=Cornered Spruce Planks
 tile.nox:boxed-spruce-planks.name=Boxed Spruce Planks
@@ -31,3 +33,7 @@ tile.nox:spruce-support.name=Spruce Support
 tile.nox:double-herringbone-spruce-planks.name=Double Herringbone Spruce Planks
 tile.nox:detailed-spruce-planks.name=Detailed Spruce Planks
 tile.nox:hewn-spruce-planks.name=Hewn Spruce Planks
+tile.nox:basket-woven-spruce-planks.name=Basket Woven Spurce Planks
+tile.nox:brick-bond-spruce-planks.name=Brick Bond Spruce Planks
+tile.nox:bricky-spruce-planks.name=Bricky Spruce Planks
+tile.nox:crated-spruce-planks.name=Crated Spruce Planks
