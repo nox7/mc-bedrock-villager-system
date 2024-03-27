@@ -57,6 +57,21 @@
         },
         "nox-lattice-glass":{
             "textures": "textures/blocks/decorative/construction/glass/lattice-glass"
+        },
+        "nox-cornered-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/cornered-spruce-planks"
+        },
+        "nox-boxed-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/boxed-spruce-planks"
+        },
+        "nox-edged-stripped-spruce-log":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/edged-stripped-spruce-log"
+        },
+        "nox-edged-stripped-spruce-log-top":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/edged-stripped-spruce-log-top"
+        },
+        "nox-natural-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/natural-spruce-planks"
         }
     }
 }

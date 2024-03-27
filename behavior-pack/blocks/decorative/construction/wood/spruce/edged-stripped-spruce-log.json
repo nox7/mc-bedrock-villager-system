@@ -1,0 +1,55 @@
+{
+    "format_version": "1.20.50",
+    "minecraft:block": {
+        "description": {
+            "identifier": "nox:edged-stripped-spruce-log",
+            "menu_category": {
+                "group": "itemGroup.name.wood",
+                "category": "construction",
+                "is_hidden_in_commands": false
+            },
+            "traits":{
+                "minecraft:placement_position":{
+                    "enabled_states":["minecraft:block_face"]
+                }
+            }
+        },
+        "permutations": [
+            {
+                "condition": "query.block_state('minecraft:block_face') == 'east' || query.block_state('minecraft:block_face') == 'west'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [0,0,90]
+                    }
+                }
+            },
+            {
+                "condition": "query.block_state('minecraft:block_face') == 'north' || query.block_state('minecraft:block_face') == 'south'",
+                "components":{
+                    "minecraft:transformation": {
+                        "rotation": [90,0,0]
+                    }
+                }
+            }
+        ],
+        "components": {
+            "minecraft:geometry":{
+                "identifier": "geometry.nox.block"
+            },
+            "minecraft:material_instances": {
+                "up": {
+                    "texture": "nox-edged-stripped-spruce-log-top",
+                    "render_method": "opaque"
+                },
+                "down": {
+                    "texture": "nox-edged-stripped-spruce-log-top",
+                    "render_method": "opaque"
+                },
+                "*": {
+                    "texture": "nox-edged-stripped-spruce-log",
+                    "render_method": "opaque"
+                }
+            }
+        }
+    }
+}
