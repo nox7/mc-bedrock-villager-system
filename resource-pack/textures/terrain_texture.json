@@ -72,6 +72,12 @@
         },
         "nox-natural-spruce-planks":{
             "textures": "textures/blocks/decorative/construction/wood/spruce/planks/natural-spruce-planks"
+        },
+        "planks-spruce":{
+            "textures": "textures/blocks/planks_spruce"
+        },
+        "log-stripped-spruce":{
+            "textures": "textures/blocks/stripped_spruce_log"
         }
     }
 }
