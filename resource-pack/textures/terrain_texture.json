@@ -99,6 +99,90 @@
     },
     "nox-crated-spruce-planks": {
       "textures": "textures/blocks/decorative/construction/wood/spruce/planks/crated-spruce-planks"
+    },
+    "nox-crossed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/crossed-spruce-planks"
+    },
+    "nox-cross-laced-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/cross-laced-spruce-planks"
+    },
+    "nox-diagonal-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/diagonal-spruce-planks"
+    },
+    "nox-diamond-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/diamond-spruce-planks"
+    },
+    "nox-enclosed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/enclosed-spruce-planks"
+    },
+    "nox-fine-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/fine-spruce-planks"
+    },
+    "nox-fine-vertical-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/fine-vertical-spruce-planks"
+    },
+    "nox-framed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/framed-spruce-planks"
+    },
+    "nox-herringbone-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/herringbone-spruce-planks"
+    },
+    "nox-laced-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/laced-spruce-planks"
+    },
+    "nox-nailed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/nailed-spruce-planks"
+    },
+    "nox-pegged-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/pegged-spruce-planks"
+    },
+    "nox-polished-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/polished-spruce-planks"
+    },
+    "nox-railed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/railed-spruce-planks"
+    },
+    "nox-shifted-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/shifted-spruce-planks"
+    },
+    "nox-slanted-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/slanted-spruce-planks"
+    },
+    "nox-smooth-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/smooth-spruce-planks"
+    },
+    "nox-spruce-planks-mosaic": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/spruce-planks-mosaic"
+    },
+    "nox-spruce-planks-panel": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/spruce-planks-panel"
+    },
+    "nox-spruce-planks-shavings": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/spruce-planks-shavings"
+    },
+    "nox-stacked-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/stacked-spruce-planks"
+    },
+    "nox-thin-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/thin-spruce-planks"
+    },
+    "nox-tiled-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/tiled-spruce-planks"
+    },
+    "nox-versailles-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/versailles-spruce-planks"
+    },
+    "nox-vertically-railed-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/vertically-railed-spruce-planks"
+    },
+    "nox-vertical-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/vertical-spruce-planks"
+    },
+    "nox-whirlwind-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/whirlwind-spruce-planks"
+    },
+    "nox-wickered-spruce-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/spruce/planks/wickered-spruce-planks"
     }
   }
 }
