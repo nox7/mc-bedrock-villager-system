@@ -1,8 +1,0 @@
-{
-    "format_version": "1.16.100",
-    "minecraft:texture_set": {
-      "color": "lattice-glass.tga",
-      "heightmap": "lattice-glass.heightmap",
-      "metalness_emissive_roughness": "lattice-glass.mer"
-    }
-}
