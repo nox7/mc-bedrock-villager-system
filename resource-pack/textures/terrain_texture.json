@@ -78,6 +78,15 @@
         },
         "log-stripped-spruce":{
             "textures": "textures/blocks/stripped_spruce_log"
+        },
+        "nox-double-herringbone-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/double-herringbone-spruce-planks"
+        },
+        "nox-detailed-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/detailed-spruce-planks"
+        },
+        "nox-hewn-spruce-planks":{
+            "textures": "textures/blocks/decorative/construction/wood/spruce/planks/hewn-spruce-planks"
         }
     }
 }
