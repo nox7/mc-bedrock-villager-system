@@ -58,3 +58,6 @@ The following blocks with recipes (find them in the in-game recipe book in the c
 - Grapevines
 - Wine Barrel
 - Empty Wine Barrel
+
+## Credits
+Some block artwork produced by: Kekie6, Marc-IceBlade, Shrimp, Facu, Frogipher, SunsetSoup, Valilla, Brother Earth, Joosh, ArtistMonster, Zilver
