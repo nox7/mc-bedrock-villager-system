@@ -183,6 +183,120 @@
     },
     "nox-wickered-spruce-planks": {
       "textures": "textures/blocks/decorative/construction/wood/spruce/planks/wickered-spruce-planks"
+    },
+    "nox-basket-woven-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/basket-woven-oak-planks"
+    },
+    "nox-boxed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/boxed-oak-planks"
+    },
+    "nox-bricky-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/bricky-oak-planks"
+    },
+    "nox-brick-bond-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/brick-bond-oak-planks"
+    },
+    "nox-cornered-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/cornered-oak-planks"
+    },
+    "nox-crated-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/crated-oak-planks"
+    },
+    "nox-crossed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/crossed-oak-planks"
+    },
+    "nox-cross-laced-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/cross-laced-oak-planks"
+    },
+    "nox-detailed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/detailed-oak-planks"
+    },
+    "nox-diagonal-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/diagonal-oak-planks"
+    },
+    "nox-diamond-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/diamond-oak-planks"
+    },
+    "nox-double-herringbone-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/double-herringbone-oak-planks"
+    },
+    "nox-enclosed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/enclosed-oak-planks"
+    },
+    "nox-fine-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/fine-oak-planks"
+    },
+    "nox-fine-vertical-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/fine-vertical-oak-planks"
+    },
+    "nox-framed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/framed-oak-planks"
+    },
+    "nox-herringbone-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/herringbone-oak-planks"
+    },
+    "nox-hewn-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/hewn-oak-planks"
+    },
+    "nox-laced-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/laced-oak-planks"
+    },
+    "nox-nailed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/nailed-oak-planks"
+    },
+    "nox-natural-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/natural-oak-planks"
+    },
+    "nox-oak-planks-mosaic": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/oak-planks-mosaic"
+    },
+    "nox-oak-planks-panel": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/oak-planks-panel"
+    },
+    "nox-oak-planks-shavings": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/oak-planks-shavings"
+    },
+    "nox-pegged-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/pegged-oak-planks"
+    },
+    "nox-polished-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/polished-oak-planks"
+    },
+    "nox-railed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/railed-oak-planks"
+    },
+    "nox-shifted-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/shifted-oak-planks"
+    },
+    "nox-slanted-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/slanted-oak-planks"
+    },
+    "nox-smooth-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/smooth-oak-planks"
+    },
+    "nox-stacked-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/stacked-oak-planks"
+    },
+    "nox-thin-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/thin-oak-planks"
+    },
+    "nox-tiled-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/tiled-oak-planks"
+    },
+    "nox-versailles-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/versailles-oak-planks"
+    },
+    "nox-vertically-railed-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/vertically-railed-oak-planks"
+    },
+    "nox-vertical-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/vertical-oak-planks"
+    },
+    "nox-whirlwind-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/whirlwind-oak-planks"
+    },
+    "nox-wickered-oak-planks": {
+      "textures": "textures/blocks/decorative/construction/wood/oak/planks/wickered-oak-planks"
     }
   }
 }
