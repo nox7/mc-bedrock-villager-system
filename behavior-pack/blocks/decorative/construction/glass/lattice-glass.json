@@ -17,7 +17,7 @@
             "minecraft:material_instances": {
                 "*": {
                     "texture": "nox-lattice-glass",
-                    "render_method": "alpha_test"
+                    "render_method": "blend"
                 }
             }
         }
