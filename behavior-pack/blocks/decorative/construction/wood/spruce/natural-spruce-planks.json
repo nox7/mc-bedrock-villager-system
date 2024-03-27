@@ -8,7 +8,6 @@
                 "category": "construction",
                 "is_hidden_in_commands": false
             }
-
         },
         "components": {
             "minecraft:geometry":{
