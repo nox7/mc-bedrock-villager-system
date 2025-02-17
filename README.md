@@ -1,3 +1,5 @@
+Please see: https://github.com/nox7/minecraft-bedrock-npc-pack instead
+
 # Village System Behavior and Resource Pack
 A Minecraft Bedrock Behavior Pack and Texture Pack that adds villagers with roles. Create living, breathing villages; towns; or kingdoms with villagers that have schedules and jobs and interact with each other. For example, general townspeople may need to visit the Merchant villagers for supplies during the day; or random villagers (when evening comes upon them) will want to visit the tavern before they go to bed for the evening.
 
